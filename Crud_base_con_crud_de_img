@@ -5,7 +5,7 @@ from io import BytesIO
 from PIL import Image, ImageTk
 
 
-conexion=sqlite3.connect("base de datos trabajo final.db")
+conexion=sqlite3.connect("/home/programador10/Desktop/archivis/base de datos trabajo final.db")
 
 cursor=conexion.cursor()
 
@@ -63,16 +63,25 @@ def modificar_nombre():
     
     t1=entrada.get()
     t2=entrada2.get()  
-    cursor.execute("UPDATE empleados SET nombre = ? WHERE id = ?", (t2,t1))
+    cursor.execute("UPDATE empleados SET nombre = ? WHERE dni = ?", (t2,t1))
+    conexion.commit()
+    ver_lista()
+
+
+def modificar_apellido():
+    
+    t1=entrada.get()
+    t2=entrada2.get()  
+    cursor.execute("UPDATE empleados SET apellido = ? WHERE dni = ?", (t2,t1))
     conexion.commit()
     ver_lista()
 
 
 
-def borar():
+def borrar():
     
     t1=entrada.get()
-    cursor.execute("DELETE FROM empleados WHERE nombre=?",(t1,))
+    cursor.execute("DELETE FROM empleados WHERE dni=?",(t1,))
     conexion.commit()
     ver_lista()
     
@@ -163,8 +172,9 @@ entrada3.pack()
 
 tk.Button(ventana,text="agregar empleado",command=agragar_data).pack()
 tk.Button(ventana,text="modificar nombre de empleado",command=modificar_nombre).pack()
+tk.Button(ventana,text="modificar apellido de empleado",command=modificar_apellido).pack()
 
-tk.Button(ventana,text="borrar a un empleado",command=borar).pack()
+tk.Button(ventana,text="borrar a un empleado",command=borrar).pack()
 tk.Button(ventana,text="buscar a un empleado",command=buscar).pack()
 tk.Button(ventana,text="Agregar imagen",command=agregar_imagen).pack()
 
