@@ -44,7 +44,7 @@ def agragar_data():
 
     cursor.execute(
                 
-    "INSERT INTO empleados (nombre,apellido,dni,foto,foto_dni1,foto_dni2) VALUES (?,?,?)",(t1,t2,t3)
+    "INSERT INTO empleados (nombre,apellido,dni) VALUES (?,?,?)",(t1,t2,t3)
                 
     )
     conexion.commit()   
@@ -139,6 +139,11 @@ ventana = tk.Tk()
 ventana.title("Prueba Multiprocessing")
 ventana.geometry("400x650")
 
+resultado=tk.Label(ventana, text="nombre del empleado a modificar")
+resultado.pack()
+entrada=tk.Entry(ventana)
+entrada.pack()
+
 resultado=tk.Label(ventana, text="nombre")
 resultado.pack()
 entrada1=tk.Entry(ventana)
@@ -180,6 +185,4 @@ ventana.mainloop()
 
 ###########################################################################################################################################
 
-
-###########################################################################################################################################
 
