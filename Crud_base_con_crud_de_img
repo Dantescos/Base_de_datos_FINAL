@@ -61,7 +61,7 @@ def ver_lista():
 
 def modificar_nombre():
     
-    t1=entrada1.get()
+    t1=entrada.get()
     t2=entrada2.get()  
     cursor.execute("UPDATE empleados SET nombre = ? WHERE id = ?", (t2,t1))
     conexion.commit()
@@ -71,13 +71,13 @@ def modificar_nombre():
 
 def borar():
     
-    t1=entrada1.get()
+    t1=entrada.get()
     cursor.execute("DELETE FROM empleados WHERE nombre=?",(t1,))
     conexion.commit()
     ver_lista()
     
 def buscar():    
-    et=int(entrada1.get())
+    et=int(entrada.get())
 
     print("holaaaaa1")
 
@@ -139,7 +139,7 @@ ventana = tk.Tk()
 ventana.title("Prueba Multiprocessing")
 ventana.geometry("400x650")
 
-resultado=tk.Label(ventana, text="nombre del empleado a modificar")
+resultado=tk.Label(ventana, text="nombre del empleado a modificar o borrar")
 resultado.pack()
 entrada=tk.Entry(ventana)
 entrada.pack()
@@ -184,5 +184,4 @@ ventana.mainloop()
 
 
 ###########################################################################################################################################
-
 
