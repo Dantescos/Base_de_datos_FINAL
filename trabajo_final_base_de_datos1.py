@@ -44,19 +44,81 @@ def ver_lista():
         lista.insert(tk.END, u)
         print("222")
 
-def modificar_nombre():
-    t1=entrada.get()
-    t2=entrada2.get()  
-    cursor.execute("UPDATE empleados SET nombre = ? WHERE id = ?", (t2,t1))
-    conexion.commit()
-    ver_lista()
 
-def borar():
-    t1=entrada.get()
-    cursor.execute("DELETE FROM empleados WHERE nombre=?",(t1,))
+def modificar_empleado():
+    dni_actual = entrada.get().strip()
+    if not dni_actual:
+            print("Introduce el DNI actual del empleado.")
+        return
+    # Buscar al empleado por su DNI actual
+    cursor.execute(
+        "SELECT id FROM empleados WHERE dni = ?",
+        (dni_actual,)
+    )
+    empleados = cursor.fetchall()
+    if len(empleados) == 0:
+        print("Empleado no encontrado.")
+        return
+    if len(empleados) > 1:
+           print("Hay varios empleados con ese DNI.")
+        return
+    # Obtener solamente los datos que se quiere modificar
+    nombre = entrada1.get().strip()
+    apellido = entrada2.get().strip()
+    dni_nuevo = entrada3.get().strip()
+    campos = []
+    valores = []
+    if nombre:
+        campos.append("nombre = ?")
+        valores.append(nombre)
+    if apellido:
+        campos.append("apellido = ?")
+        valores.append(apellido)
+    if dni_nuevo:
+        if not dni_nuevo.isdigit():
+                print("El nuevo DNI debe contener solo numeros.")
+            return
+        campos.append("dni = ?")
+        valores.append(int(dni_nuevo))
+    if not campos:
+        print("Completa al menos un campo para modificar.")
+        return
+    id_empleado = empleados[0][0]
+    consulta = (
+        "UPDATE empleados SET "
+        + ", ".join(campos)
+        + " WHERE id = ?"
+    )
+    valores.append(id_empleado)
+    cursor.execute(consulta, valores)
     conexion.commit()
     ver_lista()
-    
+    print("Datos del empleado actualizados correctamente.")
+
+def borrar():
+    dni = entrada.get().strip()
+    if not dni:
+        print("Introduce el DNI del empleado.")
+        return
+    cursor.execute(
+        "SELECT id FROM empleados WHERE dni = ?",
+        (dni,)
+    )
+    empleados = cursor.fetchall()
+    if len(empleados) == 0:
+        print("Resultado", "No se encontro ningun empleado.")
+        return
+    if len(empleados) > 1:
+        print("Hay varios empleados con ese DNI.")
+        return
+    cursor.execute(
+        "DELETE FROM empleados WHERE id = ?",
+        (empleados[0][0],)
+    )
+    conexion.commit()
+    ver_lista()
+    print("Empleado eliminado correctamente.")
+
 def buscar():    
     et=int(entrada.get())
     print("holaaaaa1")
@@ -104,7 +166,7 @@ ventana = tk.Tk()
 ventana.title("Prueba Multiprocessing")
 ventana.geometry("600x650")
 
-resultado=tk.Label(ventana, text="nombre del empleado a modificar o borrar")
+resultado=tk.Label(ventana, text="DNI actual para modificar o borrar")
 resultado.pack()
 entrada=tk.Entry(ventana)
 entrada.pack()
@@ -125,8 +187,8 @@ entrada3=tk.Entry(ventana)
 entrada3.pack()
 
 tk.Button(ventana,text="agregar empleado",command=agragar_data).pack()
-tk.Button(ventana,text="modificar nombre de empleado",command=modificar_nombre).pack()
-tk.Button(ventana,text="borrar a un empleado",command=borar).pack()
+tk.Button(ventana,text="Modificar datos del empleado",command=modificar_empleado).pack()
+tk.Button(ventana,text="Borrar empleado por DNI",command=borrar).pack()
 tk.Button(ventana,text="buscar a un empleado",command=buscar).pack()
 tk.Button(ventana,text="Agregar imagen",command=agregar_imagen).pack()
 
