@@ -50,6 +50,8 @@ def agragar_data():
     conexion.commit()   
     ver_lista() 
 
+
+
        
 def ver_lista():
     lista.delete(0, tk.END)
@@ -71,7 +73,7 @@ def modificar_nombre():
 def modificar_apellido():
     
     t1=entrada.get()
-    t2=entrada2.get()  
+    t2=entrada3.get()  
     cursor.execute("UPDATE empleados SET apellido = ? WHERE dni = ?", (t2,t1))
     conexion.commit()
     ver_lista()
@@ -105,7 +107,19 @@ def buscar():
             print("nnnnnnnnnn")
             
 
+def actualizar_lista():
+    lista2.delete(0, tk.END)
+
+    filas = conexion.execute(
+        "SELECT id, nombre FROM imagenes ORDER BY id DESC"
+    ).fetchall()
+
+    for id_imagen, nombre in filas:
+        lista2.insert(tk.END, f"{id_imagen} - {nombre}")
+
 def agregar_imagen():
+    et=str(entrada.get())
+    
     ruta = filedialog.askopenfilename(
         title="Seleccionar imagen",
         filetypes=[
@@ -124,11 +138,11 @@ def agregar_imagen():
         nombre = ruta.replace("\\", "/").split("/")[-1]
         formato = nombre.rsplit(".", 1)[-1].lower()
         
-        et=int(entrada1.get())
+        
         cursor.execute("SELECT * FROM empleados WHERE id = ?", (et,))
         conexion.execute(
-            "INSERT INTO imagenes (nombre, formato, contenido) "
-            "VALUES (?, ?, ?)",
+            "INSERT INTO imagenes (nombre, formato, contenido,id_empleado) "
+            "VALUES (?, ?, ?, ?)",
             (nombre, formato, sqlite3.Binary(contenido), et)
         )
         conexion.commit()
@@ -137,7 +151,40 @@ def agregar_imagen():
 
     except (OSError, sqlite3.Error) as error:
         messagebox.showerror("Error", str(error))
-     
+    actualizar_lista()
+
+
+def mostrar_imagen(event=None):
+    seleccion = lista2.curselection()
+
+    if not seleccion:
+        return
+
+    texto = lista2.get(seleccion[0])
+    id_imagen = int(texto.split(" - ", 1)[0])
+
+    fila = conexion.execute(
+        "SELECT nombre, contenido FROM imagenes WHERE id = ?",
+        (id_imagen,)
+    ).fetchone()
+
+    if fila is None:
+        return
+
+    nombre, contenido = fila
+
+    try:
+        imagen = Image.open(BytesIO(contenido))
+        imagen.thumbnail((600, 450))
+
+        foto = ImageTk.PhotoImage(imagen)
+        visor.configure(image=foto, text="")
+        visor.image = foto  # Mantener viva la referencia
+        titulo.configure(text=nombre)
+
+    except Exception as error:
+        messagebox.showerror("Error al mostrar", str(error))
+    actualizar_lista()
 
 
 
@@ -182,16 +229,26 @@ tk.Button(ventana,text="Agregar imagen",command=agregar_imagen).pack()
 busca=tk.Label(ventana, text="")
 busca.pack()
 
-lista=tk.Listbox(ventana, width=30, height=30)
+lista=tk.Listbox(ventana)
 lista.pack()
 ver_lista()
 
+
+titulo = tk.Label(ventana, text="Seleccioná una imagen")
+titulo.pack(pady=5)
+lista2 = tk.Listbox(ventana, height=8)
+lista2.pack(fill="x", padx=10)
+lista2.bind("<<ListboxSelect>>", mostrar_imagen)
+
+
+
 visor = tk.Label(ventana, text="Tu imagen aparecerá aquí")
 visor.pack(expand=True, fill="both", padx=10, pady=10)
-
+actualizar_lista()
 ventana.mainloop()
 
 
 
 ###########################################################################################################################################
+
 
