@@ -49,7 +49,7 @@ def modificar_empleado():
     dni_actual = entrada.get().strip()
     if not dni_actual:
             print("Introduce el DNI actual del empleado.")
-        return
+            return
     # Buscar al empleado por su DNI actual
     cursor.execute(
         "SELECT id FROM empleados WHERE dni = ?",
@@ -61,7 +61,7 @@ def modificar_empleado():
         return
     if len(empleados) > 1:
            print("Hay varios empleados con ese DNI.")
-        return
+           return
     # Obtener solamente los datos que se quiere modificar
     nombre = entrada1.get().strip()
     apellido = entrada2.get().strip()
@@ -77,7 +77,7 @@ def modificar_empleado():
     if dni_nuevo:
         if not dni_nuevo.isdigit():
                 print("El nuevo DNI debe contener solo numeros.")
-            return
+                return
         campos.append("dni = ?")
         valores.append(int(dni_nuevo))
     if not campos:
