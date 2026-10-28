@@ -2,7 +2,7 @@ import sqlite3
 import tkinter as tk
 from tkinter import filedialog, messagebox
 from io import BytesIO
-from PIL import Image, ImageTk
+from PIL import Image
 
 conexion=sqlite3.connect("base de datos trabajo final.db")
 cursor=conexion.cursor()
@@ -31,6 +31,9 @@ def agragar_data():
     t1=entrada1.get()
     t2=entrada2.get()
     t3=entrada3.get()
+    if t1=="" or t2=="" or t3=="":
+        print("Por favor complete los campos")
+        return
     cursor.execute(          
     "INSERT INTO empleados (nombre,apellido,dni) VALUES (?,?,?)",(t1,t2,t3)           
     )
