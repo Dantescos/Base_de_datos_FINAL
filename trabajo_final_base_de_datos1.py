@@ -2,7 +2,7 @@ import sqlite3
 import tkinter as tk
 from tkinter import filedialog, messagebox
 from io import BytesIO
-from PIL import Image
+from PIL import Image, ImageTk
 
 conexion=sqlite3.connect("base de datos trabajo final.db")
 cursor=conexion.cursor()
@@ -45,8 +45,6 @@ def ver_lista():
     cursor.execute("SELECT * FROM empleados")
     for u in cursor.fetchall():
         lista.insert(tk.END, u)
-        print("222")
-
 
 def modificar_empleado():
     dni_actual = entrada.get().strip()
@@ -122,21 +120,23 @@ def borrar():
     ver_lista()
     print("Empleado eliminado correctamente.")
 
-def buscar():    
-    et=int(entrada.get())
-    print("holaaaaa1")
-    cursor.execute("SELECT * FROM empleados WHERE dni = ?", (et,))
-    print("holaaaaa2")
-    idbusca=cursor.fetchall()
+def buscar():
+  texto = entrada.get().strip()
+  if not texto:
+    busca.config(text="Por favor complete el campo.")
+    return
+  try:
+    et = int(texto)
+  except ValueError:
+    busca.config(text="El DNI debe ser un numero.")
+    return
+  cursor.execute("SELECT * FROM empleados WHERE dni = ?", (et,))
+  idbusca = cursor.fetchall()
+  if idbusca:
     for i in idbusca:
-        print("holaaaaa")
-        print("paa")
-        if et in i:
-            busca.config(text=i) 
-            print("sssssssss")
-        else:
-            busca.config(text="contacto no encontrado")
-            print("nnnnnnnnnn")    
+      busca.config(text=str(i))
+  else:
+    busca.config(text="contacto no encontrado")
 
 def agregar_imagen():
     ruta = filedialog.askopenfilename(
@@ -167,7 +167,7 @@ def agregar_imagen():
      
 ventana = tk.Tk()
 ventana.title("Prueba Multiprocessing")
-ventana.geometry("600x650")
+ventana.geometry("900x800")
 
 resultado=tk.Label(ventana, text="DNI actual para modificar o borrar")
 resultado.pack()
