@@ -137,6 +137,23 @@ def agregar_foto():
         messagebox.showerror("Error", str(error))
     actualizar_lista()
 
+def borrar_imagen():
+    seleccion = lista2.curselection()
+    if not seleccion:
+        messagebox.showwarning("Atencion", "Por favor, selecciona una imagen de la lista para borrar.")
+        return
+    texto = lista2.get(seleccion[0])
+    id_imagen = int(texto.split(" - ", 1)[0])   
+    try:
+        conexion.execute("DELETE FROM imagenes WHERE id = ?", (id_imagen,))
+        conexion.commit()
+        visor.configure(image="", text="Tu imagen aparecer aquí")
+        titulo.configure(text="Selecciona una imagen")
+        messagebox.showinfo("Exito", "Imagen eliminada correctamente.")
+        actualizar_lista()
+    except Exception as error:
+        messagebox.showerror("Error. No se pudo borrar la imagen")
+
 def mostrar_imagen(event=None):
     seleccion = lista2.curselection()
     if not seleccion:
@@ -196,6 +213,9 @@ tk.Button(ventana, text="modificar apellido de empleado", command=modificar_apel
 tk.Button(ventana, text="borrar a un empleado", command=borrar).pack()
 tk.Button(ventana, text="buscar a un empleado", command=buscar).pack()
 tk.Button(ventana, text="Agregar imagen", command=agregar_foto).pack()
+
+boton_borrar_imagen = tk.Button(ventana, text="Borrar imagen seleccionada", command=borrar_imagen, fg="red")
+boton_borrar_imagen.pack(pady=5, fill="x")
 
 busca = tk.Label(ventana, text="")
 busca.pack()
