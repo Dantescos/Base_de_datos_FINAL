@@ -5,7 +5,7 @@ from io import BytesIO
 from PIL import Image, ImageTk
 
 
-conexion=sqlite3.connect("/home/programador10/Desktop/archivis/base de datos trabajo final.db")
+conexion=sqlite3.connect("base de datos trabajo final.db")
 
 cursor=conexion.cursor()
 
