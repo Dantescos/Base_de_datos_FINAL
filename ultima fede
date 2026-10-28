@@ -1,3 +1,4 @@
+
 import sqlite3
 import tkinter as tk
 from tkinter import filedialog, messagebox
@@ -62,50 +63,56 @@ def ver_lista():
         print("222")
 
 def modificar_nombre():
-    
-    t1=entrada.get()
-    t2=entrada2.get()  
-    cursor.execute("UPDATE empleados SET nombre = ? WHERE dni = ?", (t2,t1))
-    conexion.commit()
-    ver_lista()
-
+    if lista.size()==0:
+        t1=entrada.get()
+        t2=entrada2.get()  
+        cursor.execute("UPDATE empleados SET nombre = ? WHERE dni = ?", (t2,t1))
+        conexion.commit()
+        ver_lista()
+    else:
+        pass
 
 def modificar_apellido():
-    
-    t1=entrada.get()
-    t2=entrada3.get()  
-    cursor.execute("UPDATE empleados SET apellido = ? WHERE dni = ?", (t2,t1))
-    conexion.commit()
-    ver_lista()
+    if lista.size()==0:
+        t1=entrada.get()
+        t2=entrada3.get()  
+        cursor.execute("UPDATE empleados SET apellido = ? WHERE dni = ?", (t2,t1))
+        conexion.commit()
+        ver_lista()
+    else: 
+        pass
 
 
 
 def borrar():
-    
-    t1=entrada.get()
-    cursor.execute("DELETE FROM empleados WHERE dni=?",(t1,))
-    conexion.commit()
-    ver_lista()
-    
+    if lista.size()==0:
+        t1=entrada.get()
+        cursor.execute("DELETE FROM empleados WHERE dni=?",(t1,))
+        conexion.commit()
+        ver_lista()
+    else:
+        pass
 def buscar():    
-    et=int(entrada.get())
+    if lista.size()==0:
+        et=int(entrada.get())
 
-    print("holaaaaa1")
+        print("holaaaaa1")
 
-    cursor.execute("SELECT * FROM empleados WHERE dni = ?", (et,))
-    print("holaaaaa2")
+        cursor.execute("SELECT * FROM empleados WHERE dni = ?", (et,))
+        print("holaaaaa2")
 
-    idbusca=cursor.fetchall()
-    for i in idbusca:
-        print("holaaaaa")
-        print("paa")
-        if et in i:
-            busca.config(text=i) 
-            print("sssssssss")
-        else:
-            busca.config(text="contacto no encontrado")
-            print("nnnnnnnnnn")
-            
+        idbusca=cursor.fetchall()
+        for i in idbusca:
+            print("holaaaaa")
+            print("paa")
+            if et in i:
+                busca.config(text=i) 
+                print("sssssssss")
+            else:
+                busca.config(text="contacto no encontrado")
+                print("nnnnnnnnnn")
+    else:
+        print("88888888888888888888888")
 
 def actualizar_lista():
     lista2.delete(0, tk.END)
