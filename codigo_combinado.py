@@ -1,150 +1,122 @@
-#Agregar una funcion que permite agregar texto de una entrevista mas otros datos, se selecciona una persona por id, profesional que entrevista y fecha incluida. se agregan cronologicamente.
 import sqlite3
 import tkinter as tk
 from tkinter import filedialog, messagebox
 from io import BytesIO
 from PIL import Image, ImageTk
 
-conexion=sqlite3.connect("base de datos trabajo final.db")
-cursor=conexion.cursor()
-cursor.execute("""
+# --- BASE DE DATOS ---
+conexion = sqlite3.connect("base de datos trabajo final.db")
+cursor = conexion.cursor()
+cursor.execute(""" 
 CREATE TABLE IF NOT EXISTS empleados (
-id INTEGER PRIMARY KEY AUTOINCREMENT,
-nombre TEXT,
-apellido TEXT,
-dni INTEGER
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    nombre TEXT,
+    apellido TEXT,
+    dni INTEGER
 )            
-""")   
+""")
 
 conexion.execute("""
 CREATE TABLE IF NOT EXISTS imagenes (
-id INTEGER PRIMARY KEY AUTOINCREMENT,
-nombre TEXT NOT NULL,
-formato TEXT NOT NULL,
-contenido BLOB NOT NULL,
-id_empleado INTEGER,
-FOREIGN KEY (id_empleado) REFERENCES empleados(id)
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    nombre TEXT NOT NULL,
+    formato TEXT NOT NULL,
+    contenido BLOB NOT NULL,
+    id_empleado INTEGER,
+    FOREIGN KEY (id_empleado) REFERENCES empleados(id)
 )
 """)
-
 conexion.commit()
+
+# --- FUNCIONES ---
 def agragar_data():
-    t1=entrada1.get()
-    t2=entrada2.get()
-    t3=entrada3.get()
-    if t1=="" or t2=="" or t3=="":
+    t1 = entrada1.get().strip()
+    t2 = entrada2.get().strip()
+    t3 = entrada3.get().strip()
+    if t1 == "" or t2 == "" or t3 == "":
         print("Por favor complete los campos")
-        return
-    cursor.execute(          
-    "INSERT INTO empleados (nombre,apellido,dni) VALUES (?,?,?)",(t1,t2,t3)           
+        return   
+    cursor.execute(
+        "INSERT INTO empleados (nombre, apellido, dni) VALUES (?, ?, ?)", (t1, t2, t3)
     )
     conexion.commit()   
     ver_lista() 
-       
+
 def ver_lista():
     lista.delete(0, tk.END)
     cursor.execute("SELECT * FROM empleados")
     for u in cursor.fetchall():
         lista.insert(tk.END, u)
+        print("222")
 
-def modificar_empleado():
-    dni_actual = entrada.get().strip()
-    if not dni_actual:
-            print("Introduce el DNI actual del empleado.")
-            return
-    # Buscar al empleado por su DNI actual
-    cursor.execute(
-        "SELECT id FROM empleados WHERE dni = ?",
-        (dni_actual,)
-    )
-    empleados = cursor.fetchall()
-    if len(empleados) == 0:
-        print("Empleado no encontrado.")
+def modificar_nombre():
+    t1 = entrada.get().strip()
+    t2 = entrada2.get().strip()  
+    if not t1 or not t2:
+        print("Complete el DNI en el primer campo y el nuevo nombre en el campo 'apellido'")
         return
-    if len(empleados) > 1:
-           print("Hay varios empleados con ese DNI.")
-           return
-    # Obtener solamente los datos que se quiere modificar
-    nombre = entrada1.get().strip()
-    apellido = entrada2.get().strip()
-    dni_nuevo = entrada3.get().strip()
-    campos = []
-    valores = []
-    if nombre:
-        campos.append("nombre = ?")
-        valores.append(nombre)
-    if apellido:
-        campos.append("apellido = ?")
-        valores.append(apellido)
-    if dni_nuevo:
-        if not dni_nuevo.isdigit():
-                print("El nuevo DNI debe contener solo numeros.")
-                return
-        campos.append("dni = ?")
-        valores.append(int(dni_nuevo))
-    if not campos:
-        print("Completa al menos un campo para modificar.")
-        return
-    id_empleado = empleados[0][0]
-    consulta = (
-        "UPDATE empleados SET "
-        + ", ".join(campos)
-        + " WHERE id = ?"
-    )
-    valores.append(id_empleado)
-    cursor.execute(consulta, valores)
+    cursor.execute("UPDATE empleados SET nombre = ? WHERE dni = ?", (t2, t1))
     conexion.commit()
     ver_lista()
-    print("Datos del empleado actualizados correctamente.")
+
+def modificar_apellido():
+    t1 = entrada.get().strip()
+    t2 = entrada3.get().strip()  
+    if not t1 or not t2:
+        print("Complete el DNI en el primer campo y el nuevo apellido en el campo 'dni'")
+        return
+    cursor.execute("UPDATE empleados SET apellido = ? WHERE dni = ?", (t2, t1))
+    conexion.commit()
+    ver_lista()
 
 def borrar():
-    dni = entrada.get().strip()
-    if not dni:
-        print("Introduce el DNI del empleado.")
+    t1 = entrada.get().strip()
+    if not t1:
+        print("Introduce el DNI del empleado en el primer campo.")
         return
-    cursor.execute(
-        "SELECT id FROM empleados WHERE dni = ?",
-        (dni,)
-    )
-    empleados = cursor.fetchall()
-    if len(empleados) == 0:
-        print("Resultado", "No se encontro ningun empleado.")
-        return
-    if len(empleados) > 1:
-        print("Hay varios empleados con ese DNI.")
-        return
-    cursor.execute(
-        "DELETE FROM empleados WHERE id = ?",
-        (empleados[0][0],)
-    )
+    cursor.execute("DELETE FROM empleados WHERE dni = ?", (t1,))
     conexion.commit()
     ver_lista()
-    print("Empleado eliminado correctamente.")
 
-def buscar():
-  texto = entrada.get().strip()
-  if not texto:
-    busca.config(text="Por favor complete el campo.")
-    return
-  try:
-    et = int(texto)
-  except ValueError:
-    busca.config(text="El DNI debe ser un numero.")
-    return
-  cursor.execute("SELECT * FROM empleados WHERE dni = ?", (et,))
-  idbusca = cursor.fetchall()
-  if idbusca:
-    for i in idbusca:
-      busca.config(text=str(i))
-  else:
-    busca.config(text="contacto no encontrado")
+def buscar():    
+    texto = entrada.get().strip()
+    if not texto:
+        busca.config(text="Por favor complete el campo.")
+        return
+    try:
+        et = int(texto)
+    except ValueError:
+        busca.config(text="El DNI debe ser un numero.")
+        return
+    cursor.execute("SELECT * FROM empleados WHERE dni = ?", (et,))
+    idbusca = cursor.fetchall()
+    if idbusca:
+        for i in idbusca:
+            if et in i:
+                busca.config(text=str(i)) 
+            else:
+                busca.config(text="contacto no encontrado")
+    else:
+        busca.config(text="contacto no encontrado")
 
-def agregar_imagen():
+def actualizar_lista():
+    lista2.delete(0, tk.END)
+    filas = conexion.execute(
+        "SELECT id, nombre FROM imagenes ORDER BY id DESC"
+    ).fetchall()
+    for id_imagen, nombre in filas:
+        lista2.insert(tk.END, f"{id_imagen} - {nombre}")
+
+def agregar_foto():
+    et = entrada.get().strip()
+    if not et:
+        print("Por favor introduce el ID del empleado en el primer campo.")
+        return   
     ruta = filedialog.askopenfilename(
         title="Seleccionar imagen",
         filetypes=[
             ("Imágenes", "*.png *.jpg *.jpeg *.webp *.gif"),
-            ("Todos los archivos", ".")
+            ("Todos los archivos", "*.*")
         ]
     )
     if not ruta:
@@ -153,57 +125,93 @@ def agregar_imagen():
         with open(ruta, "rb") as archivo:
             contenido = archivo.read()
         nombre = ruta.replace("\\", "/").split("/")[-1]
-        formato = nombre.rsplit(".", 1)[-1].lower()  
-        et=int(entrada1.get())
-        cursor.execute("SELECT * FROM empleados WHERE id = ?", (et,))
+        formato = nombre.rsplit(".", 1)[-1].lower()
         conexion.execute(
-            "INSERT INTO imagenes (nombre, formato, contenido) "
-            "VALUES (?, ?, ?)",
+            "INSERT INTO imagenes (nombre, formato, contenido, id_empleado) "
+            "VALUES (?, ?, ?, ?)",
             (nombre, formato, sqlite3.Binary(contenido), et)
         )
         conexion.commit()
         messagebox.showinfo("Éxito", f"Imagen guardada: {nombre}")
     except (OSError, sqlite3.Error) as error:
         messagebox.showerror("Error", str(error))
-     
+    actualizar_lista()
+
+def mostrar_imagen(event=None):
+    seleccion = lista2.curselection()
+    if not seleccion:
+        return
+    texto = lista2.get(seleccion[0])
+    id_imagen = int(texto.split(" - ", 1)[0])
+    fila = conexion.execute(
+        "SELECT nombre, contenido FROM imagenes WHERE id = ?",
+        (id_imagen,)
+    ).fetchone()
+    if fila is None:
+        return
+    nombre, contenido = fila
+    try:
+        imagen = Image.open(BytesIO(contenido))
+        ventana.update_idletasks()  
+        ancho_max = visor.winfo_width()
+        alto_max = visor.winfo_height()
+        if ancho_max < 50: ancho_max = 600
+        if alto_max < 50: alto_max = 450
+        imagen.thumbnail((ancho_max, alto_max))
+        foto = ImageTk.PhotoImage(imagen)
+        visor.configure(image=foto, text="")
+        visor.image = foto  
+        titulo.configure(text=nombre)
+    except Exception as error:
+        messagebox.showerror("Error al mostrar", str(error))
+
+# --- INTERFAZ GRAFICA ---
 ventana = tk.Tk()
 ventana.title("Prueba Multiprocessing")
 ventana.geometry("900x800")
 
-resultado=tk.Label(ventana, text="DNI actual para modificar o borrar")
+resultado = tk.Label(ventana, text="nombre del empleado a modificar o borrar")
 resultado.pack()
-entrada=tk.Entry(ventana)
+entrada = tk.Entry(ventana)
 entrada.pack()
 
-resultado=tk.Label(ventana, text="nombre")
+resultado = tk.Label(ventana, text="nombre")
 resultado.pack()
-entrada1=tk.Entry(ventana)
+entrada1 = tk.Entry(ventana)
 entrada1.pack()
 
-resultado=tk.Label(ventana, text="apellido")
+resultado = tk.Label(ventana, text="apellido")
 resultado.pack()
-entrada2=tk.Entry(ventana)
+entrada2 = tk.Entry(ventana)
 entrada2.pack()
 
-resultado=tk.Label(ventana, text="dni")
+resultado = tk.Label(ventana, text="dni")
 resultado.pack()
-entrada3=tk.Entry(ventana)
+entrada3 = tk.Entry(ventana)
 entrada3.pack()
 
-tk.Button(ventana,text="agregar empleado",command=agragar_data).pack()
-tk.Button(ventana,text="Modificar datos del empleado",command=modificar_empleado).pack()
-tk.Button(ventana,text="Borrar empleado por DNI",command=borrar).pack()
-tk.Button(ventana,text="buscar a un empleado",command=buscar).pack()
-tk.Button(ventana,text="Agregar imagen",command=agregar_imagen).pack()
+tk.Button(ventana, text="agregar empleado", command=agragar_data).pack()
+tk.Button(ventana, text="modificar nombre de empleado", command=modificar_nombre).pack()
+tk.Button(ventana, text="modificar apellido de empleado", command=modificar_apellido).pack()
+tk.Button(ventana, text="borrar a un empleado", command=borrar).pack()
+tk.Button(ventana, text="buscar a un empleado", command=buscar).pack()
+tk.Button(ventana, text="Agregar imagen", command=agregar_foto).pack()
 
-busca=tk.Label(ventana, text="")
+busca = tk.Label(ventana, text="")
 busca.pack()
 
-lista=tk.Listbox(ventana, width=30, height=30)
+lista = tk.Listbox(ventana)
 lista.pack()
 ver_lista()
+
+titulo = tk.Label(ventana, text="Seleccioná una imagen")
+titulo.pack(pady=5)
+lista2 = tk.Listbox(ventana, height=8)
+lista2.pack(fill="x", padx=10)
+lista2.bind("<<ListboxSelect>>", mostrar_imagen)
 
 visor = tk.Label(ventana, text="Tu imagen aparecerá aquí")
 visor.pack(expand=True, fill="both", padx=10, pady=10)
 
+actualizar_lista()
 ventana.mainloop()
