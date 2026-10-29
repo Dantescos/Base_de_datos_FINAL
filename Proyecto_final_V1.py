@@ -201,27 +201,64 @@ tk.Button(frame_btn, text="Limpiar", command=limpiar, bg=VERDE_AZULADO, fg="whit
 def abrir_entrevistas():
     v = tk.Toplevel(ventana)
     v.title("Entrevistas")
-    v.geometry("600x500")
+    v.geometry("600x560")
     v.config(bg=VERDE_AZULADO)
 
-    tk.Label(v, text="DNI de la persona:", bg=VERDE_AZULADO, fg=NEGRO).pack(pady=(10,0))
-    e_dni = tk.Entry(v, width=20); e_dni.pack(pady=3)
-    tk.Label(v, text="Entrevistador:", bg=VERDE_AZULADO, fg=NEGRO).pack()
-    e_entrev = tk.Entry(v, width=40); e_entrev.pack(pady=3)
+    # ===== FORMULARIO =====
+    # Frame contenedor del formulario (arriba, ocupa todo el ancho)
+    form = tk.Frame(v, bg=VERDE_AZULADO)
+    form.pack(side="top", fill="x", padx=15, pady=(15, 5))
 
-    tk.Label(v, text="Fecha (DD/MM/AAAA):", bg=VERDE_AZULADO, fg=NEGRO).pack()
-    e_fecha = tk.Entry(v, width=20); e_fecha.pack(pady=3)
+    # --- Fila 1: DNI ---
+    fila1 = tk.Frame(form, bg=VERDE_AZULADO)
+    fila1.pack(side="top", fill="x", pady=3)
+    tk.Label(fila1, text="DNI:", bg=VERDE_AZULADO, fg=NEGRO,
+             width=18, anchor="w").pack(side="left")
+    e_dni = tk.Entry(fila1, width=20)
+    e_dni.pack(side="left", padx=(0, 10))
 
-    tk.Label(v, text="Observaciones:", bg=VERDE_AZULADO, fg=NEGRO).pack()
-    e_obs = tk.Entry(v, width=50); e_obs.pack(pady=3)
+    # --- Fila 2: Entrevistador ---
+    fila2 = tk.Frame(form, bg=VERDE_AZULADO)
+    fila2.pack(side="top", fill="x", pady=3)
+    tk.Label(fila2, text="Entrevistador:", bg=VERDE_AZULADO, fg=NEGRO,
+             width=18, anchor="w").pack(side="left")
+    e_entrev = tk.Entry(fila2, width=40)
+    e_entrev.pack(side="left", padx=(0, 10))
 
-    lb = tk.Listbox(v, height=10, font=("Consolas", 10), bg=AZUL_PETROLEO, fg=NEGRO)
-    lb.pack(fill="both", expand=True, padx=10, pady=10)
+    # --- Fila 3: Fecha ---
+    fila3 = tk.Frame(form, bg=VERDE_AZULADO)
+    fila3.pack(side="top", fill="x", pady=3)
+    tk.Label(fila3, text="Fecha (DD/MM/AAAA):", bg=VERDE_AZULADO, fg=NEGRO,
+             width=18, anchor="w").pack(side="left")
+    e_fecha = tk.Entry(fila3, width=20)
+    e_fecha.pack(side="left", padx=(0, 10))
+
+    # --- Fila 4: Observaciones ---
+    fila4 = tk.Frame(form, bg=VERDE_AZULADO)
+    fila4.pack(side="top", fill="x", pady=3)
+    tk.Label(fila4, text="Observaciones:", bg=VERDE_AZULADO, fg=NEGRO,
+             width=18, anchor="w").pack(side="left")
+    e_obs = tk.Entry(fila4, width=50)
+    e_obs.pack(side="left", padx=(0, 10))
+
+    # ===== LISTBOX (lo que queda, ocupa todo el resto) =====
+    frame_lb = tk.Frame(v, bg=VERDE_AZULADO)
+    frame_lb.pack(side="top", fill="both", expand=True, padx=15, pady=(0, 15))
+
+    scroll = tk.Scrollbar(frame_lb, orient="vertical")
+    scroll.pack(side="right", fill="y")
+    lb = tk.Listbox(frame_lb, height=10, font=("Consolas", 10),
+                    bg=AZUL_PETROLEO, fg="white",
+                    selectbackground=AMARILLO, selectforeground=NEGRO,
+                    yscrollcommand=scroll.set)
+    lb.pack(side="left", fill="both", expand=True)
+    scroll.config(command=lb.yview)
+
+
 
     def refrescar():
         lb.delete(0, tk.END)
-        cursor.execute("""SELECT id, dni_persona, entrevistador, fecha, observaciones
-                          FROM entrevistas ORDER BY fecha DESC""")
+        cursor.execute("""SELECT id, dni_persona, entrevistador, fecha, observaciones FROM entrevistas ORDER BY fecha DESC""")
         for i, dni, ent, fec, obs in cursor.fetchall():
             lb.insert(tk.END, f"[{i}] DNI {dni} | {ent} | {fec} | {obs or ''}")
 
@@ -236,15 +273,14 @@ def abrir_entrevistas():
         if not cursor.fetchone():
             messagebox.showerror("Error", "No existe persona con ese DNI.")
             return
-        cursor.execute("INSERT INTO entrevistas (dni_persona, entrevistador, fecha, observaciones) VALUES (?,?,?,?)",
-                       (dni, ent, fec, e_obs.get().strip()))
+        cursor.execute("INSERT INTO entrevistas (dni_persona, entrevistador, fecha, observaciones) VALUES (?,?,?,?)",dni, ent, fec, e_obs.get().strip())
         conexion.commit()
         refrescar()
 
     def eliminar_ent():
         sel = lb.curselection()
         if not sel:
-            messagebox.showwarning("Atencion", "Selecciona una entrevista.")
+            messagebox.showwarning("Atencion","Selecciona una entrevista.")
             return
         texto = lb.get(sel[0])
         id_ent = int(texto.split("]")[0].replace("[", ""))
@@ -253,17 +289,11 @@ def abrir_entrevistas():
         refrescar()
 
     frame_btns = tk.Frame(v, bg=VERDE_AZULADO); frame_btns.pack(pady=5)
-    tk.Button(frame_btns, text="Agregar entrevista", command=agregar_ent,
-              bg=VERDE_AZULADO, fg=BLANCO_HUESO).pack(side="left", padx=5)
-    tk.Button(frame_btns, text="Eliminar seleccionada", command=eliminar_ent,
-              bg=VERDE_AZULADO, fg=BLANCO_HUESO).pack(side="left", padx=5)
-    tk.Button(frame_btns, text="Cerrar", command=v.destroy,
-              bg=VERDE_AZULADO, fg=BLANCO_HUESO).pack(side="left", padx=5)
-
+    tk.Button(frame_btns, text="Agregar entrevista", command=agregar_ent,bg=AZUL_PETROLEO, fg=BLANCO_HUESO).pack(side="left", padx=5)
+    tk.Button(frame_btns, text="Eliminar seleccionada", command=eliminar_ent,bg=AZUL_PETROLEO, fg=BLANCO_HUESO).pack(side="left", padx=5)
+    tk.Button(frame_btns, text="Cerrar", command=v.destroy,bg=AZUL_PETROLEO, fg=BLANCO_HUESO).pack(side="left", padx=5)
     refrescar()
-
-tk.Button(frame_btn, text="Entrevistas", command=abrir_entrevistas,
-          bg="#008080", fg="white", width=12).pack(side="left", padx=5)
+tk.Button(frame_btn, text="Entrevistas", command=abrir_entrevistas,bg="#008080", fg="white", width=12).pack(side="left", padx=5)
 
 # ===========================================================
 refrescar_lista()
