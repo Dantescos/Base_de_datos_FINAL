@@ -49,14 +49,14 @@ VERDE_TERMINAL = "#00FF00"
 ventana = tk.Tk()
 ventana.title("APP:GESTOR DE DATOS")
 ventana.geometry("900x650")
-ventana.config(bg=NEGRO)
+ventana.config(bg=VERDE_AZULADO)
 # --- Banner ---
 banner = tk.Frame(ventana,bg=AZUL_PETROLEO, height=70)
 banner.pack(fill="x")
 banner.pack_propagate(False)
 tk.Label(banner, text="GESTOR DE DATOS", bg=AZUL_PETROLEO, fg=BLANCO_HUESO,font=("Courier", 20, "bold")).pack(pady=18)
 # --- Cuerpo principal (foto + lista) ---
-cuerpo = tk.Frame(ventana,bg = NEGRO)
+cuerpo = tk.Frame(ventana,bg = VERDE_AZULADO)
 cuerpo.pack(fill="both", expand=True, padx=15, pady=10)
 # Izquierda: visor de foto
 frame_foto = tk.Frame(cuerpo, bg=AZUL_PETROLEO, width=320, height=320)
@@ -65,29 +65,29 @@ frame_foto.pack_propagate(False)
 visor_foto = tk.Label(frame_foto, text="Sin foto", bg=VERDE_AZULADO, fg=BLANCO_HUESO)
 visor_foto.pack(expand=True, fill="both")
 # Derecha: lista de personas
-frame_lista = tk.Frame(cuerpo, bg=NEGRO)
+frame_lista = tk.Frame(cuerpo, bg=VERDE_AZULADO)
 frame_lista.pack(side="left", fill="both", expand=True, padx=10)
-tk.Label(frame_lista, text="Personas registradas", bg=NEGRO, fg=BLANCO_HUESO,font=("Courier", 12, "bold")).pack(anchor="w")
+tk.Label(frame_lista, text="Personas registradas", bg=VERDE_AZULADO, fg=BLANCO_HUESO,font=("Courier", 12, "bold")).pack(anchor="w")
 scroll = tk.Scrollbar(frame_lista, orient="vertical")
 scroll.pack(side="right", fill="y")
 lista_personas = tk.Listbox(frame_lista, yscrollcommand=scroll.set,font=("Consolas", 11), bg=VERDE_AZULADO, fg=NEGRO,selectbackground=AMARILLO, selectforeground=BLANCO_HUESO)
 lista_personas.pack(side="left", fill="both", expand=True)
-scroll.config(command=lista_personas.yview)
+scroll.config(command=lista_personas.yview, bg=AZUL_PETROLEO)
 # --- Formulario (entries) ---
-frame_form = tk.Frame(ventana, bg=NEGRO)
-frame_form.pack(fill="x", padx=15, pady=10)
-tk.Label(frame_form, text="Nombre:", bg=NEGRO, fg=BLANCO_HUESO).grid(row=0, column=0, sticky="e", padx=5)
+frame_form = tk.Frame(ventana, bg=VERDE_AZULADO) #fondo de formulario
+frame_form.pack(fill="x", padx=15, pady=10, side="top")
+tk.Label(frame_form, text="Nombre:", bg=VERDE_AZULADO, fg=BLANCO_HUESO).grid(row=0, column=0, sticky="e", padx=5)
 entry_nombre = tk.Entry(frame_form, width=22)
 entry_nombre.grid(row=0, column=1, padx=5, pady=3)
-tk.Label(frame_form, text="Apellido:", bg=NEGRO, fg = BLANCO_HUESO).grid(row=0, column=2, sticky="e", padx=5)
+tk.Label(frame_form, text="Apellido:", bg=VERDE_AZULADO, fg = BLANCO_HUESO).grid(row=0, column=2, sticky="e", padx=5)
 entry_apellido = tk.Entry(frame_form, width=22)
 entry_apellido.grid(row=0, column=3, padx=5, pady=3)
-tk.Label(frame_form, text="DNI:", bg=NEGRO, fg=BLANCO_HUESO).grid(row=0, column=4, sticky="e", padx=5)
+tk.Label(frame_form, text="DNI:", bg=VERDE_AZULADO, fg=BLANCO_HUESO).grid(row=0, column=4, sticky="e", padx=5)
 entry_dni = tk.Entry(frame_form, width=15)
 entry_dni.grid(row=0, column=5, padx=5, pady=3)
 # --- Botonera ---
-frame_btn = tk.Frame(ventana, bg=NEGRO)
-frame_btn.pack(pady=10)
+frame_btn = tk.Frame(ventana, bg=VERDE_AZULADO) #fondo de botones
+frame_btn.pack(pady=10, side="top")
 def refrescar_lista():
     lista_personas.delete(0, tk.END)
     cursor.execute("SELECT nombre, apellido, dni FROM personas ORDER BY apellido, nombre")
@@ -190,10 +190,10 @@ def limpiar():
     entry_apellido.delete(0, tk.END)
     entry_dni.delete(0, tk.END)
 
-tk.Button(frame_btn, text="Agregar", command=agregar, bg=VERDE_AZULADO,fg="white",width=12,activebackground=AMARILLO, activeforeground="white").pack(side="left", padx=5)
-tk.Button(frame_btn, text="Eliminar", command=eliminar, bg=VERDE_AZULADO, fg="white", width=12,activebackground=AMARILLO, activeforeground="white").pack(side="left", padx=5)
-tk.Button(frame_btn, text="Buscar", command=buscar, bg=VERDE_AZULADO, fg="white",width=12,activebackground=AMARILLO, activeforeground="white").pack(side="left", padx=5)
-tk.Button(frame_btn, text="Limpiar", command=limpiar, bg=VERDE_AZULADO, fg="white",width=12,activebackground=AMARILLO, activeforeground="white").pack(side="left", padx=5)
+tk.Button(frame_btn, text="Agregar", command=agregar, bg=AZUL_PETROLEO,fg="white",width=12,activebackground=AMARILLO, activeforeground="white").pack(side="left", padx=5)
+tk.Button(frame_btn, text="Eliminar", command=eliminar, bg=BLANCO_HUESO, fg="black", width=12,activebackground=AMARILLO, activeforeground="white").pack(side="left", padx=5)
+tk.Button(frame_btn, text="Buscar", command=buscar, bg=AZUL_PETROLEO, fg="white",width=12,activebackground=AMARILLO, activeforeground="white").pack(side="left", padx=5)
+tk.Button(frame_btn, text="Limpiar", command=limpiar, bg=BLANCO_HUESO, fg="black",width=12,activebackground=AMARILLO, activeforeground="white").pack(side="left", padx=5)
 
 # ===========================================================
 # VENTANA ENTREVISTAS
@@ -248,7 +248,7 @@ def abrir_entrevistas():
                     selectbackground=AMARILLO, selectforeground=NEGRO,
                     yscrollcommand=scroll.set)
     lb.pack(side="left", fill="both", expand=True)
-    scroll.config(command=lb.yview)
+    scroll.config(command=lb.yview,bg=AZUL_PETROLEO)
 
 
 
@@ -286,10 +286,10 @@ def abrir_entrevistas():
 
     frame_btns = tk.Frame(v, bg=VERDE_AZULADO); frame_btns.pack(pady=5)
     tk.Button(frame_btns, text="Agregar entrevista", command=agregar_ent,bg=AZUL_PETROLEO, fg=BLANCO_HUESO).pack(side="left", padx=5)
-    tk.Button(frame_btns, text="Eliminar seleccionada", command=eliminar_ent,bg=AZUL_PETROLEO, fg=BLANCO_HUESO).pack(side="left", padx=5)
+    tk.Button(frame_btns, text="Eliminar seleccionada", command=eliminar_ent,bg=BLANCO_HUESO, fg="black").pack(side="left", padx=5)
     tk.Button(frame_btns, text="Cerrar", command=v.destroy,bg=AZUL_PETROLEO, fg=BLANCO_HUESO).pack(side="left", padx=5)
     refrescar()
-tk.Button(frame_btn, text="Entrevistas", command=abrir_entrevistas,bg="#008080", fg="white", width=12).pack(side="left", padx=5)
+tk.Button(frame_btn, text="Entrevistas", command=abrir_entrevistas,bg=AZUL_PETROLEO, fg="white", width=12).pack(side="left", padx=5)
 
 # ===========================================================
 refrescar_lista()
