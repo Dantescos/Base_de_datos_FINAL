@@ -168,7 +168,7 @@ def agregar_foto():
     print("ufgtfkgfgh")
     ete=str(et)
     
-    os.mkdir(ete)
+    os.makedirs(ete, exist_ok=True)
     origen=ruta
     destino=ete
     shutil.move(origen,destino)
