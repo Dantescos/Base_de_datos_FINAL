@@ -16,7 +16,10 @@ CREATE TABLE IF NOT EXISTS empleados (
 id INTEGER PRIMARY KEY AUTOINCREMENT,
 nombre TEXT,
 apellido TEXT,
-dni INTEGER
+dni INTEGER,
+fecha_nacimiento INTEGER,
+direccion TEXT,
+
 
 
 )            
@@ -42,10 +45,11 @@ def agragar_data():
     t1=entrada1.get()
     t2=entrada2.get()
     t3=entrada3.get()
-
+    t4=entrada4
+    t5=entrada5
     cursor.execute(
                 
-    "INSERT INTO empleados (nombre,apellido,dni) VALUES (?,?,?)",(t1,t2,t3)
+    "INSERT INTO empleados (nombre,apellido,dni,fecha_nacimiento,direccion) VALUES (?,?,?,?,?)",(t1,t2,t3,t4,t5)
                 
     )
     conexion.commit()   
@@ -325,6 +329,16 @@ resultado.pack()
 entrada3=tk.Entry(ventana)
 entrada3.pack()
 
+resultado=tk.Label(ventana, text="fecha de nacimiento")
+resultado.pack()
+entrada4=tk.Entry(ventana)
+entrada4.pack()
+
+resultado=tk.Label(ventana, text="direccion")
+resultado.pack()
+entrada5=tk.Entry(ventana)
+entrada5.pack()
+
 
 
 tk.Button(ventana,text="agregar empleado",command=agragar_data).pack()
@@ -360,5 +374,4 @@ ventana.mainloop()
 
 
 ###########################################################################################################################################
-
 
