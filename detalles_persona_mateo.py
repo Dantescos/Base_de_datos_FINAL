@@ -71,7 +71,7 @@ frame_lista.pack(side="left", fill="both", expand=True, padx=10)
 tk.Label(frame_lista, text="Personas registradas", bg=NEGRO, fg=BLANCO_HUESO,font=("Courier", 12, "bold")).pack(anchor="w")
 scroll = tk.Scrollbar(frame_lista, orient="vertical")
 scroll.pack(side="right", fill="y")
-
+# ===========================================================
 def detalles_persona(event=None):
     seleccion=lista_personas.curselection()
     if seleccion:
@@ -94,7 +94,7 @@ lista_personas = tk.Listbox(frame_lista, yscrollcommand=scroll.set,font=("Consol
 lista_personas.pack(side="left", fill="both", expand=True)
 lista_personas.bind("<Double-1>",detalles_persona)
 scroll.config(command=lista_personas.yview)
-
+# ===========================================================
 # --- Formulario (entries) ---
 frame_form = tk.Frame(ventana, bg=NEGRO)
 frame_form.pack(fill="x", padx=15, pady=10)
