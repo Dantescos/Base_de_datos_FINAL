@@ -27,7 +27,7 @@ def comprobar(i_del_for,entry_,orden):
     else:
         return variable
 
-def comprobar_fecha():
+def comprobar_fecha(entry_fecha):
     fecha=entry_fecha.get()
     for i in string.punctuation:
         fecha=fecha.replace(i,"/")
@@ -38,14 +38,12 @@ def new_entrevista():
     entrevista=text_entrevista.get("1.0",tk.END)
     dni=entry_dni.get()
     nom_profecional=entry_nombre_profecional.get()
-    fecha=comprobar_fecha()
+    fecha=comprobar_fecha(entry_fecha)
     cursor.execute("INSERT INTO entrevistas (entrevista,dni,nombre_profecional,fecha) VALUES (?,?,?,?)",(entrevista,dni,nom_profecional,fecha))
     conexion.commit()
     ver_list_entrevist()
     
 def pantalla_edit_entrevista():
-#voy a editar por ID porque es el unico numero que permanece inmutable
-#se va a editar en un toplevel, en donde se pida el ID de la persona a la que se quiera editar
     ventana_editar=tk.Toplevel(ventana)
     ventana_editar.title("edit_entrevista")
     ventana_editar.geometry("300x200")
@@ -74,27 +72,28 @@ def pantalla_edit_entrevista():
     entry_fecha=tk.Entry(ventana_editar)
     entry_fecha.pack()
 
-    boton_edit_entrevista=tk.Button(ventana_editar,text="editar_entrevista",command=edit_entrevista)
-    boton_edit_entrevista.pack()
-
     def edit_entrevista():
         p_id=entry_id.get()
         cursor.execute("SELECT * FROM entrevistas")
         entrevistas=cursor.fetchall()
         for entrevista in entrevistas:
             if int(p_id)==entrevista[0]:
-                entrevist=comprobar(entrevista,text_entrevista,1)
+                entrevist=text_entrevista.get("1.0",tk.END)
+                if entrevist.strip()=="":
+                    entrevist=entrevista[1]
                 dni=comprobar(entrevista,entry_dni,2)
                 nom_profecional=comprobar(entrevista,entry_nombre_profecional,3)
                 fecha=entry_fecha.get()
                 if fecha=="":
                     fecha=entrevista[4]
                 else:
-                    fecha=comprobar_fecha()
-                conexion.execute("UPDATE entrevistas SET entrevista = ?, dni = ?, nombre_profecional = ?, fecha = ? WHERE dni = ?",(entrevist,dni,nom_profecional,fecha,p_id))
+                    fecha=comprobar_fecha(entry_fecha)
+                conexion.execute("UPDATE entrevistas SET entrevista = ?, dni = ?, nombre_profecional = ?, fecha = ? WHERE id = ?",(entrevist,dni,nom_profecional,fecha,p_id))
                 conexion.commit()
                 break
         ver_list_entrevist()
+    boton_edit_entrevista=tk.Button(ventana_editar,text="editar_entrevista",command=edit_entrevista)
+    boton_edit_entrevista.pack()
     
 def eliminar_entrevista():
     p_dni=entry_dni.get()
@@ -106,7 +105,7 @@ def ver_list_entrevist():
     lista_entrevistas.delete(0, tk.END)
     cursor.execute("SELECT * FROM entrevistas")
     for i in cursor.fetchall():
-        dato=f"ID: {i[0]} // fecha: {i[4]} // DNI: {i[2]} // profecional: {i[3]} // entrevista: {i[1]}"
+        dato=f"ID: {i[0]} // Fecha: {i[4]} // DNI: {i[2]} // Profecional: {i[3]} // Entrevista: {i[1]}"
         lista_entrevistas.insert(tk.END, dato)
 #############
 
