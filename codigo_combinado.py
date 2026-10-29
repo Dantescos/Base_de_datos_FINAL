@@ -1,34 +1,53 @@
 import sqlite3
 import os
-import shutil
 import tkinter as tk
 from tkinter import filedialog, messagebox
 from io import BytesIO
 from PIL import Image, ImageTk
 
-# --- BASE DE DATOS ---
-conexion = sqlite3.connect("base de datos trabajo final.db")
-cursor = conexion.cursor()
-cursor.execute(""" 
-CREATE TABLE IF NOT EXISTS empleados (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    nombre TEXT,
-    apellido TEXT,
-    dni INTEGER
-)            
-""")
+conexion = None
+cursor = None
 
-conexion.execute("""
-CREATE TABLE IF NOT EXISTS imagenes (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    nombre TEXT NOT NULL,
-    formato TEXT NOT NULL,
-    contenido BLOB NOT NULL,
-    id_empleado INTEGER,
-    FOREIGN KEY (id_empleado) REFERENCES empleados(id)
-)
-""")
-conexion.commit()
+def conectar_base_de_datos():
+    global conexion, cursor
+    nombre_defecto = "base de datos trabajo final.db"
+    if os.path.exists(nombre_defecto):
+        conexion = sqlite3.connect(nombre_defecto)
+        cursor = conexion.cursor()
+        return
+    messagebox.showinfo("Configuracion Inicial", "Por favor, selecciona donde deseas guardar el archivo de la Base de Datos.", parent=ventana)
+    ruta_personalizada = filedialog.asksaveasfilename(
+        parent=ventana,
+        title="Crear o Seleccionar archivo de Base de Datos",
+        initialfile=nombre_defecto,
+        filetypes=[("Base de Datos", "*.db"), ("Todos los archivos", "*.*")]
+    )
+    if not ruta_personalizada:
+        ruta_personalizada = nombre_defecto
+    conexion = sqlite3.connect(ruta_personalizada)
+    cursor = conexion.cursor()
+
+def crear_tablas():
+    cursor.execute(""" 
+    CREATE TABLE IF NOT EXISTS empleados (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        nombre TEXT,
+        apellido TEXT,
+        dni INTEGER
+    )            
+    """)
+
+    conexion.execute("""
+    CREATE TABLE IF NOT EXISTS imagenes (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        nombre TEXT NOT NULL,
+        formato TEXT NOT NULL,
+        contenido BLOB NOT NULL,
+        id_empleado INTEGER,
+        FOREIGN KEY (id_empleado) REFERENCES empleados(id)
+    )
+    """)
+    conexion.commit()
 
 # --- FUNCIONES ---
 def agragar_data():
@@ -108,23 +127,34 @@ def actualizar_lista():
     for id_imagen, nombre in filas:
         lista2.insert(tk.END, f"{id_imagen} - {nombre}")
 
-def guardar_imagen_bd(ruta_origen, empleado_id, ruta_personalizada_dir=None):
+def al_seleccionar_empleado(event):
+    seleccion = lista.curselection()
+    if not seleccion:
+        return
+    datos_empleado = lista.get(seleccion[0])
+    id_empleado = datos_empleado[0]
+    entrada.delete(0, tk.END)
+    entrada.insert(0, str(id_empleado))
+    lista2.delete(0, tk.END)
+    filas = conexion.execute(
+        "SELECT id, nombre FROM imagenes WHERE id_empleado = ? ORDER BY id DESC", (id_empleado,)
+    ).fetchall()
+    for id_imagen, nombre in filas:
+        lista2.insert(tk.END, f"{id_imagen} - {nombre}")
+
+def guardar_imagen_bd(ruta_origen, empleado_id):
     try:
         with open(ruta_origen, "rb") as archivo:
             contenido = archivo.read()
         nombre = ruta_origen.replace("\\", "/").split("/")[-1]
         formato = nombre.rsplit(".", 1)[-1].lower()
-        if ruta_personalizada_dir:
-            ruta_destino_fisico = os.path.join(ruta_personalizada_dir, nombre)
-            shutil.copy(ruta_origen, ruta_destino_fisico)
-            print(f"Copia física respaldada en: {ruta_destino_fisico}")
         conexion.execute(
             "INSERT INTO imagenes (nombre, formato, contenido, id_empleado) "
             "VALUES (?, ?, ?, ?)",
             (nombre, formato, sqlite3.Binary(contenido), empleado_id)
         )
         conexion.commit()
-        messagebox.showinfo("Éxito", f"Imagen guardada en BD como BLOB: {nombre}")
+        messagebox.showinfo("Éxito", f"Imagen guardada: {nombre}")
     except (OSError, sqlite3.Error) as error:
         messagebox.showerror("Error", str(error))
     actualizar_lista()
@@ -135,6 +165,7 @@ def agregar_foto():
         print("Por favor introduce el ID del empleado en el primer campo.")
         return   
     ruta_origen = filedialog.askopenfilename(
+        parent=ventana,
         title="Seleccionar imagen de origen",
         filetypes=[
             ("Imágenes", "*.png *.jpg *.jpeg *.webp *.gif"),
@@ -143,27 +174,21 @@ def agregar_foto():
     )
     if not ruta_origen:
         return
-    guardar_copia = messagebox.askyesno("Ruta Personalizada", "¿Deseas guardar una copia de este archivo en una carpeta de respaldo personalizada?")
-    ruta_personalizada = None
-    if guardar_copia:
-        ruta_personalizada = filedialog.askdirectory(title="Selecciona la carpeta de destino personalizada")
-        if not ruta_personalizada:
-            return
-    guardar_imagen_bd(ruta_origen, et, ruta_personalizada)
+    guardar_imagen_bd(ruta_origen, et)
 
 def borrar_imagen():
     seleccion = lista2.curselection()
     if not seleccion:
         messagebox.showwarning("Atencion", "Por favor, selecciona una imagen de la lista para borrar.")
         return
-    texto = lista2.get(seleccion)
-    id_imagen = int(texto.split(" - ", 1))   
+    texto = lista2.get(seleccion[0])
+    id_imagen = int(texto.split(" - ", 1)[0])   
     try:
         conexion.execute("DELETE FROM imagenes WHERE id = ?", (id_imagen,))
         conexion.commit()
         visor.configure(image="", text="Usa el botón para cargar una imagen")
         titulo.configure(text="Selecciona una imagen")
-        messagebox.showinfo("Exito", "Imagen eliminada correctamente.")
+        messagebox.showinfo("Exito", "Imagen eliminada correctamente de la BD.")
         actualizar_lista()
     except Exception as error:
         messagebox.showerror("Error", "No se pudo borrar la imagen")
@@ -172,7 +197,7 @@ def mostrar_imagen(event=None):
     seleccion = lista2.curselection()
     if not seleccion:
         return
-    texto = lista2.get(seleccion)[0]
+    texto = lista2.get(seleccion[0])
     id_imagen = int(texto.split(" - ", 1)[0])
     fila = conexion.execute(
         "SELECT nombre, contenido FROM imagenes WHERE id = ?",
@@ -200,6 +225,9 @@ def mostrar_imagen(event=None):
 ventana = tk.Tk()
 ventana.title("Control de Empleados")
 ventana.geometry("900x800")
+
+conectar_base_de_datos()
+crear_tablas()
 
 resultado = tk.Label(ventana, text="DNI del empleado a modificar, borrar o asociar foto")
 resultado.pack()
@@ -236,6 +264,7 @@ busca.pack()
 
 lista = tk.Listbox(ventana)
 lista.pack()
+lista.bind("<<ListboxSelect>>", al_seleccionar_empleado)
 ver_lista()
 
 titulo = tk.Label(ventana, text="Selecciona una imagen")
@@ -244,7 +273,7 @@ lista2 = tk.Listbox(ventana, height=8)
 lista2.pack(fill="x", padx=10)
 lista2.bind("<<ListboxSelect>>", mostrar_imagen)
 
-visor = tk.Label(ventana, text="Usa el botón para añadir una imagen", bg="#e1e1e1", relief="groove")
+visor = tk.Label(ventana, text="Usa el boton para añadir una imagen", bg="#e1e1e1", relief="groove")
 visor.pack(expand=True, fill="both", padx=10, pady=10)
 
 actualizar_lista()
