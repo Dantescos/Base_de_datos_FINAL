@@ -3,6 +3,7 @@ import tkinter as tk
 from tkinter import filedialog, messagebox
 from io import BytesIO
 from PIL import Image, ImageTk
+from tkinterdnd2 import DND_FILES, TkinterDnD
 
 # --- BASE DE DATOS ---
 conexion = sqlite3.connect("base de datos trabajo final.db")
@@ -107,6 +108,23 @@ def actualizar_lista():
     for id_imagen, nombre in filas:
         lista2.insert(tk.END, f"{id_imagen} - {nombre}")
 
+def guardar_imagen_bd(ruta, empleado_id):
+    try:
+        with open(ruta, "rb") as archivo:
+            contenido = archivo.read()
+        nombre = ruta.replace("\\", "/").split("/")[-1]
+        formato = nombre.rsplit(".", 1)[-1].lower()
+        conexion.execute(
+            "INSERT INTO imagenes (nombre, formato, contenido, id_empleado) "
+            "VALUES (?, ?, ?, ?)",
+            (nombre, formato, sqlite3.Binary(contenido), empleado_id)
+        )
+        conexion.commit()
+        messagebox.showinfo("Éxito", f"Imagen guardada: {nombre}")
+    except (OSError, sqlite3.Error) as error:
+        messagebox.showerror("Error", str(error))
+    actualizar_lista()
+
 def agregar_foto():
     et = entrada.get().strip()
     if not et:
@@ -121,21 +139,19 @@ def agregar_foto():
     )
     if not ruta:
         return
-    try:
-        with open(ruta, "rb") as archivo:
-            contenido = archivo.read()
-        nombre = ruta.replace("\\", "/").split("/")[-1]
-        formato = nombre.rsplit(".", 1)[-1].lower()
-        conexion.execute(
-            "INSERT INTO imagenes (nombre, formato, contenido, id_empleado) "
-            "VALUES (?, ?, ?, ?)",
-            (nombre, formato, sqlite3.Binary(contenido), et)
-        )
-        conexion.commit()
-        messagebox.showinfo("Éxito", f"Imagen guardada: {nombre}")
-    except (OSError, sqlite3.Error) as error:
-        messagebox.showerror("Error", str(error))
-    actualizar_lista()
+    guardar_imagen_bd(ruta, et)
+
+def al_soltar_imagen(event):
+    et = entrada.get().strip()
+    if not et:
+        messagebox.showwarning("Atencion", "Por favor introduce el ID del empleado en el primer campo antes de soltar la imagen.")
+        return   
+    ruta = event.data.strip("{}")
+     extensiones_validas = (".png", ".jpg", ".jpeg", ".webp", ".gif")
+    if ruta.lower().endswith(extensiones_validas):
+        guardar_imagen_bd(ruta, et)
+    else:
+        messagebox.showerror("Error", "El archivo arrastrado no es una imagen valida.")
 
 def borrar_imagen():
     seleccion = lista2.curselection()
@@ -147,7 +163,7 @@ def borrar_imagen():
     try:
         conexion.execute("DELETE FROM imagenes WHERE id = ?", (id_imagen,))
         conexion.commit()
-        visor.configure(image="", text="Tu imagen aparecer aquí")
+        visor.configure(image="", text="Arrastra una imagen aquí o usa el botón")
         titulo.configure(text="Selecciona una imagen")
         messagebox.showinfo("Exito", "Imagen eliminada correctamente.")
         actualizar_lista()
@@ -183,7 +199,7 @@ def mostrar_imagen(event=None):
         messagebox.showerror("Error al mostrar", str(error))
 
 # --- INTERFAZ GRAFICA ---
-ventana = tk.Tk()
+ventana = TkinterDnD.Tk()
 ventana.title("Prueba Multiprocessing")
 ventana.geometry("900x800")
 
@@ -224,14 +240,17 @@ lista = tk.Listbox(ventana)
 lista.pack()
 ver_lista()
 
-titulo = tk.Label(ventana, text="Seleccioná una imagen")
+titulo = tk.Label(ventana, text="Selecciona una imagen")
 titulo.pack(pady=5)
 lista2 = tk.Listbox(ventana, height=8)
 lista2.pack(fill="x", padx=10)
 lista2.bind("<<ListboxSelect>>", mostrar_imagen)
 
-visor = tk.Label(ventana, text="Tu imagen aparecerá aquí")
+visor = tk.Label(ventana, text="Arrastra una imagen aqui o usa el boton", bg="#e1e1e1", relief="groove")
 visor.pack(expand=True, fill="both", padx=10, pady=10)
+
+visor.drop_target_register(DND_FILES)
+visor.dnd_bind('<<Drop>>', al_soltar_imagen)
 
 actualizar_lista()
 ventana.mainloop()
