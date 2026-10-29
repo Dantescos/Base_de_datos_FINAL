@@ -36,7 +36,6 @@ conexion.commit()
 ROJO = "#E3000F"
 AMARILLO = "#FCAF17"
 NEGRO = "#0a0a0a"
-VERDE = "#00FF00"
 GRIS = "#222222"
 AZUL_PETROLEO = "#006080"
 BLANCO_HUESO = "#F5F5DC"
@@ -50,6 +49,7 @@ ventana = tk.Tk()
 ventana.title("APP:GESTOR DE DATOS")
 ventana.geometry("900x650")
 ventana.config(bg=VERDE_AZULADO)
+ventana.attributes('-fullscreen', True)
 # --- Banner ---
 banner = tk.Frame(ventana,bg=AZUL_PETROLEO, height=70)
 banner.pack(fill="x")
@@ -87,7 +87,7 @@ entry_dni = tk.Entry(frame_form, width=15)
 entry_dni.grid(row=0, column=5, padx=5, pady=3)
 # --- Botonera ---
 frame_btn = tk.Frame(ventana, bg=VERDE_AZULADO) #fondo de botones
-frame_btn.pack(pady=10, side="top")
+frame_btn.pack(pady=10, side="top",fill=None,expand=False)
 def refrescar_lista():
     lista_personas.delete(0, tk.END)
     cursor.execute("SELECT nombre, apellido, dni FROM personas ORDER BY apellido, nombre")
@@ -285,11 +285,11 @@ def abrir_entrevistas():
         refrescar()
 
     frame_btns = tk.Frame(v, bg=VERDE_AZULADO); frame_btns.pack(pady=5)
-    tk.Button(frame_btns, text="Agregar entrevista", command=agregar_ent,bg=AZUL_PETROLEO, fg=BLANCO_HUESO).pack(side="left", padx=5)
-    tk.Button(frame_btns, text="Eliminar seleccionada", command=eliminar_ent,bg=BLANCO_HUESO, fg="black").pack(side="left", padx=5)
-    tk.Button(frame_btns, text="Cerrar", command=v.destroy,bg=AZUL_PETROLEO, fg=BLANCO_HUESO).pack(side="left", padx=5)
+    tk.Button(frame_btns, text="Agregar entrevista", command=agregar_ent,bg=AZUL_PETROLEO, fg=BLANCO_HUESO,activebackground=AMARILLO, activeforeground="white").pack(side="left", padx=5)
+    tk.Button(frame_btns, text="Eliminar seleccionada", command=eliminar_ent,bg=BLANCO_HUESO, fg="black",activebackground=AMARILLO, activeforeground="white").pack(side="left", padx=5)
+    tk.Button(frame_btns, text="Cerrar", command=v.destroy,bg=AZUL_PETROLEO, fg=BLANCO_HUESO,activebackground=AMARILLO, activeforeground="white").pack(side="left", padx=5)
     refrescar()
-tk.Button(frame_btn, text="Entrevistas", command=abrir_entrevistas,bg=AZUL_PETROLEO, fg="white", width=12).pack(side="left", padx=5)
+tk.Button(frame_btn, text="Entrevistas", command=abrir_entrevistas,bg=AZUL_PETROLEO, fg="white",activebackground=AMARILLO, activeforeground="white", width=12).pack(side="left", padx=5)
 
 # ===========================================================
 refrescar_lista()
