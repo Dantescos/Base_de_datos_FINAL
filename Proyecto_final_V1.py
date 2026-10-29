@@ -3,6 +3,7 @@ import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 from io import BytesIO
 from PIL import Image, ImageTk
+
 # ===========================================================
 # BASE DE DATOS
 # ===========================================================
@@ -53,7 +54,7 @@ ventana.config(bg=NEGRO)
 banner = tk.Frame(ventana,bg=AZUL_PETROLEO, height=70)
 banner.pack(fill="x")
 banner.pack_propagate(False)
-tk.Label(banner, text="GESTOR DE DATOS", bg=AZUL_PETROLEO, fg=NEGRO,font=("Courier", 20, "bold")).pack(pady=18)
+tk.Label(banner, text="GESTOR DE DATOS", bg=AZUL_PETROLEO, fg=BLANCO_HUESO,font=("Courier", 20, "bold")).pack(pady=18)
 # --- Cuerpo principal (foto + lista) ---
 cuerpo = tk.Frame(ventana,bg = NEGRO)
 cuerpo.pack(fill="both", expand=True, padx=15, pady=10)
@@ -61,12 +62,12 @@ cuerpo.pack(fill="both", expand=True, padx=15, pady=10)
 frame_foto = tk.Frame(cuerpo, bg=AZUL_PETROLEO, width=320, height=320)
 frame_foto.pack(side="left", padx=10)
 frame_foto.pack_propagate(False)
-visor_foto = tk.Label(frame_foto, text="Sin foto", bg=VERDE_AZULADO, fg=NEGRO)
+visor_foto = tk.Label(frame_foto, text="Sin foto", bg=VERDE_AZULADO, fg=BLANCO_HUESO)
 visor_foto.pack(expand=True, fill="both")
 # Derecha: lista de personas
 frame_lista = tk.Frame(cuerpo, bg=NEGRO)
 frame_lista.pack(side="left", fill="both", expand=True, padx=10)
-tk.Label(frame_lista, text="Personas registradas", bg=AZUL_PETROLEO, fg=NEGRO,font=("Courier", 12, "bold")).pack(anchor="w")
+tk.Label(frame_lista, text="Personas registradas", bg=NEGRO, fg=BLANCO_HUESO,font=("Courier", 12, "bold")).pack(anchor="w")
 scroll = tk.Scrollbar(frame_lista, orient="vertical")
 scroll.pack(side="right", fill="y")
 lista_personas = tk.Listbox(frame_lista, yscrollcommand=scroll.set,font=("Consolas", 11), bg=VERDE_AZULADO, fg=NEGRO,selectbackground=AMARILLO, selectforeground=BLANCO_HUESO)
