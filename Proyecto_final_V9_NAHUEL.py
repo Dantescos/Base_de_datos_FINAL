@@ -8,20 +8,17 @@ import string
 import os
 import shutil
 import re
-
 # ================================================================================================
 # VARIABLES GLOBALES
 # ================================================================================================
 indice_edicion = None
 imagenes_cargadas = []
-
 # ================================================================================================
 # BASE DE DATOS 
 # ================================================================================================
 conexion = sqlite3.connect("Trabajo_FINAL_V4.db")
 cursor = conexion.cursor()
 cursor.execute("PRAGMA foreign_keys = ON;")
-
 # TABLA DE PERSONAS
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS personas(
@@ -31,7 +28,6 @@ CREATE TABLE IF NOT EXISTS personas(
     dni INTEGER UNIQUE NOT NULL,
     foto BLOB
 )""")
-
 # TABLA DE IMAGENES
 cursor.execute("""CREATE TABLE IF NOT EXISTS imagenes(
 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -39,7 +35,6 @@ nombre TEXT NOT NULL,
 formato TEXT NOT NULL,
 contenido BLOB NOT NULL,
 id_empleado INTEGER)""")
-
 # TABLA DE ENTREVISTAS
 cursor.execute("""CREATE TABLE IF NOT EXISTS entrevistas(
 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -47,7 +42,6 @@ entrevista TEXT NOT NULL,
 dni INTEGER NOT NULL,
 nombre_profecional TEXT NOT NULL,
 fecha TEXT NOT NULL)""")
-
 conexion.commit()
 
 # =================================================================================================================
@@ -86,16 +80,120 @@ banner.pack(side="bottom",fill="x")
 banner.pack_propagate(False)
 banner_label = tk.Label(banner, text="✚ MEDTRACK", bg=AZUL_SERENO, fg=BLANCO, font=("Arial", 20, "bold"))
 banner_label.pack(pady=18) 
+# =======================================================================================================================================
+# FUNCIONES PRINCIPALES
+# =======================================================================================================================================
 
+def refrescar_lista():
+    lista_personas.delete(0, tk.END)
+    cursor.execute("SELECT nombre, apellido, dni FROM personas ORDER BY apellido, nombre")
+    for nombre, apellido, dni in cursor.fetchall():
+        lista_personas.insert(tk.END, f"{apellido}, {nombre} — DNI {dni}")
+def mostrar_foto(dni):
+    cursor.execute("SELECT foto FROM personas WHERE dni = ?", (dni,))
+    fila = cursor.fetchone()
+    if fila and fila[0]:
+        try:
+            img = Image.open(BytesIO(fila[0]))
+            img.thumbnail((300, 300))
+            foto = ImageTk.PhotoImage(img)
+            visor_foto.configure(image=foto, text="")
+            visor_foto.image = foto
+            return
+        except Exception:
+            pass
+    visor_foto.configure(image="", text="Sin foto")
+def al_seleccionar(event=None):
+    sel = lista_personas.curselection()
+    if not sel: return
+    texto = lista_personas.get(sel[0])
+    dni = int(texto.split("DNI ")[1])
+    cursor.execute("SELECT nombre, apellido, dni FROM personas WHERE dni = ?", (dni,))
+    fila = cursor.fetchone()
+    if not fila: return
+    entry_nombre.delete(0, tk.END); entry_nombre.insert(0, fila[0])
+    entry_apellido.delete(0, tk.END); entry_apellido.insert(0, fila[1])
+    entry_dni.delete(0, tk.END); entry_dni.insert(0, fila[2])
+    mostrar_foto(dni)
+    lista_personas.bind("<<ListboxSelect>>", al_seleccionar)
+
+def agregar():
+    nombre = entry_nombre.get().strip()
+    apellido = entry_apellido.get().strip()
+    dni_txt = entry_dni.get().strip()
+    if not (nombre and apellido and dni_txt):
+        messagebox.showwarning("Faltan datos", "Completa nombre, apellido y DNI.")
+        return
+    try:
+        dni = int(dni_txt)
+    except ValueError:
+        messagebox.showerror("DNI invalido", "El DNI debe ser numerico.")
+        return
+    ruta = filedialog.askopenfilename(title="Foto (opcional)",
+        filetypes=[("Imagenes", "*.png *.jpg *.jpeg *.webp")])
+    contenido = None
+    if ruta:
+        with open(ruta, "rb") as f:
+            contenido = sqlite3.Binary(f.read())
+    try:
+        cursor.execute("INSERT INTO personas (nombre, apellido, dni, foto) VALUES (?,?,?,?)",
+                       (nombre, apellido, dni, contenido))
+        conexion.commit()
+    except sqlite3.IntegrityError:
+        messagebox.showerror("Error", "Ya existe una persona con ese DNI.")
+        return
+    refrescar_lista()
+    limpiar()
+    messagebox.showinfo("OK", "Persona agregada.")
+
+def eliminar():
+    dni_txt = entry_dni.get().strip()
+    if not dni_txt:
+        messagebox.showwarning("Atención", "Selecciona o escribi un DNI.")
+        return
+    if not messagebox.askyesno("Confirmar", f"¿Eliminar DNI {dni_txt}?"):
+        return
+    cursor.execute("DELETE FROM entrevistas WHERE dni_persona = ?", (dni_txt,))
+    cursor.execute("DELETE FROM personas WHERE dni = ?", (dni_txt,))
+    conexion.commit()
+    refrescar_lista()
+    limpiar()
+    visor_foto.configure(image="", text="Sin foto")
+
+def buscar():
+    dni_txt = entry_dni.get().strip()
+    if not dni_txt:
+        messagebox.showwarning("Atencion", "Escribi de forma numerica un DNI para buscar.")
+        return
+    cursor.execute("SELECT nombre, apellido, dni FROM personas WHERE dni = ?", (dni_txt,))
+    fila = cursor.fetchone()
+    if not fila:
+        messagebox.showinfo("Sin resultados", "No existe esa persona.")
+        return
+    entry_nombre.delete(0, tk.END); entry_nombre.insert(0, fila[0])
+    entry_apellido.delete(0, tk.END); entry_apellido.insert(0, fila[1])
+    mostrar_foto(fila[2])
+    # resaltar en lista
+    for i in range(lista_personas.size()):
+        if f"DNI {fila[2]}" in lista_personas.get(i):
+            lista_personas.selection_clear(0, tk.END)
+            lista_personas.selection_set(i)
+            lista_personas.see(i)
+            break
+
+def limpiar():
+    entry_nombre.delete(0, tk.END)
+    entry_apellido.delete(0, tk.END)
+    entry_dni.delete(0, tk.END)
 # =====================================================================================================================================
 # FRAME PARA BOTONERA Y BOTONES  
 # ======================================================================================================================================
 frame_btn = tk.Frame(ventana, bg=GRIS_NIEBLA)
 frame_btn.pack(side="top", fill="x", padx=15, pady=10) 
-tk.Button(frame_btn, text="Agregar",bg=VERDE_AZULADO,fg="white",width=12,activebackground=VERDE_TERMINAL, activeforeground=NEGRO, relief="flat").pack(side="left", padx=5)
-tk.Button(frame_btn, text="Eliminar", bg=VERDE_AZULADO, fg="white", width=12,activebackground=VERDE_TERMINAL, activeforeground=NEGRO, relief="flat").pack(side="left", padx=5)
-tk.Button(frame_btn, text="Buscar", bg=VERDE_AZULADO, fg="white",width=12,activebackground=VERDE_TERMINAL, activeforeground=NEGRO, relief="flat").pack(side="left", padx=5)
-tk.Button(frame_btn, text="Limpiar", bg=VERDE_AZULADO, fg="white",width=12,activebackground=VERDE_TERMINAL, activeforeground=NEGRO, relief="flat").pack(side="left", padx=5)
+tk.Button(frame_btn, text="Agregar",command=agregar,bg=VERDE_AZULADO,fg="white",width=12,activebackground=VERDE_TERMINAL, activeforeground=NEGRO, relief="flat").pack(side="left", padx=5)
+tk.Button(frame_btn, text="Eliminar",command=eliminar, bg=VERDE_AZULADO, fg="white", width=12,activebackground=VERDE_TERMINAL, activeforeground=NEGRO, relief="flat").pack(side="left", padx=5)
+tk.Button(frame_btn, text="Buscar", command=buscar,bg=VERDE_AZULADO, fg="white",width=12,activebackground=VERDE_TERMINAL, activeforeground=NEGRO, relief="flat").pack(side="left", padx=5)
+tk.Button(frame_btn, text="Limpiar",command=limpiar, bg=VERDE_AZULADO, fg="white",width=12,activebackground=VERDE_TERMINAL, activeforeground=NEGRO, relief="flat").pack(side="left", padx=5)
 
 # ======================================================================================================================================
 # FORMULARIO
@@ -142,7 +240,6 @@ scroll.pack(side="right", fill="y")
 lista_personas = tk.Listbox(frame_lista, yscrollcommand=scroll.set, font=("Arial", 11), bg=BLANCO, fg=GRIS_AZULADO, selectbackground=AZUL_SERENO, selectforeground=BLANCO)
 lista_personas.pack(side="left", fill="both", expand=True)
 scroll.config(command=lista_personas.yview)
-
 # =======================================================================================================================================
 # MODO OSCURO
 # =======================================================================================================================================
