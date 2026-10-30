@@ -324,8 +324,41 @@ def abrir_ventana_entrevistas():
     #tuve problemas con un par de variables asi que las defino global para enparcharlo
     global lista_entrevistas, text_entrevista, entry_dni, entry_nombre_profecional, entry_fecha
 
+    
+    lista_entrevistas=tk.Listbox(ventana_entrevistas)
+    lista_entrevistas.pack()
+    lista_entrevistas.bind("<<ListboxSelect>>",detalles_entrevsit)
+    ver_list_entrevist()
 
+    
+    label_entrevista=tk.Label(ventana_entrevistas, text="entrevista")
+    label_entrevista.pack()
+    text_entrevista=tk.Text(ventana_entrevistas)
+    text_entrevista.pack()
 
+    label_dni=tk.Label(ventana_entrevistas, text="dni")
+    label_dni.pack()
+    entry_dni=tk.Entry(ventana_entrevistas)
+    entry_dni.pack()
+
+    label_nombre_profecional=tk.Label(ventana_entrevistas, text="nombre_profecional")
+    label_nombre_profecional.pack()
+    entry_nombre_profecional=tk.Entry(ventana_entrevistas)
+    entry_nombre_profecional.pack()
+
+    label_fecha=tk.Label(ventana_entrevistas, text="fecha")
+    label_fecha.pack()
+    entry_fecha=tk.Entry(ventana_entrevistas)
+    entry_fecha.pack()
+
+    boton_new_entrevista=tk.Button(ventana_entrevistas,text="new_entrevista",command=new_entrevista)
+    boton_new_entrevista.pack()
+
+    boton_ventana_edit_entrevista=tk.Button(ventana_entrevistas,text="pantalla_edit_entrevista")
+    boton_ventana_edit_entrevista.pack()
+
+    boton_eliminar_entrevista=tk.Button(ventana_entrevistas,text="eliminar_entrevista",command=eliminar_entrevista)
+    boton_eliminar_entrevista.pack()
 
 
 
