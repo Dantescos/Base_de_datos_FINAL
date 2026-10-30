@@ -81,9 +81,8 @@ banner.pack_propagate(False)
 banner_label = tk.Label(banner, text="✚ MEDTRACK", bg=AZUL_SERENO, fg=BLANCO, font=("Arial", 20, "bold"))
 banner_label.pack(pady=18) 
 # =======================================================================================================================================
-# FUNCIONES PRINCIPALES
+# FUNCIONES PRINCIPALES PARA LA VENTANA PRINCIPAL
 # =======================================================================================================================================
-
 def refrescar_lista():
     lista_personas.delete(0, tk.END)
     cursor.execute("SELECT nombre, apellido, dni FROM personas ORDER BY apellido, nombre")
@@ -116,7 +115,6 @@ def al_seleccionar(event=None):
     entry_dni.delete(0, tk.END); entry_dni.insert(0, fila[2])
     mostrar_foto(dni)
     lista_personas.bind("<<ListboxSelect>>", al_seleccionar)
-
 def agregar():
     nombre = entry_nombre.get().strip()
     apellido = entry_apellido.get().strip()
@@ -145,7 +143,6 @@ def agregar():
     refrescar_lista()
     limpiar()
     messagebox.showinfo("OK", "Persona agregada.")
-
 def eliminar():
     dni_txt = entry_dni.get().strip()
     if not dni_txt:
@@ -159,7 +156,6 @@ def eliminar():
     refrescar_lista()
     limpiar()
     visor_foto.configure(image="", text="Sin foto")
-
 def buscar():
     dni_txt = entry_dni.get().strip()
     if not dni_txt:
@@ -180,13 +176,12 @@ def buscar():
             lista_personas.selection_set(i)
             lista_personas.see(i)
             break
-
 def limpiar():
     entry_nombre.delete(0, tk.END)
     entry_apellido.delete(0, tk.END)
     entry_dni.delete(0, tk.END)
 # =====================================================================================================================================
-# FRAME PARA BOTONERA Y BOTONES  
+#                                           FRAME PARA BOTONERA Y BOTONES  PARA LA VENTANA PRINCIPAL
 # ======================================================================================================================================
 frame_btn = tk.Frame(ventana, bg=GRIS_NIEBLA)
 frame_btn.pack(side="top", fill="x", padx=15, pady=10) 
@@ -196,7 +191,7 @@ tk.Button(frame_btn, text="Buscar", command=buscar,bg=VERDE_AZULADO, fg="white",
 tk.Button(frame_btn, text="Limpiar",command=limpiar, bg=VERDE_AZULADO, fg="white",width=12,activebackground=VERDE_TERMINAL, activeforeground=NEGRO, relief="flat").pack(side="left", padx=5)
 
 # ======================================================================================================================================
-# FORMULARIO
+#                                           FORMULARIO PARA LA VENTANA PRINCIPAL
 # ======================================================================================================================================
 frame_form = tk.Frame(ventana, bg=GRIS_NIEBLA)
 frame_form.pack(side="top",fill="x", padx=15, pady=10)
@@ -216,7 +211,7 @@ entry_dni = tk.Entry(frame_form, width=15)
 entry_dni.grid(row=0, column=5, padx=5, pady=3)
 
 # ======================================================================================================================================
-# Cuerpo principal (PANTALLA PRINCIPAL)
+#                                    Cuerpo principal (PANTALLA PRINCIPAL)
 # ======================================================================================================================================
 cuerpo = tk.Frame(ventana,bg = GRIS_NIEBLA)
 cuerpo.pack(fill="both", expand=True, padx=15, pady=10)
@@ -316,7 +311,6 @@ def aplicar_tema():
         activebackground=active_bg,
         activeforeground=active_fg
     )
-
 btn_tema = tk.Button(
     frame_btn,
     text="☾",
@@ -333,7 +327,7 @@ btn_tema = tk.Button(
 btn_tema.pack(side="right", padx=5)
 
 # =======================================================================================================================================
-# FUNCIONES AUXILIARES
+# FUNCIONES AUXILIARES PARA ENTREVISTA O EDITAR ENTREVISTA(cualquier cosa preguntar a Mateo)
 # ======================================================================================================================================
 def comprobar(i_del_for,entry_,orden):
     variable=entry_.get()
@@ -341,53 +335,54 @@ def comprobar(i_del_for,entry_,orden):
         return i_del_for[orden]
     else:
         return variable
-
 def comprobar_fecha(entry_fecha):
     fecha=entry_fecha.get()
     for i in string.punctuation:
         fecha=fecha.replace(i,"/")
     return str(fecha)
-
-def ver_list_entrevist(lista_widget):
-    # Le paso la lista como parametro para no depender de una variable global porque el codigo de Mateo tenia problemas aca, no funcionaba bien aca.
+def ver_list_entrevist(lista_widget):# Le paso la lista como parametro para no depender de una variable global porque el codigo de Mateo tenia problemas aca, no funcionaba bien aca.
     lista_widget.delete(0, tk.END)
     cursor.execute("SELECT * FROM entrevistas")
     for i in cursor.fetchall():
         dato=f"ID: {i[0]} // Fecha: {i[4]} // DNI: {i[2]} // Profecional: {i[3]} // Entrevista: {i[1]}"
         lista_widget.insert(tk.END, dato)
-
 # ======================================================================================================================================
 # VENTANA PARA EDITAR ENTREVISTAS
 # ======================================================================================================================================
 def pantalla_edit_entrevista(ventana_padre):# tuve varios problemas y puse un parametro para que funcione, no quedo otra
     # Recibe la ventana padre como parametro, monton de problemas no funcionaba o abria bien la ventana , directamente no me la reconocia bien me aparecio en rojo
     ventana_editar=tk.Toplevel(ventana_padre)
-    ventana_editar.title("Editar entrevista")
-    ventana_editar.geometry("300x200")
-    label_id=tk.Label(ventana_editar,text="Ingrese el ID de la entrevista que desea editar")
-    label_id.pack()
-    entry_id=tk.Entry(ventana_editar)
-    entry_id.pack()
+    ventana_editar.title("Editar datos de entrevista")
+    ventana_editar.geometry("1000x600")
 
-    label_entrevista=tk.Label(ventana_editar, text="Entrevista")
-    label_entrevista.pack()
-    text_entrevista=tk.Text(ventana_editar)
-    text_entrevista.pack()
+    frame_editar = tk.Frame(ventana_editar, bg=BLANCO, relief="solid", bd=1)#aca para remarcar el recuadro se le pone el relief solid
+    frame_editar.pack(padx=20, pady=20, fill="both", expand=True)
 
-    label_dni=tk.Label(ventana_editar, text="Dni")
-    label_dni.pack()
-    entry_dni=tk.Entry(ventana_editar)
-    entry_dni.pack()
+    # CORREGIDO: Le saque el .pack() doble que rompia todo
+    label_entrevista=tk.Label(frame_editar, text="Modificar Entrevista", bg=BLANCO, fg=GRIS_AZULADO)
+    label_entrevista.pack(pady=10)
 
-    label_nombre_profecional=tk.Label(ventana_editar, text="Nombre_profecional")
-    label_nombre_profecional.pack()
-    entry_nombre_profecional=tk.Entry(ventana_editar)
-    entry_nombre_profecional.pack()
+    Label(frame_editar, text="ID de la entrevista a editar:", bg=BLANCO, fg=GRIS_AZULADO).pack(anchor="w", padx=20)
+    entry_id = tk.Entry(frame_editar, width=30, relief="solid", bd=1)
+    entry_id.pack(pady=15, padx=20)
 
-    label_fecha=tk.Label(ventana_editar, text="Fecha")
-    label_fecha.pack()
-    entry_fecha=tk.Entry(ventana_editar)
-    entry_fecha.pack()
+    Label(frame_editar, text="Texto de la entrevista:", bg=BLANCO, fg=GRIS_AZULADO).pack(anchor="w", padx=20)
+    text_entrevista = tk.Text(frame_editar, height=5, width=40, relief="solid", bd=1)
+    text_entrevista.pack(pady=15, padx=20)
+
+    Label(frame_editar, text="DNI:", bg=BLANCO, fg=GRIS_AZULADO).pack(anchor="w", padx=20)
+    entry_dni = tk.Entry(frame_editar, width=30, relief="solid", bd=1)
+    entry_dni.pack(pady= 15, padx=20)
+    
+    Label(frame_editar, text="Nombre del Profesional:", bg=BLANCO, fg=GRIS_AZULADO).pack(anchor="w", padx=20)
+    entry_nombre_profecional = tk.Entry(frame_editar, width=30, relief="solid", bd=1)
+    entry_nombre_profecional.pack(pady= 15, padx=20)
+
+    Label(frame_editar, text="Fecha:", bg=BLANCO, fg=GRIS_AZULADO).pack(anchor="w", padx=20)
+    entry_fecha = tk.Entry(frame_editar, width=30, relief="solid", bd=1)
+    entry_fecha.pack(pady= 20, padx=20)
+
+    # CORREGIDO: Borre los entry_dni, entry_nombre_profecional y entry_fecha duplicados que estaban aca sueltos
 
     def edit_entrevista():
         p_id=entry_id.get()
@@ -410,8 +405,8 @@ def pantalla_edit_entrevista(ventana_padre):# tuve varios problemas y puse un pa
                 break
         ver_list_entrevist(lista_entrevistas) 
 
-    boton_edit_entrevista=tk.Button(ventana_editar,text="Editar entrevista",command=edit_entrevista)
-    boton_edit_entrevista.pack()
+    boton_edit_entrevista= Button(frame_editar,text="Editar entrevista",command=edit_entrevista)
+    boton_edit_entrevista.pack(pady=10)
 
 # ==================================================================================================================================================================
 # FUNCIONES DE LA VENTANA DE ENTREVISTAS (la que vendria a abrirse de la ventana principal)
@@ -425,11 +420,15 @@ def new_entrevista():
     conexion.commit()
     ver_list_entrevist(lista_entrevistas)
 
+# ARREGLADA: Ahora busca por el ID de la entrevista seleccionada en la lista
 def eliminar_entrevista():
-    p_dni=entry_dni_entrevista.get()
-    cursor.execute("DELETE FROM entrevistas WHERE dni = ?",(p_dni,))
-    conexion.commit()
-    ver_list_entrevist(lista_entrevistas)
+    seleccion=lista_entrevistas.curselection()
+    if seleccion:
+        dato=lista_entrevistas.get(seleccion)
+        id_entrevista=dato.split("//")[0].replace("ID: ","").strip()
+        cursor.execute("DELETE FROM entrevistas WHERE id = ?",(id_entrevista,))
+        conexion.commit()
+        ver_list_entrevist(lista_entrevistas)
 
 def detalles_entrevsit(event=None):
     seleccion=lista_entrevistas.curselection()
@@ -457,49 +456,50 @@ def detalles_entrevsit(event=None):
 def abrir_ventana_entrevistas(ventana_padre):
     ventana_entrevistas = tk.Toplevel(ventana_padre) 
     ventana_entrevistas.title("ENTREVISTAS")
-    ventana_entrevistas.geometry("400x650")
-    
+    ventana_entrevistas.geometry("1000x800")
+    ventana_entrevistas.config(bg=GRIS_NIEBLA)    
     global lista_entrevistas, text_entrevista, entry_dni_entrevista, entry_nombre_profecional, entry_fecha # declaro variables globales para que funcione, 
     # no se porque el codigo de Mateo no funcionaba bien aca. Aclaro que no digo que lo hizo mal. Capaz por la complejidad del codigo que revento Python
-    
+    # Un label que para que quede bien
+    tk.Label(ventana_entrevistas, text="Historial de Entrevistas", bg=GRIS_NIEBLA, fg=GRIS_AZULADO).pack(pady= 5)
     lista_entrevistas=tk.Listbox(ventana_entrevistas)
     lista_entrevistas.pack()
     lista_entrevistas.bind("<<ListboxSelect>>",detalles_entrevsit)
     ver_list_entrevist(lista_entrevistas)
-
     label_entrevista=tk.Label(ventana_entrevistas, text="Entrevista")
     label_entrevista.pack()
     text_entrevista=tk.Text(ventana_entrevistas)
     text_entrevista.pack()
-
     label_dni=tk.Label(ventana_entrevistas, text="Dni")
     label_dni.pack()
     # LE CAMBIE EL NOMBRE A entry_dni_entrevista PARA QUE NO CHOQUE CON EL DE LA VENTANA PRINCIPAL porque reventaba, literalmente
     entry_dni_entrevista=tk.Entry(ventana_entrevistas)
     entry_dni_entrevista.pack()
-
     label_nombre_profecional=tk.Label(ventana_entrevistas, text="Nombre profesional")
     label_nombre_profecional.pack()
     entry_nombre_profecional=tk.Entry(ventana_entrevistas)
     entry_nombre_profecional.pack()
-
     label_fecha=tk.Label(ventana_entrevistas, text="fecha")
     label_fecha.pack()
     entry_fecha=tk.Entry(ventana_entrevistas)
     entry_fecha.pack()
-            
-    boton_new_entrevista=tk.Button(ventana_entrevistas,text="Nueva entrevista",command=new_entrevista)
+    #BOTONES
+
+    boton_new_entrevista=tk.Button(ventana_entrevistas,text="Nueva entrevista",command=new_entrevista,bg=VERDE_AZULADO, fg="white")
     boton_new_entrevista.pack()
+    
+    boton_eliminar_entrevista=tk.Button(ventana_entrevistas,text="Eliminar_entrevista",command=eliminar_entrevista,bg=VERDE_AZULADO, fg="white")
+    boton_eliminar_entrevista.pack()
 
     # ESTE ES EL BOTON PARA ABRIR LA VENTANA DE EDITAR
     def abrir_editar():
         pantalla_edit_entrevista(ventana_entrevistas)
         
-    boton_editar=tk.Button(ventana_entrevistas, text="editar_entrevista", command=abrir_editar)
+    boton_editar=tk.Button(ventana_entrevistas, text="Editar entrevista", bg=AZUL_SERENO,fg=BLANCO,command=abrir_editar)
     boton_editar.pack()
 
 # ======================================================================================================================================
-# BOTON PRINCIPAL QUE ABRE ENTREVISTAS
+# BOTON PRINCIPAL QUE ABRE ENTREVISTAS desde la ventana PRINCIPAL, VALGA LA REGUNDANCIA EL NOMBRE. 
 # ======================================================================================================================================
 def abrir_desde_principal():
     abrir_ventana_entrevistas(ventana)
