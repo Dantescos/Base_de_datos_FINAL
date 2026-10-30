@@ -16,7 +16,7 @@ imagenes_cargadas = []
 # ================================================================================================
 # BASE DE DATOS 
 # ================================================================================================
-conexion = sqlite3.connect("Trabajo_FINAL_V4.db")
+conexion = sqlite3.connect("Trabajo_FINAL_V.db")
 cursor = conexion.cursor()
 cursor.execute("PRAGMA foreign_keys = ON;")
 # TABLA DE PERSONAS
@@ -153,7 +153,7 @@ def eliminar():
         return
     if not messagebox.askyesno("Confirmar", f"¿Eliminar DNI {dni_txt}?"):
         return
-    cursor.execute("DELETE FROM entrevistas WHERE dni_persona = ?", (dni_txt,))
+    cursor.execute("DELETE FROM entrevistas WHERE dni = ?", (dni_txt,))
     cursor.execute("DELETE FROM personas WHERE dni = ?", (dni_txt,))
     conexion.commit()
     refrescar_lista()
