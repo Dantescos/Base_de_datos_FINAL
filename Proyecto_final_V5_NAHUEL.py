@@ -3,19 +3,23 @@ import sqlite3
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk,Label, Button, Entry, Frame, Toplevel
 from io import BytesIO
-from tkinter import Label, Button, Entry, Frame, Toplevel
 from PIL import Image, ImageTk
 import string
-from PIL import Image, ImageTk
 import os
 import shutil
 import re
 # ================================================================================================
-# BASE DE DATOS (3 TABLAS, 1) CREA LA PERSONA, 2) CREA PARA ENTREVISTAS, 3) CREAR PARA IMAGENES
+# VARIABLES GLOBALES
+# ================================================================================================
+indice_edicion = None
+imagenes_cargadas = []
+# ================================================================================================
+# BASE DE DATOS 
 # ================================================================================================
 conexion = sqlite3.connect("Trabajo_FINAL_V4.db")
 cursor = conexion.cursor()
 cursor.execute("PRAGMA foreign_keys = ON;")
+# TABLA DE PERSONAS
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS personas(
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -24,22 +28,23 @@ CREATE TABLE IF NOT EXISTS personas(
     dni INTEGER UNIQUE NOT NULL,
     foto BLOB
 )""")
-cursor.execute("""
-CREATE TABLE IF NOT EXISTS entrevistas(
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    dni_persona INTEGER NOT NULL,
-    entrevistador TEXT NOT NULL,
-    fecha TEXT NOT NULL,
-    observaciones TEXT,
-    FOREIGN KEY (dni_persona) REFERENCES personas(dni)
-)""")
 
+# TABLA DE IMAGENES
 cursor.execute("""CREATE TABLE IF NOT EXISTS imagenes(
 id INTEGER PRIMARY KEY AUTOINCREMENT,
 nombre TEXT NOT NULL,
 formato TEXT NOT NULL,
 contenido BLOB NOT NULL,
 id_empleado INTEGER)""")
+
+# TABLA DE ENTREVISTAS (Saque el UNIQUE de DNI, porque una persona puede tener muchas entrevistas, POR LAS DUDAS LO DEJAMOS ASI)
+cursor.execute("""CREATE TABLE IF NOT EXISTS entrevistas(
+id INTEGER PRIMARY KEY AUTOINCREMENT,
+entrevista TEXT NOT NULL,
+dni INTEGER NOT NULL,
+nombre_profecional TEXT NOT NULL,
+fecha TEXT NOT NULL)""")
+
 
 conexion.commit()
 # =================================================================================================================
@@ -81,29 +86,38 @@ ventana.config(bg=GRIS_NIEBLA) #FONDO DE PANTALLA PARA LA APP
 banner = tk.Frame(ventana,bg=AZUL_SERENO, height=70) # FONDO PARA EL BANNER
 banner.pack(side="bottom",fill="x") # SE EXPANDE EN X, EN EL ANCHO
 banner.pack_propagate(False) # FALSO PARA QUE NO SE PROPAGUE
-tk.Label(banner, text="✚ MEDTRACK", bg=AZUL_SERENO, fg=BLANCO, font=("Arial", 20, "bold")).pack(pady=18) # Puse fuente ariel(lo comun, cualquier cosa lo vemos)
+# GUARDE EL LABEL EN UNA VARIABLE ASI EL MODO OSCURO PUEDE CAMBIARLE EL COLOR
+banner_label = tk.Label(banner, text="✚ MEDTRACK", bg=AZUL_SERENO, fg=BLANCO, font=("Arial", 20, "bold"))
+banner_label.pack(pady=18) 
+
 # =====================================================================================================================================
 #                                                         FRAME PARA BOTONERA Y BOTONES  
 # ======================================================================================================================================
 frame_btn = tk.Frame(ventana, bg=GRIS_NIEBLA)
 frame_btn.pack(side="top", fill="x", padx=15, pady=10) 
-tk.Button(frame_btn, text="Agregar",bg=VERDE_AZULADO,fg="white",width=12,activebackground=VERDE_TERMINAL, activeforeground=NEGRO).pack(side="left", padx=5)
-tk.Button(frame_btn, text="Eliminar", bg=VERDE_AZULADO, fg="white", width=12,activebackground=VERDE_TERMINAL, activeforeground=NEGRO).pack(side="left", padx=5)
-tk.Button(frame_btn, text="Buscar", bg=VERDE_AZULADO, fg="white",width=12,activebackground=VERDE_TERMINAL, activeforeground=NEGRO).pack(side="left", padx=5)
-tk.Button(frame_btn, text="Limpiar", bg=VERDE_AZULADO, fg="white",width=12,activebackground=VERDE_TERMINAL, activeforeground=NEGRO).pack(side="left", padx=5)
+tk.Button(frame_btn, text="Agregar",bg=VERDE_AZULADO,fg="white",width=12,activebackground=VERDE_TERMINAL, activeforeground=NEGRO, relief="flat").pack(side="left", padx=5)
+tk.Button(frame_btn, text="Eliminar", bg=VERDE_AZULADO, fg="white", width=12,activebackground=VERDE_TERMINAL, activeforeground=NEGRO, relief="flat").pack(side="left", padx=5)
+tk.Button(frame_btn, text="Buscar", bg=VERDE_AZULADO, fg="white",width=12,activebackground=VERDE_TERMINAL, activeforeground=NEGRO, relief="flat").pack(side="left", padx=5)
+tk.Button(frame_btn, text="Limpiar", bg=VERDE_AZULADO, fg="white",width=12,activebackground=VERDE_TERMINAL, activeforeground=NEGRO, relief="flat").pack(side="left", padx=5)
 #tk.Button(frame_btn, text="Entrevistas", command= ventana_entrevista,bg=VERDE_AZULADO,fg="white",width=12,activebackground=VERDE_TERMINAL, activeforeground=NEGRO).pack(side="left", padx=5)
 # ======================================================================================================================================
 #                                                               FORMULARIO
 # ======================================================================================================================================
 frame_form = tk.Frame(ventana, bg=GRIS_NIEBLA)
 frame_form.pack(side="top",fill="x", padx=15, pady=10)
-tk.Label(frame_form, text="Nombre:", bg=GRIS_NIEBLA,fg=GRIS_AZULADO).grid(row=0, column=0, sticky="e", padx=5)
+# GUARDE LOS LABELS EN VARIABLES PARA QUE EL MODO OSCURO LES CAMBIE EL COLOR
+label_nombre = tk.Label(frame_form, text="Nombre:", bg=GRIS_NIEBLA,fg=GRIS_AZULADO)
+label_nombre.grid(row=0, column=0, sticky="e", padx=5)
 entry_nombre = tk.Entry(frame_form, width=22)
 entry_nombre.grid(row=0, column=1, padx=5, pady=3)
-tk.Label(frame_form, text="Apellido:", bg=GRIS_NIEBLA,fg =GRIS_AZULADO).grid(row=0, column=2, sticky="e", padx=5)
+
+label_apellido = tk.Label(frame_form, text="Apellido:", bg=GRIS_NIEBLA,fg =GRIS_AZULADO)
+label_apellido.grid(row=0, column=2, sticky="e", padx=5)
 entry_apellido = tk.Entry(frame_form, width=22)
 entry_apellido.grid(row=0, column=3, padx=5, pady=3)
-tk.Label(frame_form, text="DNI:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO).grid(row=0, column=4, sticky="e", padx=5)
+
+label_dni = tk.Label(frame_form, text="DNI:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO)
+label_dni.grid(row=0, column=4, sticky="e", padx=5)
 entry_dni = tk.Entry(frame_form, width=15)
 entry_dni.grid(row=0, column=5, padx=5, pady=3)
 # ======================================================================================================================================
@@ -125,12 +139,119 @@ visor_foto.pack(expand=True, fill="both")
 # ======================================================================================================================================
 frame_lista = tk.Frame(cuerpo, bg=GRIS_AZULADO,relief="solid", bd=1)
 frame_lista.pack(side="left", fill="both", expand=True, padx=10)
-tk.Label(frame_lista, text="Personas registradas", bg=GRIS_AZULADO, fg=BLANCO, font=("Arial", 12, "bold")).pack(anchor="w", padx=5, pady=5)
+# GUARDE EL TITULO EN UNA VARIABLE ASI EL MODO OSCURO LE CAMBIA EL COLOR
+titulo_lista = tk.Label(frame_lista, text="Personas registradas", bg=GRIS_AZULADO, fg=BLANCO, font=("Arial", 12, "bold"))
+titulo_lista.pack(anchor="w", padx=5, pady=5)
+
 scroll = tk.Scrollbar(frame_lista, orient="vertical")
 scroll.pack(side="right", fill="y")
+
+# GUARDE LA LISTA EN UNA VARIABLE PARA APLICARLE EL TEMA (antes no existia la variable)
+lista_personas = tk.Listbox(frame_lista, yscrollcommand=scroll.set, font=("Arial", 11), bg=BLANCO, fg=GRIS_AZULADO, selectbackground=AZUL_SERENO, selectforeground=BLANCO)
+lista_personas.pack(side="left", fill="both", expand=True)
+scroll.config(command=lista_personas.yview)
+
 # =======================================================================================================================================
-#                                                   VENTANA PARA ENTREVISTAS
+#                                                              MODO OSCURO
 # =======================================================================================================================================
 
+tema_oscuro = False
+
+def aplicar_tema():
+    global tema_oscuro
+    tema_oscuro = not tema_oscuro # Cambia el estado (si es True lo hace False, y viceversa)
+
+    if tema_oscuro:
+        # COLORES DEL MODO OSCURO
+        fondo_general = "#111111"
+        panel = "#1B1B1B"
+        panel_2 = "#202020"
+        texto = "#F5F5F5"
+        texto_secundario = "#D9D9D9"
+        fondo_banner = "#0D0D0D"
+        boton_accion = "#1A1A1A"
+        boton_fill = "#FFFFFF"   # Fondo del boton de la luna
+        boton_text = "#000000"   # Color de la luna
+        active_bg = "#EAEAEA"
+        active_fg = "#000000"
+        lista_bg = "#1B1B1B"
+        lista_fg = "#F5F5F5"
+    else:
+        # COLORES DEL MODO CLARO
+        fondo_general = GRIS_NIEBLA
+        panel = BLANCO
+        panel_2 = GRIS_AZULADO
+        texto = GRIS_AZULADO
+        texto_secundario = GRIS_MEDIO
+        fondo_banner = AZUL_SERENO
+        boton_accion = VERDE_AZULADO
+        boton_fill = "#111111"
+        boton_text = "#FFFFFF"
+        active_bg = "#333333"
+        active_fg = "#FFFFFF"
+        lista_bg = BLANCO
+        lista_fg = GRIS_AZULADO
+
+    # Aplicamos los colores a los contenedores grandes
+    ventana.config(bg=fondo_general)
+    banner.config(bg=fondo_banner)
+    frame_btn.config(bg=fondo_general)
+    frame_form.config(bg=fondo_general)
+    cuerpo.config(bg=fondo_general)
+    
+    # Aplicamos a las tarjetas y textos
+    frame_foto.config(bg=panel)
+    visor_foto.config(bg=panel, fg=texto_secundario)
+    
+    frame_lista.config(bg=panel_2)
+    titulo_lista.config(bg=panel_2, fg="white" if tema_oscuro else BLANCO)
+    lista_personas.config(bg=lista_bg, fg=lista_fg, selectbackground=AZUL_SERENO, selectforeground=BLANCO)
+    
+    banner_label.config(bg=fondo_banner, fg="white")
+
+    # Aplicamos a los Labels del formulario
+    for widget in frame_form.winfo_children():
+        if isinstance(widget, tk.Label):
+            widget.config(bg=fondo_general, fg=texto)
+            
+    # Aplicamos a los Entry del formulario
+    for widget in frame_form.winfo_children():
+        if isinstance(widget, tk.Entry):
+            widget.config(bg=lista_bg, fg=lista_fg, insertbackground=lista_fg)
+
+    # Aplicamos a los botones
+    for widget in frame_btn.winfo_children():
+        if isinstance(widget, tk.Button) and widget is not btn_tema:
+            widget.config(
+                bg=boton_accion,
+                fg="white",
+                activebackground=VERDE_TERMINAL if not tema_oscuro else "#444444",
+                activeforeground="white"
+            )
+
+    # Aplicamos al boton de la luna
+    btn_tema.config(
+        bg=boton_fill,
+        fg=boton_text,
+        activebackground=active_bg,
+        activeforeground=active_fg
+    )
+
+# Creamos el botón de la luna (Movido ANTES de aplicar_tema para que no de error)
+btn_tema = tk.Button(
+    frame_btn,
+    text="☾",
+    command=aplicar_tema,
+    bg="#111111",
+    fg="#FFFFFF",
+    font=("Arial", 18, "bold"),
+    width=3,
+    height=1,
+    relief="flat",
+    bd=0,
+    cursor="hand2"
+)
+btn_tema.pack(side="right", padx=5)
+# =======================================================================================================================================
 
 ventana.mainloop()
