@@ -382,7 +382,6 @@ def pantalla_edit_entrevista(ventana_padre):# tuve varios problemas y puse un pa
     entry_fecha = tk.Entry(frame_editar, width=30, relief="solid", bd=1)
     entry_fecha.pack(pady= 20, padx=20)
 
-    # CORREGIDO: Borre los entry_dni, entry_nombre_profecional y entry_fecha duplicados que estaban aca sueltos
 
     def edit_entrevista():
         p_id=entry_id.get()
@@ -420,7 +419,6 @@ def new_entrevista():
     conexion.commit()
     ver_list_entrevist(lista_entrevistas)
 
-# ARREGLADA: Ahora busca por el ID de la entrevista seleccionada en la lista
 def eliminar_entrevista():
     seleccion=lista_entrevistas.curselection()
     if seleccion:
@@ -488,7 +486,7 @@ def abrir_ventana_entrevistas(ventana_padre):
     boton_new_entrevista=tk.Button(ventana_entrevistas,text="Nueva entrevista",command=new_entrevista,bg=VERDE_AZULADO, fg="white")
     boton_new_entrevista.pack()
     
-    boton_eliminar_entrevista=tk.Button(ventana_entrevistas,text="Eliminar_entrevista",command=eliminar_entrevista,bg=VERDE_AZULADO, fg="white")
+    boton_eliminar_entrevista=tk.Button(ventana_entrevistas,text="Eliminar entrevista",command=eliminar_entrevista,bg=VERDE_AZULADO, fg="white")
     boton_eliminar_entrevista.pack()
 
     # ESTE ES EL BOTON PARA ABRIR LA VENTANA DE EDITAR
