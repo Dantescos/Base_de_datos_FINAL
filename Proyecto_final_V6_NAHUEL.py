@@ -99,7 +99,6 @@ tk.Button(frame_btn, text="Agregar",bg=VERDE_AZULADO,fg="white",width=12,activeb
 tk.Button(frame_btn, text="Eliminar", bg=VERDE_AZULADO, fg="white", width=12,activebackground=VERDE_TERMINAL, activeforeground=NEGRO, relief="flat").pack(side="left", padx=5)
 tk.Button(frame_btn, text="Buscar", bg=VERDE_AZULADO, fg="white",width=12,activebackground=VERDE_TERMINAL, activeforeground=NEGRO, relief="flat").pack(side="left", padx=5)
 tk.Button(frame_btn, text="Limpiar", bg=VERDE_AZULADO, fg="white",width=12,activebackground=VERDE_TERMINAL, activeforeground=NEGRO, relief="flat").pack(side="left", padx=5)
-#tk.Button(frame_btn, text="Entrevistas", command= ventana_entrevista,bg=VERDE_AZULADO,fg="white",width=12,activebackground=VERDE_TERMINAL, activeforeground=NEGRO).pack(side="left", padx=5)
 # ======================================================================================================================================
 #                                                               FORMULARIO
 # ======================================================================================================================================
@@ -253,5 +252,86 @@ btn_tema = tk.Button(
 )
 btn_tema.pack(side="right", padx=5)
 # =======================================================================================================================================
+#                                                       # FUNCIONES AUXILIARES
+# ======================================================================================================================================
 
+def comprobar(i_del_for,entry_,orden):
+    variable=entry_.get()
+    if variable=="":
+        return i_del_for[orden]
+    else:
+        return variable
+
+def comprobar_fecha(entry_fecha):
+    fecha=entry_fecha.get()
+    for i in string.punctuation:
+        fecha=fecha.replace(i,"/")
+    return str(fecha)
+# ======================================================================================================================================
+#                                                          VENTANA PARA ENTREVISTAS
+# ======================================================================================================================================
+
+def new_entrevista():
+    entrevista=text_entrevista.get("1.0",tk.END)
+    dni=entry_dni.get()
+    nom_profecional=entry_nombre_profecional.get()
+    fecha=comprobar_fecha(entry_fecha)
+    cursor.execute("INSERT INTO entrevistas (entrevista,dni,nombre_profecional,fecha) VALUES (?,?,?,?)",(entrevista,dni,nom_profecional,fecha))
+    conexion.commit()
+    ver_list_entrevist()
+
+def eliminar_entrevista():
+    p_dni=entry_dni.get()
+    cursor.execute("DELETE FROM entrevistas WHERE dni = ?",(p_dni,))
+    conexion.commit()
+    ver_list_entrevist()
+
+def ver_list_entrevist():
+    lista_entrevistas.delete(0, tk.END)
+    cursor.execute("SELECT * FROM entrevistas")
+    for i in cursor.fetchall():
+        dato=f"ID: {i[0]} // Fecha: {i[4]} // DNI: {i[2]} // Profecional: {i[3]} // Entrevista: {i[1]}"
+        lista_entrevistas.insert(tk.END, dato)
+
+def detalles_entrevsit(event=None):
+    seleccion=lista_entrevistas.curselection()
+    if seleccion:
+        dato=lista_entrevistas.get(seleccion)
+        datos=dato.split("//")
+
+        ventana_entrevista=tk.Toplevel(ventana)
+        ventana_entrevista.title("entrevista")
+        ventana_entrevista.geometry("300x200")
+
+        label_dato_fecha=tk.Label(ventana_entrevista,text=datos[1])
+        label_dato_fecha.pack()
+        label_dato_dni=tk.Label(ventana_entrevista,text=datos[2])
+        label_dato_dni.pack()
+        label_dato_profecional=tk.Label(ventana_entrevista,text=datos[3])
+        label_dato_profecional.pack()
+
+        text_dato_entrevista=tk.Text(ventana_entrevista)
+        text_dato_entrevista.pack()
+        text_dato_entrevista.insert("1.0",datos[4])
+        text_dato_entrevista.config(state=tk.DISABLED)
+
+
+def abrir_ventana_entrevistas():
+    # ACA CREO LA VENTANA EMERGENTE PARA ENTREVISTAS
+    ventana_entrevistas = tk.Toplevel(ventana) 
+    ventana_entrevistas.title("Entrevistas")
+    ventana_entrevistas.geometry("1000x700")
+    #tuve problemas con un par de variables asi que las defino global para enparcharlo
+    global lista_entrevistas, text_entrevista, entry_dni, entry_nombre_profecional, entry_fecha
+
+
+
+
+
+
+
+
+
+# Esto abre entrevistas
+tk.Button(frame_btn, text="Entrevistas",command=abrir_ventana_entrevistas,bg=VERDE_AZULADO,fg="white",width=12,activebackground=VERDE_TERMINAL, activeforeground=NEGRO).pack(side="left", padx=5)
 ventana.mainloop()
