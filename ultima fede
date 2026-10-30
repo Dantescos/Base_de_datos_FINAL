@@ -1,3 +1,4 @@
+
 import sqlite3
 import tkinter as tk
 from tkinter import filedialog, messagebox
@@ -300,7 +301,8 @@ def mostrar_imagen(event=None):
         messagebox.showerror("Error al mostrar", str(error))
     actualizar_lista()
 
-
+def eliminar_imagenes():
+    pass
 
 
             
