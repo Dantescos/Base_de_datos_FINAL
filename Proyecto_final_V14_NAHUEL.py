@@ -311,21 +311,8 @@ def aplicar_tema():
         activebackground=active_bg,
         activeforeground=active_fg
     )
-btn_tema = tk.Button(
-    frame_btn,
-    text="☾",
-    command=aplicar_tema,
-    bg="#111111",
-    fg="#FFFFFF",
-    font=("Arial", 18, "bold"),
-    width=3,
-    height=1,
-    relief="flat",
-    bd=0,
-    cursor="hand2"
-)
+btn_tema = tk.Button(frame_btn,text="☾",command=aplicar_tema, bg="#111111",fg="#FFFFFF",font=("Arial", 18, "bold"),width=3, height=1,relief="flat", bd=0,cursor="hand2")
 btn_tema.pack(side="right", padx=5)
-
 # =======================================================================================================================================
 # FUNCIONES AUXILIARES PARA ENTREVISTA O EDITAR ENTREVISTA(cualquier cosa preguntar a Mateo)
 # ======================================================================================================================================
@@ -459,8 +446,23 @@ def abrir_ventana_entrevistas(ventana_padre):
     global lista_entrevistas, text_entrevista, entry_dni_entrevista, entry_nombre_profecional, entry_fecha # declaro variables globales para que funcione, 
     # no se porque el codigo de Mateo no funcionaba bien aca. Aclaro que no digo que lo hizo mal. Capaz por la complejidad del codigo que revento Python
     # Un label que para que quede bien
-    frame_superior = Frame(bg=GRIS_AZULADO)
-    frame_superior.pack(side="top", fill="x", padx=15, pady=10) 
+    #Frame superior para poner las entradas 
+    frame_superior = Frame(ventana_entrevistas,bg=GRIS_AZULADO)
+    frame_superior.pack(side="top", fill="x", padx=20, pady=10) 
+    # LE CAMBIE EL NOMBRE A entry_dni_entrevista PARA QUE NO CHOQUE CON EL DE LA VENTANA PRINCIPAL porque reventaba, literalmente
+    label_dni = tk.Label(frame_superior, text="DNI:",bg=GRIS_AZULADO, fg=BLANCO)
+    label_dni.grid(row=0, column=0, sticky="e", padx=5)
+    entry_dni_entrevista=tk.Entry(frame_superior)
+    entry_dni_entrevista.grid(row=0, column=1, sticky="e", padx=5)
+    label_nombre_profecional=tk.Label(frame_superior, text="Nombre del profesional",bg=GRIS_AZULADO, fg=BLANCO)
+    label_nombre_profecional.grid(row=0, column=2, sticky="e", padx=5)
+    entry_nombre_profecional=tk.Entry(frame_superior)
+    entry_nombre_profecional.grid(row=0, column=3, sticky="e", padx=5)
+    label_fecha=tk.Label(frame_superior, text="Fecha de entrevista",bg=GRIS_AZULADO, fg=BLANCO)
+    label_fecha.grid(row=0, column=4, sticky="e", padx=5)
+    entry_fecha=tk.Entry(frame_superior)
+    entry_fecha.grid(row=0, column=5, sticky="e", padx=5)
+    ################################################
 
     tk.Label(ventana_entrevistas, text="Historial de Entrevistas", bg=GRIS_NIEBLA, fg=GRIS_AZULADO).pack(pady= 5)
     lista_entrevistas=tk.Listbox(ventana_entrevistas)
@@ -471,21 +473,9 @@ def abrir_ventana_entrevistas(ventana_padre):
     label_entrevista.pack()
     text_entrevista=tk.Text(ventana_entrevistas)
     text_entrevista.pack()
-    label_dni=tk.Label(ventana_entrevistas, text="Dni")
-    label_dni.pack()
-    # LE CAMBIE EL NOMBRE A entry_dni_entrevista PARA QUE NO CHOQUE CON EL DE LA VENTANA PRINCIPAL porque reventaba, literalmente
-    entry_dni_entrevista=tk.Entry(ventana_entrevistas)
-    entry_dni_entrevista.pack()
-    label_nombre_profecional=tk.Label(ventana_entrevistas, text="Nombre profesional")
-    label_nombre_profecional.pack()
-    entry_nombre_profecional=tk.Entry(ventana_entrevistas)
-    entry_nombre_profecional.pack()
-    label_fecha=tk.Label(ventana_entrevistas, text="fecha")
-    label_fecha.pack()
-    entry_fecha=tk.Entry(ventana_entrevistas)
-    entry_fecha.pack()
-    #BOTONES
 
+
+    #BOTONES van abajo, frame inferior
     boton_new_entrevista=tk.Button(ventana_entrevistas,text="Nueva entrevista",command=new_entrevista,bg=VERDE_AZULADO, fg="white")
     boton_new_entrevista.pack()
     
