@@ -1,25 +1,27 @@
 # LIBRERIAS A IMPORTAR/NECESITAMOS
 import sqlite3
 import tkinter as tk
-from tkinter import filedialog, messagebox, ttk,Label, Button, Entry, Frame, Toplevel
+from tkinter import filedialog, messagebox, ttk,Label, Button, Entry, Frame, Toplevel,Listbox,font
 from io import BytesIO
 from PIL import Image, ImageTk
 import string
 import os
 import shutil
 import re
+
 # ================================================================================================
 # VARIABLES GLOBALES
 # ================================================================================================
 indice_edicion = None
 imagenes_cargadas = []
+
 # ================================================================================================
 # BASE DE DATOS 
 # ================================================================================================
 conexion = sqlite3.connect("Trabajo_FINAL_V.db")
 cursor = conexion.cursor()
 cursor.execute("PRAGMA foreign_keys = ON;")
-# TABLA DE PERSONAS
+
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS personas(
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -28,14 +30,14 @@ CREATE TABLE IF NOT EXISTS personas(
     dni INTEGER UNIQUE NOT NULL,
     foto BLOB
 )""")
-# TABLA DE IMAGENES
+
 cursor.execute("""CREATE TABLE IF NOT EXISTS imagenes(
 id INTEGER PRIMARY KEY AUTOINCREMENT,
 nombre TEXT NOT NULL,
 formato TEXT NOT NULL,
 contenido BLOB NOT NULL,
 id_empleado INTEGER)""")
-# TABLA DE ENTREVISTAS
+
 cursor.execute("""CREATE TABLE IF NOT EXISTS entrevistas(
 id INTEGER PRIMARY KEY AUTOINCREMENT,
 entrevista TEXT NOT NULL,
@@ -45,7 +47,7 @@ fecha TEXT NOT NULL)""")
 conexion.commit()
 
 # =================================================================================================================
-# PALETA DE COLORES (VIEJA Y NUEVA) 
+# PALETA DE COLORES 
 # ==================================================================================================================
 ROJO = "#E3000F"
 AMARILLO = "#FCAF17"
@@ -56,7 +58,7 @@ AZUL_PETROLEO = "#006080"
 BLANCO_HUESO = "#F5F5DC"
 VERDE_AZULADO = "#008080"
 VERDE_TERMINAL = "#00FF00"
-# NUEVOS COLORES, MODO CLARO , ASI LLAMA LA ATENCION Y DA BUENAS VIBRAS
+# NUEVOS COLORES MODO CLARO
 GRIS_NIEBLA="#F4F7F6" 
 BLANCO = "#FFFFFF" 
 GRIS_AZULADO = "#2C3E50" 
@@ -73,21 +75,23 @@ ventana.geometry("1000x700")
 ventana.config(bg=GRIS_NIEBLA)
 
 # =====================================================================================================================================
-#                                                       Banner para el titulo
+# Banner para el titulo
 # =====================================================================================================================================
-banner = tk.Frame(ventana,bg=AZUL_SERENO, height=70)
+banner = tk.Frame(ventana,bg=AZUL_SERENO, height=80) # Aumente un poco la altura
 banner.pack(side="bottom",fill="x")
 banner.pack_propagate(False)
-banner_label = tk.Label(banner, text="✚ MEDTRACK", bg=AZUL_SERENO, fg=BLANCO, font=("Arial", 20, "bold"))
-banner_label.pack(pady=18) 
+banner_label = tk.Label(banner, text="✚ MEDTRACK", bg=AZUL_SERENO, fg=BLANCO, font=("Segoe UI", 24, "bold")) # Letra mas grande
+banner_label.pack(pady=20) 
+
 # =======================================================================================================================================
-#                                            FUNCIONES PRINCIPALES PARA LA VENTANA PRINCIPAL
+# FUNCIONES PRINCIPALES PARA LA VENTANA PRINCIPAL
 # =======================================================================================================================================
 def refrescar_lista():
     lista_personas.delete(0, tk.END)
     cursor.execute("SELECT nombre, apellido, dni FROM personas ORDER BY apellido, nombre")
     for nombre, apellido, dni in cursor.fetchall():
         lista_personas.insert(tk.END, f"{apellido}, {nombre} — DNI {dni}")
+
 def mostrar_foto(dni):
     cursor.execute("SELECT foto FROM personas WHERE dni = ?", (dni,))
     fila = cursor.fetchone()
@@ -102,6 +106,7 @@ def mostrar_foto(dni):
         except Exception:
             pass
     visor_foto.configure(image="", text="Sin foto")
+
 def al_seleccionar(event=None):
     sel = lista_personas.curselection()
     if not sel: return
@@ -115,6 +120,7 @@ def al_seleccionar(event=None):
     entry_dni.delete(0, tk.END); entry_dni.insert(0, fila[2])
     mostrar_foto(dni)
     lista_personas.bind("<<ListboxSelect>>", al_seleccionar)
+
 def agregar():
     nombre = entry_nombre.get().strip()
     apellido = entry_apellido.get().strip()
@@ -143,6 +149,7 @@ def agregar():
     refrescar_lista()
     limpiar()
     messagebox.showinfo("OK", "Persona agregada.")
+
 def eliminar():
     dni_txt = entry_dni.get().strip()
     if not dni_txt:
@@ -156,6 +163,7 @@ def eliminar():
     refrescar_lista()
     limpiar()
     visor_foto.configure(image="", text="Sin foto")
+
 def buscar():
     dni_txt = entry_dni.get().strip()
     if not dni_txt:
@@ -169,49 +177,51 @@ def buscar():
     entry_nombre.delete(0, tk.END); entry_nombre.insert(0, fila[0])
     entry_apellido.delete(0, tk.END); entry_apellido.insert(0, fila[1])
     mostrar_foto(fila[2])
-    # resaltar en lista
     for i in range(lista_personas.size()):
         if f"DNI {fila[2]}" in lista_personas.get(i):
             lista_personas.selection_clear(0, tk.END)
             lista_personas.selection_set(i)
             lista_personas.see(i)
             break
+
 def limpiar():
     entry_nombre.delete(0, tk.END)
     entry_apellido.delete(0, tk.END)
     entry_dni.delete(0, tk.END)
+
 # =====================================================================================================================================
-#                                           FRAME PARA BOTONERA Y BOTONES  PARA LA VENTANA PRINCIPAL
+# FRAME PARA BOTONERA Y BOTONES  PARA LA VENTANA PRINCIPAL
 # ======================================================================================================================================
 frame_btn = tk.Frame(ventana, bg=GRIS_NIEBLA)
 frame_btn.pack(side="top", fill="x", padx=15, pady=10) 
-tk.Button(frame_btn, text="Agregar",command=agregar,bg=VERDE_AZULADO,fg="white",width=12,activebackground=VERDE_TERMINAL, activeforeground=NEGRO, relief="flat").pack(side="left", padx=5)
-tk.Button(frame_btn, text="Eliminar",command=eliminar, bg=VERDE_AZULADO, fg="white", width=12,activebackground=VERDE_TERMINAL, activeforeground=NEGRO, relief="flat").pack(side="left", padx=5)
-tk.Button(frame_btn, text="Buscar", command=buscar,bg=VERDE_AZULADO, fg="white",width=12,activebackground=VERDE_TERMINAL, activeforeground=NEGRO, relief="flat").pack(side="left", padx=5)
-tk.Button(frame_btn, text="Limpiar",command=limpiar, bg=VERDE_AZULADO, fg="white",width=12,activebackground=VERDE_TERMINAL, activeforeground=NEGRO, relief="flat").pack(side="left", padx=5)
+tk.Button(frame_btn, text="Agregar",font=("Segoe UI", 12),command=agregar,bg=VERDE_AZULADO,fg="white",width=12,activebackground=VERDE_TERMINAL, activeforeground=NEGRO, relief="flat").pack(side="left", padx=5)
+tk.Button(frame_btn, text="Eliminar",font=("Segoe UI", 12),command=eliminar, bg=VERDE_AZULADO, fg="white", width=12,activebackground=VERDE_TERMINAL, activeforeground=NEGRO, relief="flat").pack(side="left", padx=5)
+tk.Button(frame_btn, text="Buscar", font=("Segoe UI", 12),command=buscar,bg=VERDE_AZULADO, fg="white",width=12,activebackground=VERDE_TERMINAL, activeforeground=NEGRO, relief="flat").pack(side="left", padx=5)
+tk.Button(frame_btn, text="Limpiar",font=("Segoe UI", 12),command=limpiar, bg=VERDE_AZULADO, fg="white",width=12,activebackground=VERDE_TERMINAL, activeforeground=NEGRO, relief="flat").pack(side="left", padx=5)
 
 # ======================================================================================================================================
-#                                           FORMULARIO PARA LA VENTANA PRINCIPAL
+# FORMULARIO PARA LA VENTANA PRINCIPAL
 # ======================================================================================================================================
 frame_form = tk.Frame(ventana, bg=GRIS_NIEBLA)
 frame_form.pack(side="top",fill="x", padx=15, pady=10)
-label_nombre = tk.Label(frame_form, text="Nombre:", bg=GRIS_NIEBLA,fg=GRIS_AZULADO)
+
+label_nombre = tk.Label(frame_form, text="Nombre:", bg=GRIS_NIEBLA,fg=GRIS_AZULADO,font=("Segoe UI", 12))
 label_nombre.grid(row=0, column=0, sticky="e", padx=5)
-entry_nombre = tk.Entry(frame_form, width=22)
+entry_nombre = tk.Entry(frame_form, width=22, font=("Segoe UI", 12)) # Letra mas grande en el entry
 entry_nombre.grid(row=0, column=1, padx=5, pady=3)
 
-label_apellido = tk.Label(frame_form, text="Apellido:", bg=GRIS_NIEBLA,fg =GRIS_AZULADO)
+label_apellido = tk.Label(frame_form, text="Apellido:", bg=GRIS_NIEBLA,fg =GRIS_AZULADO,font=("Segoe UI", 12))
 label_apellido.grid(row=0, column=2, sticky="e", padx=5)
-entry_apellido = tk.Entry(frame_form, width=22)
+entry_apellido = tk.Entry(frame_form, width=22, font=("Segoe UI", 12))
 entry_apellido.grid(row=0, column=3, padx=5, pady=3)
 
-label_dni = tk.Label(frame_form, text="DNI:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO)
+label_dni = tk.Label(frame_form, text="DNI:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO,font=("Segoe UI", 12))
 label_dni.grid(row=0, column=4, sticky="e", padx=5)
-entry_dni = tk.Entry(frame_form, width=15)
+entry_dni = tk.Entry(frame_form, width=15, font=("Segoe UI", 12))
 entry_dni.grid(row=0, column=5, padx=5, pady=3)
 
 # ======================================================================================================================================
-#                                    Cuerpo principal (PANTALLA PRINCIPAL)
+# Cuerpo principal (PANTALLA PRINCIPAL)
 # ======================================================================================================================================
 cuerpo = tk.Frame(ventana,bg = GRIS_NIEBLA)
 cuerpo.pack(fill="both", expand=True, padx=15, pady=10)
@@ -220,21 +230,22 @@ cuerpo.pack(fill="both", expand=True, padx=15, pady=10)
 frame_foto = tk.Frame(cuerpo, bg=BLANCO, relief="solid", bd=1)
 frame_foto.pack(side="left", fill="both", expand=True, padx=(0, 15))
 frame_foto.pack_propagate(False)
-visor_foto = tk.Label(frame_foto, text="👤\nSin foto", bg=BLANCO, fg=GRIS_MEDIO, font=("Arial", 14))
+visor_foto = tk.Label(frame_foto, text="👤\nSin foto", bg=BLANCO, fg=GRIS_MEDIO, font=("Segoe UI", 18))
 visor_foto.pack(expand=True, fill="both")
 
 # LISTBOX PARA QUE SE PUEDA VER A LA PERSONA
 frame_lista = tk.Frame(cuerpo, bg=GRIS_AZULADO,relief="solid", bd=1)
 frame_lista.pack(side="left", fill="both", expand=True, padx=10)
-titulo_lista = tk.Label(frame_lista, text="Personas registradas", bg=GRIS_AZULADO, fg=BLANCO, font=("Arial", 12, "bold"))
+titulo_lista = tk.Label(frame_lista, text="Personas registradas", bg=GRIS_AZULADO, fg=BLANCO, font=("Segoe UI", 15, "bold"))
 titulo_lista.pack(anchor="w", padx=5, pady=5)
 
 scroll = tk.Scrollbar(frame_lista, orient="vertical")
 scroll.pack(side="right", fill="y")
 
-lista_personas = tk.Listbox(frame_lista, yscrollcommand=scroll.set, font=("Arial", 11), bg=BLANCO, fg=GRIS_AZULADO, selectbackground=AZUL_SERENO, selectforeground=BLANCO)
+lista_personas = tk.Listbox(frame_lista, yscrollcommand=scroll.set, font=("Segoe UI", 12), bg=BLANCO, fg=GRIS_AZULADO, selectbackground=AZUL_SERENO, selectforeground=BLANCO)
 lista_personas.pack(side="left", fill="both", expand=True)
 scroll.config(command=lista_personas.yview)
+
 # =======================================================================================================================================
 # MODO OSCURO
 # =======================================================================================================================================
@@ -311,10 +322,12 @@ def aplicar_tema():
         activebackground=active_bg,
         activeforeground=active_fg
     )
-btn_tema = tk.Button(frame_btn,text="☾",command=aplicar_tema, bg="#111111",fg="#FFFFFF",font=("Arial", 18, "bold"),width=3, height=1,relief="flat", bd=0,cursor="hand2")
+
+btn_tema = tk.Button(frame_btn,text="☾",command=aplicar_tema, bg="#111111",fg="#FFFFFF",font=("Segoe UI", 18, "bold"),width=3, height=1,relief="flat", bd=0,cursor="hand2")
 btn_tema.pack(side="right", padx=5)
+
 # =======================================================================================================================================
-# FUNCIONES AUXILIARES PARA ENTREVISTA O EDITAR ENTREVISTA(cualquier cosa preguntar a Mateo)
+# FUNCIONES AUXILIARES
 # ======================================================================================================================================
 def comprobar(i_del_for,entry_,orden):
     variable=entry_.get()
@@ -322,53 +335,54 @@ def comprobar(i_del_for,entry_,orden):
         return i_del_for[orden]
     else:
         return variable
+
 def comprobar_fecha(entry_fecha):
     fecha=entry_fecha.get()
     for i in string.punctuation:
         fecha=fecha.replace(i,"/")
     return str(fecha)
-def ver_list_entrevist(lista_widget):# Le paso la lista como parametro para no depender de una variable global porque el codigo de Mateo tenia problemas aca, no funcionaba bien aca.
+
+def ver_list_entrevist(lista_widget):
     lista_widget.delete(0, tk.END)
     cursor.execute("SELECT * FROM entrevistas")
     for i in cursor.fetchall():
         dato=f"ID: {i[0]} // Fecha: {i[4]} // DNI: {i[2]} // Profecional: {i[3]} // Entrevista: {i[1]}"
         lista_widget.insert(tk.END, dato)
+
 # ======================================================================================================================================
 # VENTANA PARA EDITAR ENTREVISTAS
 # ======================================================================================================================================
-def pantalla_edit_entrevista(ventana_padre):# tuve varios problemas y puse un parametro para que funcione, no quedo otra
-    # Recibe la ventana padre como parametro, monton de problemas no funcionaba o abria bien la ventana , directamente no me la reconocia bien me aparecio en rojo
+def pantalla_edit_entrevista(ventana_padre):
     ventana_editar=tk.Toplevel(ventana_padre)
     ventana_editar.title("Editar datos de entrevista")
-    ventana_editar.geometry("1000x600")
+    ventana_editar.geometry("800x650") # Un poco mas chica para que se vea mejor
+    ventana_editar.config(bg=GRIS_NIEBLA)
 
-    frame_editar = tk.Frame(ventana_editar, bg=BLANCO, relief="solid", bd=1)#aca para remarcar el recuadro se le pone el relief solid
+    frame_editar = tk.Frame(ventana_editar, bg=BLANCO, relief="solid", bd=1)
     frame_editar.pack(padx=20, pady=20, fill="both", expand=True)
 
-    # CORREGIDO: Le saque el .pack() doble que rompia todo
-    label_entrevista=tk.Label(frame_editar, text="Modificar Entrevista", bg=BLANCO, fg=GRIS_AZULADO)
-    label_entrevista.pack(pady=10)
+    label_entrevista=tk.Label(frame_editar, text="Modificar Entrevista", bg=BLANCO, fg=GRIS_AZULADO,font=("Segoe UI", 16, "bold"))
+    label_entrevista.pack(pady=15)
 
-    Label(frame_editar, text="ID de la entrevista a editar:", bg=BLANCO, fg=GRIS_AZULADO).pack(anchor="w", padx=20)
-    entry_id = tk.Entry(frame_editar, width=30, relief="solid", bd=1)
-    entry_id.pack(pady=15, padx=20)
+    Label(frame_editar, text="ID de la entrevista a editar:", bg=BLANCO, fg=GRIS_AZULADO,font=("Segoe UI", 12)).pack(anchor="w", padx=20)
+    entry_id = tk.Entry(frame_editar, width=30, relief="solid", bd=1, font=("Segoe UI", 12))
+    entry_id.pack(pady=10, padx=20)
 
-    Label(frame_editar, text="Texto de la entrevista:", bg=BLANCO, fg=GRIS_AZULADO).pack(anchor="w", padx=20)
-    text_entrevista = tk.Text(frame_editar, height=5, width=40, relief="solid", bd=1)
-    text_entrevista.pack(pady=15, padx=20)
+    Label(frame_editar, text="Texto de la entrevista:", bg=BLANCO, fg=GRIS_AZULADO,font=("Segoe UI", 12)).pack(anchor="w", padx=20)
+    text_entrevista = tk.Text(frame_editar, height=5, width=40, relief="solid", bd=1, font=("Segoe UI", 12))
+    text_entrevista.pack(pady=10, padx=20)
 
-    Label(frame_editar, text="DNI:", bg=BLANCO, fg=GRIS_AZULADO).pack(anchor="w", padx=20)
-    entry_dni = tk.Entry(frame_editar, width=30, relief="solid", bd=1)
-    entry_dni.pack(pady= 15, padx=20)
+    Label(frame_editar, text="DNI:", bg=BLANCO, fg=GRIS_AZULADO,font=("Segoe UI", 12)).pack(anchor="w", padx=20)
+    entry_dni = tk.Entry(frame_editar, width=30, relief="solid", bd=1, font=("Segoe UI", 12))
+    entry_dni.pack(pady=10, padx=20)
     
-    Label(frame_editar, text="Nombre del Profesional:", bg=BLANCO, fg=GRIS_AZULADO).pack(anchor="w", padx=20)
-    entry_nombre_profecional = tk.Entry(frame_editar, width=30, relief="solid", bd=1)
-    entry_nombre_profecional.pack(pady= 15, padx=20)
+    Label(frame_editar, text="Nombre del Profesional:", bg=BLANCO, fg=GRIS_AZULADO,font=("Segoe UI", 12)).pack(anchor="w", padx=20)
+    entry_nombre_profecional = tk.Entry(frame_editar, width=30, relief="solid", bd=1, font=("Segoe UI", 12))
+    entry_nombre_profecional.pack(pady=10, padx=20)
 
-    Label(frame_editar, text="Fecha:", bg=BLANCO, fg=GRIS_AZULADO).pack(anchor="w", padx=20)
-    entry_fecha = tk.Entry(frame_editar, width=30, relief="solid", bd=1)
-    entry_fecha.pack(pady= 20, padx=20)
-
+    Label(frame_editar, text="Fecha:", bg=BLANCO, fg=GRIS_AZULADO,font=("Segoe UI", 12)).pack(anchor="w", padx=20)
+    entry_fecha = tk.Entry(frame_editar, width=30, relief="solid", bd=1, font=("Segoe UI", 12))
+    entry_fecha.pack(pady=10, padx=20)
 
     def edit_entrevista():
         p_id=entry_id.get()
@@ -390,12 +404,13 @@ def pantalla_edit_entrevista(ventana_padre):# tuve varios problemas y puse un pa
                 conexion.commit()
                 break
         ver_list_entrevist(lista_entrevistas) 
+        ventana_editar.destroy() # Cierra la ventana al guardar
 
-    boton_edit_entrevista= Button(frame_editar,text="Editar entrevista",command=edit_entrevista)
-    boton_edit_entrevista.pack(pady=10)
+    boton_edit_entrevista= Button(frame_editar,text="Guardar cambios",font=("Segoe UI", 12, "bold"), command=edit_entrevista, bg=VERDE_AZULADO, fg=BLANCO, relief="flat", width=15)
+    boton_edit_entrevista.pack(pady=20)
 
 # ==================================================================================================================================================================
-# FUNCIONES DE LA VENTANA DE ENTREVISTAS (la que vendria a abrirse de la ventana principal)
+# FUNCIONES DE LA VENTANA DE ENTREVISTAS
 # ==================================================================================================================================================================
 def new_entrevista():
     entrevista=text_entrevista.get("1.0",tk.END)
@@ -422,99 +437,113 @@ def detalles_entrevsit(event=None):
         datos=dato.split("//")
 
         ventana_detalle=tk.Toplevel(ventana)
-        ventana_detalle.title("entrevista")
-        ventana_detalle.geometry("300x200")
+        ventana_detalle.title("Detalle de entrevista")
+        ventana_detalle.geometry("500x400")
+        ventana_detalle.config(bg=GRIS_NIEBLA)
 
-        label_dato_fecha=tk.Label(ventana_detalle,text=datos[1])
-        label_dato_fecha.pack()
-        label_dato_dni=tk.Label(ventana_detalle,text=datos[2])
+        frame_detalle = Frame(ventana_detalle, bg=BLANCO, relief="solid", bd=1)
+        frame_detalle.pack(padx=20, pady=20, fill="both", expand=True)
+
+        label_dato_fecha=tk.Label(frame_detalle, text=datos[1], bg=BLANCO, fg=GRIS_AZULADO, font=("Segoe UI", 12, "bold"))
+        label_dato_fecha.pack(pady=5)
+        label_dato_dni=tk.Label(frame_detalle, text=datos[2], bg=BLANCO, fg=GRIS_AZULADO, font=("Segoe UI", 12))
         label_dato_dni.pack()
-        label_dato_profecional=tk.Label(ventana_detalle,text=datos[3])
-        label_dato_profecional.pack()
+        label_dato_profecional=tk.Label(frame_detalle, text=datos[3], bg=BLANCO, fg=GRIS_AZULADO, font=("Segoe UI", 12))
+        label_dato_profecional.pack(pady=10)
 
-        text_dato_entrevista=tk.Text(ventana_detalle)
-        text_dato_entrevista.pack()
+        text_dato_entrevista=tk.Text(frame_detalle, height=8, font=("Segoe UI", 12), relief="solid", bd=1)
+        text_dato_entrevista.pack(fill="both", expand=True, padx=10, pady=10)
         text_dato_entrevista.insert("1.0",datos[4])
         text_dato_entrevista.config(state=tk.DISABLED)
 
-# Creo la ventana emergente para ENTREVISTAS, la creo aca y paso parametro para que funcione porque no me la reconoce
+# ======================================================================================================================================
+# VENTANA EMERGENTE PARA ENTREVISTAS
+# ======================================================================================================================================
 def abrir_ventana_entrevistas(ventana_padre):
     ventana_entrevistas = tk.Toplevel(ventana_padre) 
     ventana_entrevistas.title("ENTREVISTAS")
     ventana_entrevistas.geometry("1000x800")
     ventana_entrevistas.config(bg=GRIS_NIEBLA)    
-    global lista_entrevistas, text_entrevista, entry_dni_entrevista, entry_nombre_profecional, entry_fecha # declaro variables globales para que funcione, 
-    # no se porque el codigo de Mateo no funcionaba bien aca. Aclaro que no digo que lo hizo mal. Capaz por la complejidad del codigo que revento Python
-    # Un label que para que quede bien
-    #Frame superior para poner las entradas 
+    
+    global lista_entrevistas, text_entrevista, entry_dni_entrevista, entry_nombre_profecional, entry_fecha 
+
+    # --- FRAME SUPERIOR (Formulario) ---
     frame_superior = Frame(ventana_entrevistas,bg=GRIS_AZULADO)
     frame_superior.pack(side="top", fill="x", padx=20, pady=10) 
-    # LE CAMBIE EL NOMBRE A entry_dni_entrevista PARA QUE NO CHOQUE CON EL DE LA VENTANA PRINCIPAL porque reventaba, literalmente
-    label_dni = tk.Label(frame_superior, text="DNI:",bg=GRIS_AZULADO, fg=BLANCO)
-    label_dni.grid(row=0, column=0, sticky="e", padx=5)
-    entry_dni_entrevista=tk.Entry(frame_superior)
+
+    label_dni = tk.Label(frame_superior, text="DNI:",bg=GRIS_AZULADO, fg=BLANCO,font=("Segoe UI", 12))
+    label_dni.grid(row=0, column=0, sticky="e", padx=5, pady=10)
+    entry_dni_entrevista=tk.Entry(frame_superior, font=("Segoe UI", 12))
     entry_dni_entrevista.grid(row=0, column=1, sticky="e", padx=5)
-    label_nombre_profecional=tk.Label(frame_superior, text="Nombre del profesional",bg=GRIS_AZULADO, fg=BLANCO)
+
+    label_nombre_profecional=tk.Label(frame_superior, text="Nombre del profesional:",bg=GRIS_AZULADO, fg=BLANCO,font=("Segoe UI", 12))
     label_nombre_profecional.grid(row=0, column=2, sticky="e", padx=5)
-    entry_nombre_profecional=tk.Entry(frame_superior)
+    entry_nombre_profecional=tk.Entry(frame_superior, font=("Segoe UI", 12))
     entry_nombre_profecional.grid(row=0, column=3, sticky="e", padx=5)
-    label_fecha=tk.Label(frame_superior, text="Fecha de entrevista",bg=GRIS_AZULADO, fg=BLANCO)
+
+    label_fecha=tk.Label(frame_superior, text="Fecha de entrevista:",bg=GRIS_AZULADO, fg=BLANCO,font=("Segoe UI", 12))
     label_fecha.grid(row=0, column=4, sticky="e", padx=5)
-    entry_fecha=tk.Entry(frame_superior)
+    entry_fecha=tk.Entry(frame_superior, font=("Segoe UI", 12))
     entry_fecha.grid(row=0, column=5, sticky="e", padx=5)
 
-    ###########################################################################################################################
-    #FRAMES DEL MEDIO
+    # --- FRAMES DEL MEDIO (Lista y Texto) ---
     frame_medio_cuerpo = tk.Frame(ventana_entrevistas,bg =GRIS_NIEBLA)
-    frame_medio_cuerpo.pack(fill="both", expand=True, padx=15, pady=10) # esto va bien
+    frame_medio_cuerpo.pack(fill="both", expand=True, padx=15, pady=10) 
+
     # LADO IZQUIERDO
     frame_lista_medio = Frame(frame_medio_cuerpo, bg=BLANCO,relief="solid", bd=1)
     frame_lista_medio.pack(side="left", fill="both", expand=True, padx=(0,10))
-    tk.Label(frame_lista_medio, text="Historial de Entrevistas", bg=BLANCO, fg=GRIS_AZULADO).pack(pady=5)
-    lista_entrevistas=tk.Listbox(frame_lista_medio,bg= BLANCO,fg=GRIS_AZULADO,selectbackground=AZUL_SERENO,selectforeground=AMARILLO,bd = 0)
+    tk.Label(frame_lista_medio, text="Historial de Entrevistas", bg=BLANCO, fg=GRIS_AZULADO,font=("Segoe UI", 13, "bold")).pack(pady=5)
+    lista_entrevistas=tk.Listbox(frame_lista_medio,bg= BLANCO,fg=GRIS_AZULADO,selectbackground=AZUL_SERENO,selectforeground=BLANCO,bd = 0, font=("Segoe UI", 12))
     lista_entrevistas.pack(fill="both", expand=True, padx=5,pady=5)
     lista_entrevistas.bind("<<ListboxSelect>>",detalles_entrevsit)
     ver_list_entrevist(lista_entrevistas)
+
     # LADO DERECHO
     frame_texto= Frame(frame_medio_cuerpo, bg=BLANCO, relief="solid", bd=1)
     frame_texto.pack(side="left", fill="both", expand=True, padx=(10,0))
-    label_entrevista=tk.Label(frame_texto, text="Anotaciones de la entrevista",bg=BLANCO, fg=NEGRO)
+    label_entrevista=tk.Label(frame_texto, text="Anotaciones de la entrevista",bg=BLANCO, fg=GRIS_AZULADO,font=("Segoe UI", 13, "bold"))
     label_entrevista.pack(pady=5)
-    text_entrevista=tk.Text(frame_texto,relief="solid", bd=1, bg=GRIS_NIEBLA)
+    text_entrevista=tk.Text(frame_texto,relief="solid", bd=1, bg=GRIS_NIEBLA, font=("Segoe UI", 12))
     text_entrevista.pack(fill="both", expand=True, padx=5, pady=5)
-    ############################################################################################################################
-    #BOTONES van abajo, frame inferior
+
+    # --- FRAME INFERIOR (Botones) ---
     frame_inferior = Frame(ventana_entrevistas,bg=GRIS_NIEBLA)
     frame_inferior.pack(side="bottom",fill="x", padx=20, pady=20) 
-    #BOTONERA, ACA VOY A PONER COMO UNOS FRAMES "INVISIBLES", EN CRIOLLA UNAS BARRAS QUE LIMITEN Y MUEVAN LOS BOTONES AL CENTRO COMO QUIERO
-    # se come todo el espacio sobrante, empujando los botones (1, 2, 3) al medio.
+    
+    # Peso a los extremos para centrar los botones
     frame_inferior.grid_columnconfigure(0, weight=1)
     frame_inferior.grid_columnconfigure(4, weight=1)
-    #Botones
-    boton_new_entrevista=tk.Button(frame_inferior,text="Nueva entrevista",command=new_entrevista,bg=AZUL_SERENO, fg=BLANCO)
-    boton_new_entrevista.grid(row=0,column=0, padx=10,sticky="e")    
-    boton_eliminar_entrevista=tk.Button(frame_inferior,text="Eliminar entrevista",command=eliminar_entrevista,bg=AZUL_SERENO, fg=BLANCO)
-    boton_eliminar_entrevista.grid(row=0,column=1, padx=10,sticky="e")
-    # ESTE ES EL BOTON PARA ABRIR LA VENTANA DE EDITAR
+    
+    # Botones centrados en las columnas 1, 2 y 3 (sin sticky para que queden al medio)
+    boton_new_entrevista=tk.Button(frame_inferior,text="Nueva entrevista",command=new_entrevista,bg=VERDE_AZULADO, fg=BLANCO,font=("Segoe UI", 12, "bold"), relief="flat", width=15)
+    boton_new_entrevista.grid(row=0,column=1, padx=10)    
+    
+    boton_eliminar_entrevista=tk.Button(frame_inferior,text="Eliminar entrevista",command=eliminar_entrevista,bg=ROJO, fg=BLANCO,font=("Segoe UI", 12, "bold"), relief="flat", width=15)
+    boton_eliminar_entrevista.grid(row=0,column=2, padx=10)
+
     def abrir_editar():
         pantalla_edit_entrevista(ventana_entrevistas)
-    boton_editar=tk.Button(frame_inferior, text="Editar entrevista", bg=AZUL_SERENO,fg=BLANCO,command=abrir_editar)
-    boton_editar.grid(row=0,column=2,padx=10)
+        
+    boton_editar=tk.Button(frame_inferior, text="Editar entrevista", bg=AZUL_SERENO,fg=BLANCO,command=abrir_editar,font=("Segoe UI", 12, "bold"), relief="flat", width=15)
+    boton_editar.grid(row=0,column=3,padx=10)
+
 # ======================================================================================================================================
-#                       VENTANA PARA PERFIL
+# VENTANA PARA PERFIL
 # ======================================================================================================================================
 def abrir_ventana_perfil():
     ventana_perfil = tk.Toplevel(ventana)
     ventana_perfil.title("PERFIL")
     ventana_perfil.geometry("1000x800")
     ventana_perfil.config(bg=GRIS_NIEBLA) 
+
 # ======================================================================================================================================
-# BOTON PRINCIPAL QUE ABRE ENTREVISTAS desde la ventana PRINCIPAL, VALGA LA REGUNDANCIA EL NOMBRE. 
+# BOTONES PRINCIPALES QUE ABREN LAS VENTANAS
 # ======================================================================================================================================
 def abrir_desde_principal():
     abrir_ventana_entrevistas(ventana)
 
-tk.Button(frame_btn, text="Entrevistas",command=abrir_desde_principal,bg=VERDE_AZULADO,fg="white",width=12,activebackground=VERDE_TERMINAL, activeforeground=NEGRO).pack(side="left", padx=5)
-tk.Button(frame_btn,text="Perfil",command=abrir_ventana_perfil,bg=VERDE_AZULADO,fg=BLANCO,width=12,activebackground=VERDE_TERMINAL,activeforeground=NEGRO).pack(side="left", padx=5)
+tk.Button(frame_btn, text="Entrevistas",command=abrir_desde_principal,bg=VERDE_AZULADO,fg="white",width=12,activebackground=VERDE_TERMINAL, activeforeground=NEGRO,font=("Segoe UI", 12)).pack(side="left", padx=5)
+tk.Button(frame_btn,text="Perfil",command=abrir_ventana_perfil,bg=VERDE_AZULADO,fg=BLANCO,width=12,activebackground=VERDE_TERMINAL,activeforeground=NEGRO,font=("Segoe UI", 12)).pack(side="left", padx=5)
 
 ventana.mainloop()
