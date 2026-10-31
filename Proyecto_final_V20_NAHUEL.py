@@ -8,13 +8,11 @@ import string
 import os
 import shutil
 import re
-
 # ================================================================================================
 # VARIABLES GLOBALES
 # ================================================================================================
 indice_edicion = None
 imagenes_cargadas = []
-
 # ================================================================================================
 # BASE DE DATOS 
 # ================================================================================================
@@ -22,14 +20,12 @@ conexion = sqlite3.connect("Trabajo_FINAL_V.db")
 cursor = conexion.cursor()
 cursor.execute("PRAGMA foreign_keys = ON;")
 
-cursor.execute("""
-CREATE TABLE IF NOT EXISTS personas(
+cursor.execute("""CREATE TABLE IF NOT EXISTS personas(
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     nombre TEXT NOT NULL,
     apellido TEXT NOT NULL,
     dni INTEGER UNIQUE NOT NULL,
-    foto BLOB
-)""")
+    foto BLOB)""")
 
 cursor.execute("""CREATE TABLE IF NOT EXISTS imagenes(
 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -65,7 +61,6 @@ GRIS_AZULADO = "#2C3E50"
 GRIS_MEDIO ="#7F8C8D" 
 AZUL_SERENO= "#4A90E2" 
 VERDE_AZULADO="#26A69A" 
-
 # ==================================================================================================================
 # VENTANA PRINCIPAL
 # ===================================================================================================================
@@ -73,7 +68,6 @@ ventana = tk.Tk()
 ventana.title("✚ MEDTRACK")
 ventana.geometry("1000x700") 
 ventana.config(bg=GRIS_NIEBLA)
-
 # =====================================================================================================================================
 # Banner para el titulo
 # =====================================================================================================================================
@@ -82,7 +76,6 @@ banner.pack(side="bottom",fill="x")
 banner.pack_propagate(False)
 banner_label = tk.Label(banner, text="✚ MEDTRACK", bg=AZUL_SERENO, fg=BLANCO, font=("Segoe UI", 24, "bold")) # Letra mas grande
 banner_label.pack(pady=20) 
-
 # =======================================================================================================================================
 # FUNCIONES PRINCIPALES PARA LA VENTANA PRINCIPAL
 # =======================================================================================================================================
@@ -188,7 +181,6 @@ def limpiar():
     entry_nombre.delete(0, tk.END)
     entry_apellido.delete(0, tk.END)
     entry_dni.delete(0, tk.END)
-
 # =====================================================================================================================================
 # FRAME PARA BOTONERA Y BOTONES  PARA LA VENTANA PRINCIPAL
 # ======================================================================================================================================
@@ -198,7 +190,6 @@ tk.Button(frame_btn, text="Agregar",font=("Segoe UI", 12),command=agregar,bg=VER
 tk.Button(frame_btn, text="Eliminar",font=("Segoe UI", 12),command=eliminar, bg=VERDE_AZULADO, fg="white", width=12,activebackground=VERDE_TERMINAL, activeforeground=NEGRO, relief="flat").pack(side="left", padx=5)
 tk.Button(frame_btn, text="Buscar", font=("Segoe UI", 12),command=buscar,bg=VERDE_AZULADO, fg="white",width=12,activebackground=VERDE_TERMINAL, activeforeground=NEGRO, relief="flat").pack(side="left", padx=5)
 tk.Button(frame_btn, text="Limpiar",font=("Segoe UI", 12),command=limpiar, bg=VERDE_AZULADO, fg="white",width=12,activebackground=VERDE_TERMINAL, activeforeground=NEGRO, relief="flat").pack(side="left", padx=5)
-
 # ======================================================================================================================================
 # FORMULARIO PARA LA VENTANA PRINCIPAL
 # ======================================================================================================================================
@@ -357,33 +348,33 @@ def pantalla_edit_entrevista(ventana_padre):
     ventana_editar.title("Editar datos de entrevista")
     ventana_editar.geometry("800x650") # Un poco mas chica para que se vea mejor
     ventana_editar.config(bg=GRIS_NIEBLA)
+    #Frame superior
+    frame_editar_superior = tk.Frame(ventana_editar, bg=AZUL_PETROLEO, relief="solid", bd=1)
+    frame_editar_superior.pack(side = "top" ,padx=20, pady=20, fill="x")
 
-    frame_editar = tk.Frame(ventana_editar, bg=BLANCO, relief="solid", bd=1)
-    frame_editar.pack(padx=20, pady=20, fill="both", expand=True)
+    Label(frame_editar_superior, text="ID de la entrevista a editar:", bg=AZUL_PETROLEO, fg=BLANCO_HUESO,font=("Segoe UI", 12)).grid(row=0,column=0)
+    entry_id = tk.Entry(frame_editar_superior, width=30, relief="solid", bd=1, font=("Segoe UI", 12))
+    entry_id.grid(row=0,column=1)
 
-    label_entrevista=tk.Label(frame_editar, text="Modificar Entrevista", bg=BLANCO, fg=GRIS_AZULADO,font=("Segoe UI", 16, "bold"))
-    label_entrevista.pack(pady=15)
-
-    Label(frame_editar, text="ID de la entrevista a editar:", bg=BLANCO, fg=GRIS_AZULADO,font=("Segoe UI", 12)).pack(anchor="w", padx=20)
-    entry_id = tk.Entry(frame_editar, width=30, relief="solid", bd=1, font=("Segoe UI", 12))
-    entry_id.pack(pady=10, padx=20)
-
-    Label(frame_editar, text="Texto de la entrevista:", bg=BLANCO, fg=GRIS_AZULADO,font=("Segoe UI", 12)).pack(anchor="w", padx=20)
-    text_entrevista = tk.Text(frame_editar, height=5, width=40, relief="solid", bd=1, font=("Segoe UI", 12))
-    text_entrevista.pack(pady=10, padx=20)
-
-    Label(frame_editar, text="DNI:", bg=BLANCO, fg=GRIS_AZULADO,font=("Segoe UI", 12)).pack(anchor="w", padx=20)
-    entry_dni = tk.Entry(frame_editar, width=30, relief="solid", bd=1, font=("Segoe UI", 12))
-    entry_dni.pack(pady=10, padx=20)
+    Label(frame_editar_superior, text="DNI:", bg=AZUL_PETROLEO, fg=BLANCO_HUESO,font=("Segoe UI", 12)).grid(row=1,column=0)
+    entry_dni = tk.Entry(frame_editar_superior, width=30, relief="solid", bd=1, font=("Segoe UI", 12))
+    entry_dni.grid(row=1,column=1)
     
-    Label(frame_editar, text="Nombre del Profesional:", bg=BLANCO, fg=GRIS_AZULADO,font=("Segoe UI", 12)).pack(anchor="w", padx=20)
-    entry_nombre_profecional = tk.Entry(frame_editar, width=30, relief="solid", bd=1, font=("Segoe UI", 12))
-    entry_nombre_profecional.pack(pady=10, padx=20)
+    Label(frame_editar_superior, text="Nombre del Profesional:", bg=AZUL_PETROLEO, fg=BLANCO_HUESO,font=("Segoe UI", 12)).grid(row=2,column=0)
+    entry_nombre_profecional = tk.Entry(frame_editar_superior, width=30, relief="solid", bd=1, font=("Segoe UI", 12))
+    entry_nombre_profecional.grid(row=2,column=1)
+    Label(frame_editar_superior, text="Fecha:", bg=AZUL_PETROLEO, fg=BLANCO_HUESO,font=("Segoe UI", 12)).grid(row=3,column=0)
+    entry_fecha = tk.Entry(frame_editar_superior, width=30, relief="solid", bd=1, font=("Segoe UI", 12))
+    entry_fecha.grid(row=3,column=1)
+    #Frame medio
 
-    Label(frame_editar, text="Fecha:", bg=BLANCO, fg=GRIS_AZULADO,font=("Segoe UI", 12)).pack(anchor="w", padx=20)
-    entry_fecha = tk.Entry(frame_editar, width=30, relief="solid", bd=1, font=("Segoe UI", 12))
-    entry_fecha.pack(pady=10, padx=20)
+    frame_editar_medio =Frame(ventana_editar,bg=GRIS_NIEBLA,relief="solid",bd=1)
+    frame_editar_medio.pack(fill="both",expand=True,padx=20, pady=10)
+    Label(frame_editar_medio, text="Texto de la entrevista:",bg=AZUL_PETROLEO, fg=BLANCO_HUESO,font=("Segoe UI", 12)).pack(fill="x",side="top",padx=20,pady=5)
+    text_entrevista = tk.Text(frame_editar_medio, height=20, width=150, bg=AZUL_SERENO,relief="solid", bd=1, font=("Segoe UI", 12)) 
+    text_entrevista.pack(padx=20, pady=20)
 
+    #########################################################################################################################
     def edit_entrevista():
         p_id=entry_id.get()
         cursor.execute("SELECT * FROM entrevistas")
@@ -405,10 +396,14 @@ def pantalla_edit_entrevista(ventana_padre):
                 break
         ver_list_entrevist(lista_entrevistas) 
         ventana_editar.destroy() # Cierra la ventana al guardar
-
-    boton_edit_entrevista= Button(frame_editar,text="Guardar cambios",font=("Segoe UI", 12, "bold"), command=edit_entrevista, bg=VERDE_AZULADO, fg=BLANCO, relief="flat", width=15)
-    boton_edit_entrevista.pack(pady=20)
-
+    #frame inferior y botones
+    # Peso a los extremos para centrar los botones
+    frame_editar_inferior =Frame(ventana_editar,bg=GRIS_NIEBLA)
+    frame_editar_inferior.pack(fill="x",expand=True)
+    frame_editar_inferior.grid_columnconfigure(0, weight=1)
+    frame_editar_inferior.grid_columnconfigure(4, weight=1)
+    boton_edit_entrevista= Button(frame_editar_inferior,text="Guardar cambios",font=("Segoe UI", 12, "bold"), command=edit_entrevista, bg=VERDE_AZULADO, fg=BLANCO, relief="flat", width=15)
+    boton_edit_entrevista.grid(row=0,column=0)
 # ==================================================================================================================================================================
 # FUNCIONES DE LA VENTANA DE ENTREVISTAS
 # ==================================================================================================================================================================
