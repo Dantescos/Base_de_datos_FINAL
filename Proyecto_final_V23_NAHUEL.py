@@ -563,11 +563,11 @@ def abrir_ventana_perfil():
     entry_f_nacimiento.grid(row=4, column=1, padx=5, pady=3)
 
     # VISOR DE FOTOS 
-    frame_foto = Frame(ventana_perfil, bg=BLANCO, relief="solid", bd=1)
-    frame_foto.pack(side="top", fill="both", expand=True, padx=(0, 15))
-    frame_foto.pack_propagate(False)
-    visor_foto = tk.Label(frame_foto, text="👤\nSin foto", bg=BLANCO, fg=GRIS_MEDIO, font=("Segoe UI", 18))
-    visor_foto.pack(expand=True, fill="both")
+    frame_foto_perfil = Frame(ventana_perfil, bg=BLANCO, relief="solid", bd=1)
+    frame_foto_perfil.pack(side="top", fill="both", expand=True, padx=(0, 15))
+    frame_foto_perfil.pack_propagate(False)
+    visor_foto_perfil = tk.Label(frame_foto_perfil, text="👤\nSin foto", bg=BLANCO, fg=GRIS_MEDIO, font=("Segoe UI", 18))
+    visor_foto_perfil.pack(expand=True, fill="both")
 
     # LISTBOX PARA QUE SE PUEDA VER LAS ORDENES DE LA PERSONA
     frame_lista_perfil = tk.Frame(ventana_perfil, bg=GRIS_AZULADO,relief="solid", bd=1)
@@ -581,7 +581,9 @@ def abrir_ventana_perfil():
     lista_personas = tk.Listbox(frame_lista_perfil, yscrollcommand=scroll.set, font=("Segoe UI", 12), bg=BLANCO, fg=GRIS_AZULADO, selectbackground=AZUL_SERENO, selectforeground=BLANCO)
     lista_personas.pack(side="left", fill="both", expand=True)
     scroll.config(command=lista_personas.yview)
-
+    #Frames para abajo
+    frame_perfil_inferior =Frame(ventana_perfil,bg=GRIS_NIEBLA,relief="solid",bd=1)
+    frame_perfil_inferior.pack(side="bottom", fill="x", pady=10)
 
     #BARRA PARA PDF
 
