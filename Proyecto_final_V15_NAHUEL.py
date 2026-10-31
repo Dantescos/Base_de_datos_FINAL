@@ -462,8 +462,9 @@ def abrir_ventana_entrevistas(ventana_padre):
     label_fecha.grid(row=0, column=4, sticky="e", padx=5)
     entry_fecha=tk.Entry(frame_superior)
     entry_fecha.grid(row=0, column=5, sticky="e", padx=5)
-    ################################################
 
+    ###########################################################################################################################
+    #FRAMES DEL MEDIO
     tk.Label(ventana_entrevistas, text="Historial de Entrevistas", bg=GRIS_NIEBLA, fg=GRIS_AZULADO).pack(pady= 5)
     lista_entrevistas=tk.Listbox(ventana_entrevistas)
     lista_entrevistas.pack()
@@ -473,21 +474,24 @@ def abrir_ventana_entrevistas(ventana_padre):
     label_entrevista.pack()
     text_entrevista=tk.Text(ventana_entrevistas)
     text_entrevista.pack()
-
-
+    ############################################################################################################################
     #BOTONES van abajo, frame inferior
-    boton_new_entrevista=tk.Button(ventana_entrevistas,text="Nueva entrevista",command=new_entrevista,bg=VERDE_AZULADO, fg="white")
-    boton_new_entrevista.pack()
-    
-    boton_eliminar_entrevista=tk.Button(ventana_entrevistas,text="Eliminar entrevista",command=eliminar_entrevista,bg=VERDE_AZULADO, fg="white")
-    boton_eliminar_entrevista.pack()
-
+    frame_inferior = Frame(ventana_entrevistas,bg=GRIS_AZULADO)
+    frame_inferior.pack(side="bottom",fill="x", padx=20, pady=20) 
+    #BOTONERA, ACA VOY A PONER COMO UNOS FRAMES "INVISIBLES", EN CRIOLLA UNAS BARRAS QUE LIMITEN Y MUEVAN LOS BOTONES AL CENTRO COMO QUIERO
+    # se come todo el espacio sobrante, empujando los botones (1, 2, 3) al medio.
+    frame_inferior.grid_columnconfigure(0, weight=1)
+    frame_inferior.grid_columnconfigure(4, weight=1)
+    #Botones
+    boton_new_entrevista=tk.Button(frame_inferior,text="Nueva entrevista",command=new_entrevista,bg=AZUL_PETROLEO, fg=BLANCO)
+    boton_new_entrevista.grid(row=0,column=0, padx=10,sticky="e")    
+    boton_eliminar_entrevista=tk.Button(frame_inferior,text="Eliminar entrevista",command=eliminar_entrevista,bg=AZUL_PETROLEO, fg=BLANCO)
+    boton_eliminar_entrevista.grid(row=0,column=1, padx=10,sticky="e")
     # ESTE ES EL BOTON PARA ABRIR LA VENTANA DE EDITAR
     def abrir_editar():
         pantalla_edit_entrevista(ventana_entrevistas)
-        
-    boton_editar=tk.Button(ventana_entrevistas, text="Editar entrevista", bg=AZUL_SERENO,fg=BLANCO,command=abrir_editar)
-    boton_editar.pack()
+    boton_editar=tk.Button(frame_inferior, text="Editar entrevista", bg=AZUL_PETROLEO,fg=BLANCO,command=abrir_editar)
+    boton_editar.grid(row=0,column=2,padx=10)
 # ======================================================================================================================================
 #                       VENTANA PARA PERFIL
 # ======================================================================================================================================
