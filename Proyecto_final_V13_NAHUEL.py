@@ -459,6 +459,9 @@ def abrir_ventana_entrevistas(ventana_padre):
     global lista_entrevistas, text_entrevista, entry_dni_entrevista, entry_nombre_profecional, entry_fecha # declaro variables globales para que funcione, 
     # no se porque el codigo de Mateo no funcionaba bien aca. Aclaro que no digo que lo hizo mal. Capaz por la complejidad del codigo que revento Python
     # Un label que para que quede bien
+    frame_superior = Frame(bg=GRIS_AZULADO)
+    frame_superior.pack(side="top", fill="x", padx=15, pady=10) 
+
     tk.Label(ventana_entrevistas, text="Historial de Entrevistas", bg=GRIS_NIEBLA, fg=GRIS_AZULADO).pack(pady= 5)
     lista_entrevistas=tk.Listbox(ventana_entrevistas)
     lista_entrevistas.pack()
@@ -495,6 +498,19 @@ def abrir_ventana_entrevistas(ventana_padre):
         
     boton_editar=tk.Button(ventana_entrevistas, text="Editar entrevista", bg=AZUL_SERENO,fg=BLANCO,command=abrir_editar)
     boton_editar.pack()
+# ======================================================================================================================================
+#                       VENTANA PARA PERFIL
+# ======================================================================================================================================
+def abrir_ventana_perfil():
+    ventana_perfil = tk.Toplevel(ventana)
+    ventana_perfil.title("PERFIL")
+    ventana_perfil.geometry("1000x800")
+    ventana_perfil.config(bg=GRIS_NIEBLA) 
+
+
+
+
+
 
 # ======================================================================================================================================
 # BOTON PRINCIPAL QUE ABRE ENTREVISTAS desde la ventana PRINCIPAL, VALGA LA REGUNDANCIA EL NOMBRE. 
@@ -503,6 +519,6 @@ def abrir_desde_principal():
     abrir_ventana_entrevistas(ventana)
 
 tk.Button(frame_btn, text="Entrevistas",command=abrir_desde_principal,bg=VERDE_AZULADO,fg="white",width=12,activebackground=VERDE_TERMINAL, activeforeground=NEGRO).pack(side="left", padx=5)
-
+tk.Button(frame_btn,text="Perfil",command=abrir_ventana_perfil,bg=VERDE_AZULADO,fg=BLANCO,width=12,activebackground=VERDE_TERMINAL,activeforeground=NEGRO).pack(side="left", padx=5)
 
 ventana.mainloop()
