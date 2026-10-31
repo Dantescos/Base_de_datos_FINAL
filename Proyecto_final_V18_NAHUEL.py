@@ -470,35 +470,35 @@ def abrir_ventana_entrevistas(ventana_padre):
     # LADO IZQUIERDO
     frame_lista_medio = Frame(frame_medio_cuerpo, bg=BLANCO,relief="solid", bd=1)
     frame_lista_medio.pack(side="left", fill="both", expand=True, padx=(0,10))
-    tk.Label(frame_lista_medio, text="Historial de Entrevistas", bg=GRIS_NIEBLA, fg=GRIS_AZULADO).pack(pady=5)
-    lista_entrevistas=tk.Listbox(frame_lista_medio,bg= BLANCO_HUESO,fg= AZUL_PETROLEO,selectbackground=VERDE_TERMINAL, selectforeground=NEGRO,bd = 0)
+    tk.Label(frame_lista_medio, text="Historial de Entrevistas", bg=BLANCO, fg=GRIS_AZULADO).pack(pady=5)
+    lista_entrevistas=tk.Listbox(frame_lista_medio,bg= BLANCO,fg=GRIS_AZULADO,selectbackground=AZUL_SERENO,selectforeground=AMARILLO,bd = 0)
     lista_entrevistas.pack(fill="both", expand=True, padx=5,pady=5)
     lista_entrevistas.bind("<<ListboxSelect>>",detalles_entrevsit)
     ver_list_entrevist(lista_entrevistas)
     # LADO DERECHO
     frame_texto= Frame(frame_medio_cuerpo, bg=BLANCO, relief="solid", bd=1)
     frame_texto.pack(side="left", fill="both", expand=True, padx=(10,0))
-    label_entrevista=tk.Label(frame_texto, text="Anotaciones de la entrevista",bg=BLANCO, fg=GRIS_MEDIO)
+    label_entrevista=tk.Label(frame_texto, text="Anotaciones de la entrevista",bg=BLANCO, fg=NEGRO)
     label_entrevista.pack(pady=5)
     text_entrevista=tk.Text(frame_texto,relief="solid", bd=1, bg=GRIS_NIEBLA)
     text_entrevista.pack(fill="both", expand=True, padx=5, pady=5)
     ############################################################################################################################
     #BOTONES van abajo, frame inferior
-    frame_inferior = Frame(ventana_entrevistas,bg=GRIS_AZULADO)
+    frame_inferior = Frame(ventana_entrevistas,bg=GRIS_NIEBLA)
     frame_inferior.pack(side="bottom",fill="x", padx=20, pady=20) 
     #BOTONERA, ACA VOY A PONER COMO UNOS FRAMES "INVISIBLES", EN CRIOLLA UNAS BARRAS QUE LIMITEN Y MUEVAN LOS BOTONES AL CENTRO COMO QUIERO
     # se come todo el espacio sobrante, empujando los botones (1, 2, 3) al medio.
     frame_inferior.grid_columnconfigure(0, weight=1)
     frame_inferior.grid_columnconfigure(4, weight=1)
     #Botones
-    boton_new_entrevista=tk.Button(frame_inferior,text="Nueva entrevista",command=new_entrevista,bg=AZUL_PETROLEO, fg=BLANCO)
+    boton_new_entrevista=tk.Button(frame_inferior,text="Nueva entrevista",command=new_entrevista,bg=AZUL_SERENO, fg=BLANCO)
     boton_new_entrevista.grid(row=0,column=0, padx=10,sticky="e")    
-    boton_eliminar_entrevista=tk.Button(frame_inferior,text="Eliminar entrevista",command=eliminar_entrevista,bg=AZUL_PETROLEO, fg=BLANCO)
+    boton_eliminar_entrevista=tk.Button(frame_inferior,text="Eliminar entrevista",command=eliminar_entrevista,bg=AZUL_SERENO, fg=BLANCO)
     boton_eliminar_entrevista.grid(row=0,column=1, padx=10,sticky="e")
     # ESTE ES EL BOTON PARA ABRIR LA VENTANA DE EDITAR
     def abrir_editar():
         pantalla_edit_entrevista(ventana_entrevistas)
-    boton_editar=tk.Button(frame_inferior, text="Editar entrevista", bg=AZUL_PETROLEO,fg=BLANCO,command=abrir_editar)
+    boton_editar=tk.Button(frame_inferior, text="Editar entrevista", bg=AZUL_SERENO,fg=BLANCO,command=abrir_editar)
     boton_editar.grid(row=0,column=2,padx=10)
 # ======================================================================================================================================
 #                       VENTANA PARA PERFIL
