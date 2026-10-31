@@ -367,12 +367,11 @@ def pantalla_edit_entrevista(ventana_padre):
     entry_fecha = tk.Entry(frame_editar_superior, width=30, relief="solid", bd=1, font=("Segoe UI", 12))
     entry_fecha.grid(row=3,column=1)
     #Frame medio
-
     frame_editar_medio =Frame(ventana_editar,bg=GRIS_NIEBLA,relief="solid",bd=1)
     frame_editar_medio.pack(fill="both",expand=True,padx=20, pady=10)
     Label(frame_editar_medio, text="Texto de la entrevista:",bg=AZUL_PETROLEO, fg=BLANCO_HUESO,font=("Segoe UI", 12)).pack(fill="x",side="top",padx=20,pady=5)
-    text_entrevista = tk.Text(frame_editar_medio, height=20, width=150, bg=AZUL_SERENO,relief="solid", bd=1, font=("Segoe UI", 12)) 
-    text_entrevista.pack(padx=20, pady=20)
+    text_entrevista = tk.Text(frame_editar_medio, bg=AZUL_SERENO,relief="solid", bd=1, font=("Segoe UI", 12)) 
+    text_entrevista.pack(fill="both",expand=True,padx=15, pady=15)
 
     #########################################################################################################################
     def edit_entrevista():
