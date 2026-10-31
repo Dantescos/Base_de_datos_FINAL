@@ -73,7 +73,7 @@ ventana.geometry("1000x700")
 ventana.config(bg=GRIS_NIEBLA)
 
 # =====================================================================================================================================
-# Banner para el titulo
+#                                                       Banner para el titulo
 # =====================================================================================================================================
 banner = tk.Frame(ventana,bg=AZUL_SERENO, height=70)
 banner.pack(side="bottom",fill="x")
@@ -81,7 +81,7 @@ banner.pack_propagate(False)
 banner_label = tk.Label(banner, text="✚ MEDTRACK", bg=AZUL_SERENO, fg=BLANCO, font=("Arial", 20, "bold"))
 banner_label.pack(pady=18) 
 # =======================================================================================================================================
-# FUNCIONES PRINCIPALES PARA LA VENTANA PRINCIPAL
+#                                            FUNCIONES PRINCIPALES PARA LA VENTANA PRINCIPAL
 # =======================================================================================================================================
 def refrescar_lista():
     lista_personas.delete(0, tk.END)
@@ -465,15 +465,23 @@ def abrir_ventana_entrevistas(ventana_padre):
 
     ###########################################################################################################################
     #FRAMES DEL MEDIO
-    tk.Label(ventana_entrevistas, text="Historial de Entrevistas", bg=GRIS_NIEBLA, fg=GRIS_AZULADO).pack(pady= 5)
-    lista_entrevistas=tk.Listbox(ventana_entrevistas)
-    lista_entrevistas.pack()
+    frame_medio_cuerpo = tk.Frame(ventana_entrevistas,bg =GRIS_NIEBLA)
+    frame_medio_cuerpo.pack(fill="both", expand=True, padx=15, pady=10) # esto va bien
+    # LADO IZQUIERDO
+    frame_lista_medio = Frame(frame_medio_cuerpo, bg=BLANCO,relief="solid", bd=1)
+    frame_lista_medio.pack(side="left", fill="both", expand=True, padx=(0,10))
+    tk.Label(frame_lista_medio, text="Historial de Entrevistas", bg=GRIS_NIEBLA, fg=GRIS_AZULADO).pack(pady=5)
+    lista_entrevistas=tk.Listbox(frame_lista_medio,bg= BLANCO_HUESO,fg= AZUL_PETROLEO,selectbackground=VERDE_TERMINAL, selectforeground=NEGRO,bd = 0)
+    lista_entrevistas.pack(fill="both", expand=True, padx=5,pady=5)
     lista_entrevistas.bind("<<ListboxSelect>>",detalles_entrevsit)
     ver_list_entrevist(lista_entrevistas)
-    label_entrevista=tk.Label(ventana_entrevistas, text="Entrevista")
-    label_entrevista.pack()
-    text_entrevista=tk.Text(ventana_entrevistas)
-    text_entrevista.pack()
+    # LADO DERECHO
+    frame_texto= Frame(frame_medio_cuerpo, bg=BLANCO, relief="solid", bd=1)
+    frame_texto.pack(side="left", fill="both", expand=True, padx=(10,0))
+    label_entrevista=tk.Label(frame_texto, text="Anotaciones de la entrevista",bg=BLANCO, fg=GRIS_MEDIO)
+    label_entrevista.pack(pady=5)
+    text_entrevista=tk.Text(frame_texto,relief="solid", bd=1, bg=GRIS_NIEBLA)
+    text_entrevista.pack(fill="both", expand=True, padx=5, pady=5)
     ############################################################################################################################
     #BOTONES van abajo, frame inferior
     frame_inferior = Frame(ventana_entrevistas,bg=GRIS_AZULADO)
@@ -500,12 +508,6 @@ def abrir_ventana_perfil():
     ventana_perfil.title("PERFIL")
     ventana_perfil.geometry("1000x800")
     ventana_perfil.config(bg=GRIS_NIEBLA) 
-
-
-
-
-
-
 # ======================================================================================================================================
 # BOTON PRINCIPAL QUE ABRE ENTREVISTAS desde la ventana PRINCIPAL, VALGA LA REGUNDANCIA EL NOMBRE. 
 # ======================================================================================================================================
