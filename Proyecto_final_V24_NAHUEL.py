@@ -531,66 +531,69 @@ def abrir_ventana_perfil():
     ventana_perfil.geometry("1000x800")
     ventana_perfil.config(bg=GRIS_NIEBLA)
 
-    frame_perfil = tk.Frame(ventana_perfil, bg=GRIS_NIEBLA)
-    frame_perfil.pack(side="left", fill="y", padx=15, pady=10) 
+    # Frame izquierda. fill="y" hace que ocupe todo el alto.
+    frame_izquierdo = tk.Frame(ventana_perfil, bg=AZUL_PETROLEO)
+    frame_izquierdo.pack(side="left", fill="y", padx=15, pady=15)
     # ======================================================================================================================================
     #                                                      FORMULARIO PARA PERFIL
     # ======================================================================================================================================
-
-    label_nombre = tk.Label(frame_perfil, text=" Nombre:", bg=GRIS_NIEBLA,fg=GRIS_AZULADO,font=("Segoe UI", 12))
+    label_nombre = Label(frame_izquierdo, text=" Nombre:", bg=GRIS_NIEBLA,fg=GRIS_AZULADO,font=("Segoe UI", 12))
     label_nombre.grid(row=0, column=0, sticky="e", padx=5)
-    entry_nombre = tk.Entry(frame_perfil, width=22, font=("Segoe UI", 12)) # Letra mas grande en el entry
+    entry_nombre = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12)) # Letra mas grande en el entry asi se ve
     entry_nombre.grid(row=0, column=1, padx=5, pady=3)
 
-    label_apellido = tk.Label(frame_perfil, text=" Apellido:", bg=GRIS_NIEBLA,fg =GRIS_AZULADO,font=("Segoe UI", 12))
+    label_apellido = Label(frame_izquierdo, text=" Apellido:", bg=GRIS_NIEBLA,fg =GRIS_AZULADO,font=("Segoe UI", 12))
     label_apellido.grid(row=1, column=0, sticky="e", padx=5)
-    entry_apellido = tk.Entry(frame_perfil, width=22, font=("Segoe UI", 12))
+    entry_apellido = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
     entry_apellido.grid(row=1, column=1, padx=5, pady=3)
 
-    label_dni = tk.Label(frame_perfil, text=" DNI:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO,font=("Segoe UI", 12))
+    label_dni = Label(frame_izquierdo, text=" DNI:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO,font=("Segoe UI", 12))
     label_dni.grid(row=2, column=0, sticky="e", padx=5)
-    entry_dni = tk.Entry(frame_perfil, width=15, font=("Segoe UI", 12))
+    entry_dni = tk.Entry(frame_izquierdo, width=15, font=("Segoe UI", 12))
     entry_dni.grid(row=2, column=1, padx=5, pady=3)
 
-    label_direccion = tk.Label(frame_perfil, text=" Direccion:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO,font=("Segoe UI", 12))
+    label_direccion = Label(frame_izquierdo, text=" Direccion:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO,font=("Segoe UI", 12))
     label_direccion.grid(row=3, column=0, sticky="e", padx=5)
-    entry_direccion = tk.Entry(frame_perfil, width=15, font=("Segoe UI", 12))
+    entry_direccion = tk.Entry(frame_izquierdo, width=15, font=("Segoe UI", 12))
     entry_direccion.grid(row=3, column=1, padx=5, pady=3)
 
-    label_f_nacimiento = tk.Label(frame_perfil, text=" Fecha de nacimiento:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO,font=("Segoe UI", 12))
+    label_f_nacimiento = tk.Label(frame_izquierdo, text=" Fecha de nacimiento:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO,font=("Segoe UI", 12))
     label_f_nacimiento.grid(row=4, column=0, sticky="e", padx=5)
-    entry_f_nacimiento = tk.Entry(frame_perfil, width=15, font=("Segoe UI", 12))
+    entry_f_nacimiento = tk.Entry(frame_izquierdo, width=15, font=("Segoe UI", 12))
     entry_f_nacimiento.grid(row=4, column=1, padx=5, pady=3)
 
-    # VISOR DE FOTOS 
-    frame_foto_perfil = Frame(ventana_perfil, bg=BLANCO, relief="solid", bd=1)
-    frame_foto_perfil.pack(side="top", fill="both", expand=True, padx=(0, 15))
-    frame_foto_perfil.pack_propagate(False)
-    visor_foto_perfil = tk.Label(frame_foto_perfil, text="👤\nSin foto", bg=BLANCO, fg=GRIS_MEDIO, font=("Segoe UI", 18))
-    visor_foto_perfil.pack(expand=True, fill="both")
-
-    # LISTBOX PARA QUE SE PUEDA VER LAS ORDENES DE LA PERSONA
-    frame_lista_perfil = tk.Frame(ventana_perfil, bg=GRIS_AZULADO,relief="solid", bd=1)
-    frame_lista_perfil.pack(side="bottom", fill="both", expand=True, padx=10)
-    titulo_lista_perfil = tk.Label(frame_lista_perfil, text="Ordenes registradas", bg=GRIS_AZULADO, fg=BLANCO, font=("Segoe UI", 15, "bold"))
-    titulo_lista_perfil.pack(anchor="s", padx=5, pady=5)
-
-    scroll_perfil = tk.Scrollbar(frame_lista_perfil, orient="vertical")
-    scroll_perfil.pack(side="right", fill="y")
-
-    lista_personas = tk.Listbox(frame_lista_perfil, yscrollcommand=scroll.set, font=("Segoe UI", 12), bg=BLANCO, fg=GRIS_AZULADO, selectbackground=AZUL_SERENO, selectforeground=BLANCO)
-    lista_personas.pack(side="left", fill="both", expand=True)
-    scroll.config(command=lista_personas.yview)
-    #Frames para abajo
-    frame_perfil_inferior =Frame(ventana_perfil,bg=GRIS_NIEBLA,relief="solid",bd=1)
-    frame_perfil_inferior.pack(side="bottom", fill="x", pady=10)
-
-    #BARRA PARA PDF
-
-
-
+    label_pdf_perfil = tk.Label(frame_izquierdo, text=" Cargar pdfs aqui", bg=GRIS_NIEBLA, fg=GRIS_AZULADO,font=("Segoe UI", 12))
+    label_pdf_perfil.grid(row=10, column=1, sticky="e", padx=10)
+    entry_pdf_perfil = tk.Entry(frame_izquierdo, font=("Segoe UI", 12))
+    entry_pdf_perfil.grid(row=11, column=1,sticky="e", padx=10, pady=3)
+    
     #BARRA DE ESTADISTICA
+    label_barra_progreso_perfil = tk.Label(frame_izquierdo, text=" Barra de progreso", bg=GRIS_NIEBLA, fg=GRIS_AZULADO,font=("Segoe UI", 12))
+    label_barra_progreso_perfil.grid(row=12, column=1, sticky="e", padx=10)
+    entry_barra_progreso_perfil = tk.Entry(frame_izquierdo, font=("Segoe UI", 12))
+    entry_barra_progreso_perfil.grid(row=13, column=1,sticky="e", padx=10, pady=3)
 
+    # ============================================================================ Frame derecha ==========================================================================================
+    # Lo empaquetamos a la derecha. fill="y" hace que ocupe todo el alto.
+    frame_derecha = tk.Frame(ventana_perfil, bg=ROJO)
+    frame_derecha.pack(side="right", fill="both",expand=True, padx=(0,15), pady=15)
+
+    # VISOR DE FOTOS 
+    frame_foto_perfil = Frame(frame_derecha, bg=BLANCO, relief="solid", bd=1, height=350)
+    frame_foto_perfil.pack(side="top", fill="both",expand=True,pady=(0,10))
+    frame_foto_perfil.pack_propagate(False)
+    visor_foto_perfil = tk.Label(frame_foto_perfil, text="👤\nSin foto", bg=BLANCO, fg=GRIS_MEDIO, font=("Segoe UI", 20))
+    visor_foto_perfil.pack(side= "right",fill= "both",expand=True,padx=10,pady=10)
+    # LISTBOX PARA QUE SE PUEDA VER LAS ORDENES DE LA PERSONA
+    frame_lista = Frame(frame_derecha,bg=GRIS_AZULADO,relief="solid", bd=1) # esto lo hice para separar asi no se juntan, creo que se podria con grid, creo
+    frame_lista.pack(fill="both",expand=True,side="bottom",pady=(0,20))
+    titulo_lista_perfil = Label(frame_lista, text="Ordenes registradas", bg=GRIS_AZULADO, fg=BLANCO, font=("Segoe UI", 15, "bold"))
+    titulo_lista_perfil.pack(side="top", padx=10, pady=10)
+    lista_personas = Listbox(frame_lista, yscrollcommand=scroll.set, font=("Segoe UI", 12), bg=BLANCO, fg=GRIS_AZULADO, selectbackground=AZUL_SERENO, selectforeground=BLANCO)
+    lista_personas.pack(side="left", fill="both", expand=True)
+    scroll_perfil = tk.Scrollbar(frame_lista, orient="vertical")
+    scroll_perfil.pack(side="right", fill="y")
+    scroll.config(command=lista_personas.yview)
 
 # ======================================================================================================================================
 # BOTONES PRINCIPALES QUE ABREN LAS VENTANAS
