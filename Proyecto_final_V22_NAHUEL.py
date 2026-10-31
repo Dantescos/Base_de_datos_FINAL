@@ -523,13 +523,72 @@ def abrir_ventana_entrevistas(ventana_padre):
     boton_editar.grid(row=0,column=3,padx=10)
 
 # ======================================================================================================================================
-# VENTANA PARA PERFIL
+#                                                       VENTANA PARA PERFIL
 # ======================================================================================================================================
 def abrir_ventana_perfil():
     ventana_perfil = tk.Toplevel(ventana)
     ventana_perfil.title("PERFIL")
     ventana_perfil.geometry("1000x800")
-    ventana_perfil.config(bg=GRIS_NIEBLA) 
+    ventana_perfil.config(bg=GRIS_NIEBLA)
+
+    frame_perfil = tk.Frame(ventana_perfil, bg=GRIS_NIEBLA)
+    frame_perfil.pack(side="left", fill="y", padx=15, pady=10) 
+    # ======================================================================================================================================
+    #                                                      FORMULARIO PARA PERFIL
+    # ======================================================================================================================================
+
+    label_nombre = tk.Label(frame_perfil, text=" Nombre:", bg=GRIS_NIEBLA,fg=GRIS_AZULADO,font=("Segoe UI", 12))
+    label_nombre.grid(row=0, column=0, sticky="e", padx=5)
+    entry_nombre = tk.Entry(frame_perfil, width=22, font=("Segoe UI", 12)) # Letra mas grande en el entry
+    entry_nombre.grid(row=0, column=1, padx=5, pady=3)
+
+    label_apellido = tk.Label(frame_perfil, text=" Apellido:", bg=GRIS_NIEBLA,fg =GRIS_AZULADO,font=("Segoe UI", 12))
+    label_apellido.grid(row=1, column=0, sticky="e", padx=5)
+    entry_apellido = tk.Entry(frame_perfil, width=22, font=("Segoe UI", 12))
+    entry_apellido.grid(row=1, column=1, padx=5, pady=3)
+
+    label_dni = tk.Label(frame_perfil, text=" DNI:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO,font=("Segoe UI", 12))
+    label_dni.grid(row=2, column=0, sticky="e", padx=5)
+    entry_dni = tk.Entry(frame_perfil, width=15, font=("Segoe UI", 12))
+    entry_dni.grid(row=2, column=1, padx=5, pady=3)
+
+    label_direccion = tk.Label(frame_perfil, text=" Direccion:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO,font=("Segoe UI", 12))
+    label_direccion.grid(row=3, column=0, sticky="e", padx=5)
+    entry_direccion = tk.Entry(frame_perfil, width=15, font=("Segoe UI", 12))
+    entry_direccion.grid(row=3, column=1, padx=5, pady=3)
+
+    label_f_nacimiento = tk.Label(frame_perfil, text=" Fecha de nacimiento:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO,font=("Segoe UI", 12))
+    label_f_nacimiento.grid(row=4, column=0, sticky="e", padx=5)
+    entry_f_nacimiento = tk.Entry(frame_perfil, width=15, font=("Segoe UI", 12))
+    entry_f_nacimiento.grid(row=4, column=1, padx=5, pady=3)
+
+    # VISOR DE FOTOS 
+    frame_foto = Frame(ventana_perfil, bg=BLANCO, relief="solid", bd=1)
+    frame_foto.pack(side="top", fill="both", expand=True, padx=(0, 15))
+    frame_foto.pack_propagate(False)
+    visor_foto = tk.Label(frame_foto, text="👤\nSin foto", bg=BLANCO, fg=GRIS_MEDIO, font=("Segoe UI", 18))
+    visor_foto.pack(expand=True, fill="both")
+
+    # LISTBOX PARA QUE SE PUEDA VER LAS ORDENES DE LA PERSONA
+    frame_lista_perfil = tk.Frame(ventana_perfil, bg=GRIS_AZULADO,relief="solid", bd=1)
+    frame_lista_perfil.pack(side="bottom", fill="both", expand=True, padx=10)
+    titulo_lista_perfil = tk.Label(frame_lista_perfil, text="Ordenes registradas", bg=GRIS_AZULADO, fg=BLANCO, font=("Segoe UI", 15, "bold"))
+    titulo_lista_perfil.pack(anchor="s", padx=5, pady=5)
+
+    scroll_perfil = tk.Scrollbar(frame_lista_perfil, orient="vertical")
+    scroll_perfil.pack(side="right", fill="y")
+
+    lista_personas = tk.Listbox(frame_lista_perfil, yscrollcommand=scroll.set, font=("Segoe UI", 12), bg=BLANCO, fg=GRIS_AZULADO, selectbackground=AZUL_SERENO, selectforeground=BLANCO)
+    lista_personas.pack(side="left", fill="both", expand=True)
+    scroll.config(command=lista_personas.yview)
+
+
+    #BARRA PARA PDF
+
+
+
+    #BARRA DE ESTADISTICA
+
 
 # ======================================================================================================================================
 # BOTONES PRINCIPALES QUE ABREN LAS VENTANAS
@@ -539,5 +598,6 @@ def abrir_desde_principal():
 
 tk.Button(frame_btn, text="Entrevistas",command=abrir_desde_principal,bg=VERDE_AZULADO,fg="white",width=12,activebackground=VERDE_TERMINAL, activeforeground=NEGRO,font=("Segoe UI", 12)).pack(side="left", padx=5)
 tk.Button(frame_btn,text="Perfil",command=abrir_ventana_perfil,bg=VERDE_AZULADO,fg=BLANCO,width=12,activebackground=VERDE_TERMINAL,activeforeground=NEGRO,font=("Segoe UI", 12)).pack(side="left", padx=5)
+
 
 ventana.mainloop()
