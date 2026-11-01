@@ -597,28 +597,92 @@ def abrir_ventana_perfil():
 def abrir_ventana_editor_fotos():
     ventana_editor_fotos = tk.Toplevel(ventana)
     ventana_editor_fotos.title("Editor de fotos")
-    ventana_editor_fotos.geometry("500x400")
-    #FRAME SUPERIOR
-    frame_editor_fotos_superior = Frame(ventana_editor_fotos,bg = GRIS_NIEBLA)
-    frame_editor_fotos_superior.pack(side="top",fill="both",expand=True)
-    visor_foto_perfil = tk.Label(frame_editor_fotos_superior, text="👤\nSin foto", bg=BLANCO, fg=NEGRO,relief="solid", bd=1, font=("Segoe UI", 20))
-    visor_foto_perfil.pack(side= "top",fill= "both",expand=True,padx=10,pady=10)
-    #FRAME INFERIOR
-    frame_editor_fotos_inferior = Frame(ventana_editor_fotos,bg=GRIS_NIEBLA)
-    frame_editor_fotos_inferior.pack(side="bottom",fill="both",expand=True)
-    # Peso a los extremos para centrar los botones
+    ventana_editor_fotos.geometry("500x600")
+    ventana_editor_fotos.config(bg=GRIS_NIEBLA)
+
+    #============================================
+    # FRAME SUPERIOR
+    # ==========================================
+    frame_editor_fotos_superior = Frame(ventana_editor_fotos, bg=GRIS_NIEBLA)
+    frame_editor_fotos_superior.pack(side="top", fill="both", expand=True)
+
+    visor_foto_perfil = tk.Label(
+        frame_editor_fotos_superior,
+        text="👤\nSin foto",
+        bg=BLANCO, fg=NEGRO, relief="solid", bd=1,
+        font=("Segoe UI", 20)
+    )
+    visor_foto_perfil.pack(fill="both", expand=True, padx=10, pady=10)
+    # ==========================================
+    #  FRAME MEDIO
+    # ==========================================
+
+    frame_lista_imgs = Frame(ventana_editor_fotos, bg=GRIS_NIEBLA)
+    frame_lista_imgs.pack(fill="both", expand=True, padx=10, pady=5)
+
+    tk.Label(frame_lista_imgs, text="Imágenes cargadas:",font=("Segoe UI", 11, "bold"), bg=VERDE_AZULADO, fg="white").pack(fill="x")
+
+    lista_imagenes = tk.Listbox(frame_lista_imgs, height=6, font=("Segoe UI", 10))
+    lista_imagenes.pack(fill="both", expand=True, pady=5)
+    # ==========================================
+    #  FRAME INFERIOR
+    # ===================================================================
+    frame_editor_fotos_inferior = Frame(ventana_editor_fotos, bg=GRIS_NIEBLA)
+    frame_editor_fotos_inferior.pack(side="bottom", fill="x", pady=10)
+
+    # Columnas 0 y 3 con peso, empujan a los botones (cols 1 y 2) al centro
     frame_editor_fotos_inferior.grid_columnconfigure(0, weight=1)
-    frame_editor_fotos_inferior.grid_columnconfigure(4, weight=1)
+    frame_editor_fotos_inferior.grid_columnconfigure(3, weight=1)
 
-    # =================================================================================================================================================================
-    # LOGICA DE FUNCIONES
-    # =================================================================================================================================================================
+    # ---------- FUNCIONES ----------
+    def mostrar_previa(ruta):
+        try:
+            imagen = Image.open(ruta).resize((180, 180))
+            imagen_tk = ImageTk.PhotoImage(imagen)
+            visor_foto_perfil.config(image=imagen_tk, text="")  
+            visor_foto_perfil.image = imagen_tk
+        except Exception as e:
+            print("Error al mostrar la imagen:", e)
 
-    # =================================================================================================================================================================
-    # Botones
-    # =================================================================================================================================================================
-    tk.Button(frame_editor_fotos_inferior, text="Añadir fotos",bg=VERDE_AZULADO,fg="white",width=12,activebackground=VERDE_TERMINAL, activeforeground=NEGRO,font=("Segoe UI", 12)).grid(row=0,column=1, padx=10)      
-    tk.Button(frame_editor_fotos_inferior, text="Eliminar fotos",bg=VERDE_AZULADO,fg="white",width=12,activebackground=VERDE_TERMINAL, activeforeground=NEGRO,font=("Segoe UI", 12)).grid(row=0,column=2, padx=10)    
+    def agregar_imagen():
+        ruta = filedialog.askopenfilename(
+            title="Seleccionar imagen",
+            filetypes=[("Imágenes", "*.png *.jpg *.jpeg *.bmp")]
+        )
+        if not ruta:
+            return
+        imagenes_cargadas.append(ruta)
+        lista_imagenes.insert(tk.END, os.path.basename(ruta))
+        mostrar_previa(ruta)
+
+    def eliminar_imagen():
+        try:
+            indice = lista_imagenes.curselection()[0]
+        except IndexError:
+            return
+        ruta = imagenes_cargadas[indice]
+        if os.path.exists(ruta):
+            os.remove(ruta)
+        del imagenes_cargadas[indice]
+        lista_imagenes.delete(indice)
+        visor_foto_perfil.config(image="", text="👤\nSin foto")
+        visor_foto_perfil.image = None
+
+    # ---------- BOTONES ----------
+    tk.Button(frame_editor_fotos_inferior, text="Añadir fotos",
+        command=agregar_imagen,                   
+        bg=VERDE_AZULADO, fg="white", width=12,
+        activebackground=VERDE_TERMINAL, activeforeground=NEGRO,
+        font=("Segoe UI", 12)
+    ).grid(row=0, column=1, padx=10)
+
+    tk.Button(
+        frame_editor_fotos_inferior, text="Eliminar fotos",
+        command=eliminar_imagen,               
+        bg=VERDE_AZULADO, fg="white", width=12,
+        activebackground=VERDE_TERMINAL, activeforeground=NEGRO,
+        font=("Segoe UI", 12)
+    ).grid(row=0, column=2, padx=10)
 
 # ======================================================================================================================================
 # BOTONES PRINCIPALES QUE ABREN LAS VENTANAS
