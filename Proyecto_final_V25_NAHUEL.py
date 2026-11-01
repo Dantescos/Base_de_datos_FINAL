@@ -1,5 +1,4 @@
-# LIBRERIAS A IMPORTAR/NECESITAMOS
-import sqlite3
+import sqlite3 # type: ignore
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk,Label, Button, Entry, Frame, Toplevel,Listbox,font
 from io import BytesIO
@@ -430,7 +429,7 @@ def detalles_entrevsit(event=None):
         dato=lista_entrevistas.get(seleccion)
         datos=dato.split("//")
 
-        ventana_detalle=tk.Toplevel(ventana)
+        ventana_detalle=tk.Toplevel()
         ventana_detalle.title("Detalle de entrevista")
         ventana_detalle.geometry("500x400")
         ventana_detalle.config(bg=GRIS_NIEBLA)
@@ -516,6 +515,7 @@ def abrir_ventana_entrevistas(ventana_padre):
     boton_eliminar_entrevista=tk.Button(frame_inferior,text="Eliminar entrevista",command=eliminar_entrevista,bg=ROJO, fg=BLANCO,font=("Segoe UI", 12, "bold"), relief="flat", width=15)
     boton_eliminar_entrevista.grid(row=0,column=2, padx=10)
 
+
     def abrir_editar():
         pantalla_edit_entrevista(ventana_entrevistas)
         
@@ -530,7 +530,6 @@ def abrir_ventana_perfil():
     ventana_perfil.title("PERFIL")
     ventana_perfil.geometry("1000x800")
     ventana_perfil.config(bg=GRIS_NIEBLA)
-
     # Frame izquierda. fill="y" hace que ocupe todo el alto.
     frame_izquierdo = tk.Frame(ventana_perfil, bg=AZUL_PETROLEO)
     frame_izquierdo.pack(side="left", fill="y", padx=15, pady=15)
@@ -577,7 +576,6 @@ def abrir_ventana_perfil():
     # Lo empaquetamos a la derecha. fill="y" hace que ocupe todo el alto.
     frame_derecha = tk.Frame(ventana_perfil, bg=ROJO)
     frame_derecha.pack(side="right", fill="both",expand=True, padx=(0,15), pady=15)
-
     # VISOR DE FOTOS 
     frame_foto_perfil = Frame(frame_derecha, bg=BLANCO, relief="solid", bd=1, height=350)
     frame_foto_perfil.pack(side="top", fill="both",expand=True,pady=(0,10))
@@ -594,6 +592,33 @@ def abrir_ventana_perfil():
     scroll_perfil = tk.Scrollbar(frame_lista, orient="vertical")
     scroll_perfil.pack(side="right", fill="y")
     scroll.config(command=lista_personas.yview)
+    # =================================================================================================================================================================
+
+def abrir_ventana_editor_fotos():
+    ventana_editor_fotos = tk.Toplevel(ventana)
+    ventana_editor_fotos.title("Editor de fotos")
+    ventana_editor_fotos.geometry("500x400")
+    #FRAME SUPERIOR
+    frame_editor_fotos_superior = Frame(ventana_editor_fotos,bg = GRIS_NIEBLA)
+    frame_editor_fotos_superior.pack(side="top",fill="both",expand=True)
+    visor_foto_perfil = tk.Label(frame_editor_fotos_superior, text="👤\nSin foto", bg=BLANCO, fg=NEGRO,relief="solid", bd=1, font=("Segoe UI", 20))
+    visor_foto_perfil.pack(side= "top",fill= "both",expand=True,padx=10,pady=10)
+    #FRAME INFERIOR
+    frame_editor_fotos_inferior = Frame(ventana_editor_fotos,bg=GRIS_NIEBLA)
+    frame_editor_fotos_inferior.pack(side="bottom",fill="both",expand=True)
+    # Peso a los extremos para centrar los botones
+    frame_editor_fotos_inferior.grid_columnconfigure(0, weight=1)
+    frame_editor_fotos_inferior.grid_columnconfigure(4, weight=1)
+
+    # =================================================================================================================================================================
+    # LOGICA DE FUNCIONES
+    # =================================================================================================================================================================
+
+    # =================================================================================================================================================================
+    # Botones
+    # =================================================================================================================================================================
+    tk.Button(frame_editor_fotos_inferior, text="Añadir fotos",bg=VERDE_AZULADO,fg="white",width=12,activebackground=VERDE_TERMINAL, activeforeground=NEGRO,font=("Segoe UI", 12)).grid(row=0,column=1, padx=10)      
+    tk.Button(frame_editor_fotos_inferior, text="Eliminar fotos",bg=VERDE_AZULADO,fg="white",width=12,activebackground=VERDE_TERMINAL, activeforeground=NEGRO,font=("Segoe UI", 12)).grid(row=0,column=2, padx=10)    
 
 # ======================================================================================================================================
 # BOTONES PRINCIPALES QUE ABREN LAS VENTANAS
@@ -603,6 +628,7 @@ def abrir_desde_principal():
 
 tk.Button(frame_btn, text="Entrevistas",command=abrir_desde_principal,bg=VERDE_AZULADO,fg="white",width=12,activebackground=VERDE_TERMINAL, activeforeground=NEGRO,font=("Segoe UI", 12)).pack(side="left", padx=5)
 tk.Button(frame_btn,text="Perfil",command=abrir_ventana_perfil,bg=VERDE_AZULADO,fg=BLANCO,width=12,activebackground=VERDE_TERMINAL,activeforeground=NEGRO,font=("Segoe UI", 12)).pack(side="left", padx=5)
+tk.Button(frame_btn,text="Editor de fotos",command=abrir_ventana_editor_fotos,bg=VERDE_AZULADO,fg=BLANCO,width=12,activebackground=VERDE_TERMINAL,activeforeground=NEGRO,font=("Segoe UI", 12)).pack(side="left", padx=5)
 
 
 ventana.mainloop()
