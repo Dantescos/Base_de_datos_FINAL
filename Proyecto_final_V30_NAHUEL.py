@@ -631,6 +631,7 @@ def abrir_ventana_perfil():
     ventana_perfil.title("PERFIL")
     ventana_perfil.geometry("1000x800")
     ventana_perfil.config(bg=GRIS_NIEBLA)
+    ventana_perfil.resizable(False, False)
 
     frame_izquierdo = tk.Frame(ventana_perfil, bg=AZUL_PETROLEO)
     frame_izquierdo.pack(side="left", fill="y", padx=15, pady=15)
@@ -726,6 +727,7 @@ def abrir_ventana_editor_fotos():
     ventana_editor_fotos.title("Editor de fotos")
     ventana_editor_fotos.geometry("500x600")
     ventana_editor_fotos.config(bg=GRIS_NIEBLA)
+    ventana_perfil.resizable(False, False)
 
     frame_editor_fotos_superior = Frame(ventana_editor_fotos, bg=GRIS_NIEBLA)
     frame_editor_fotos_superior.pack(side="top", fill="both", expand=True)
@@ -852,8 +854,7 @@ def abrir_ventana_autores():
              "ingeniería inversa y uso comercial sin autorización escrita.",fill=NEGRO,font=("Segoe UI", 12),
         justify="center",width=800)
     # Boton cerrar
-    tk.Button(ventana_autores,text="Cerrar",command=ventana_autores.destroy,bg=VERDE_AZULADO,fg="white",font=("Segoe UI", 12, "bold")).place(relx=0.95, rely=0.95, anchor="se")
-    agregar_boton_luna(ventana_autores)
+    tk.Button(ventana_autores,text="X",command=ventana_autores.destroy, bg=NEGRO, fg=BLANCO, font=("Segoe UI", 12, "bold")).place(relx=0.95, rely=0.05, anchor="ne")
 # ============================================================================
 # BLOQUE 20: BOTONES PRINCIPALES QUE ABREN LAS OTRAS VENTANAS
 # ============================================================================
