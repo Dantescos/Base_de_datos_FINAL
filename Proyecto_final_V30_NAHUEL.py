@@ -317,24 +317,6 @@ def agregar_boton_luna(ventana_hija):
     if ventana_hija not in ventanas_secundarias:
         ventanas_secundarias.append(ventana_hija)
 
-    boton_luna = getattr(ventana_hija, "boton_luna", None)
-    if boton_luna is None or not boton_luna.winfo_exists():
-        boton_luna = tk.Button(
-            ventana_hija,
-            text="☾",
-            command=aplicar_tema,
-            font=("Segoe UI", 15, "bold"),
-            width=2,
-            height=1,
-            relief="flat",
-            bd=0,
-            cursor="hand2",
-            padx=0,
-            pady=0,
-        )
-        boton_luna.place(relx=1.0, x=-12, y=8, anchor="ne")
-        ventana_hija.boton_luna = boton_luna
-
     actualizar_ventanas_secundarias()
 def aplicar_tema():
     global tema_oscuro
