@@ -90,7 +90,7 @@ ventana.config(bg=GRIS_NIEBLA)           # Color de fondo
 # BLOQUE 6: BANNER (franja del titulo abajo)
 # ============================================================================
 banner = tk.Frame(ventana, bg=AZUL_SERENO, height=80)  # Frame de 80px
-banner.pack(side="bottom", fill="x")                    # Pegado abajo
+banner.pack(side="top", fill="x")                    # Pegado abajo
 banner.pack_propagate(False)                            # No se achica
 banner_label = tk.Label(banner,text="✚ MEDTRACK",bg=AZUL_SERENO, fg=BLANCO, font=("Segoe UI", 24, "bold"))
 banner_label.pack(pady=20) # Centrado
@@ -727,7 +727,6 @@ def abrir_ventana_editor_fotos():
     ventana_editor_fotos.title("Editor de fotos")
     ventana_editor_fotos.geometry("500x600")
     ventana_editor_fotos.config(bg=GRIS_NIEBLA)
-    ventana_perfil.resizable(False, False)
 
     frame_editor_fotos_superior = Frame(ventana_editor_fotos, bg=GRIS_NIEBLA)
     frame_editor_fotos_superior.pack(side="top", fill="both", expand=True)
@@ -863,7 +862,7 @@ def abrir_desde_principal():
 tk.Button(frame_btn, text="Entrevistas", command=abrir_desde_principal, bg=VERDE_AZULADO, fg="white", width=12, activebackground=VERDE_TERMINAL, activeforeground=NEGRO, font=("Segoe UI", 12)).pack(side="left", padx=5)
 tk.Button(frame_btn, text="Perfil", command=abrir_ventana_perfil, bg=VERDE_AZULADO, fg=BLANCO, width=12, activebackground=VERDE_TERMINAL, activeforeground=NEGRO, font=("Segoe UI", 12)).pack(side="left", padx=5)
 tk.Button(frame_btn, text="Editor de fotos", command=abrir_ventana_editor_fotos, bg=VERDE_AZULADO, fg=BLANCO, width=12, activebackground=VERDE_TERMINAL, activeforeground=NEGRO, font=("Segoe UI", 12)).pack(side="left", padx=5)
-tk.Button(frame_btn, text="Autores",command=abrir_ventana_autores, bg=VERDE_AZULADO, fg=BLANCO, width=12, activebackground=VERDE_TERMINAL, activeforeground=NEGRO, font=("Segoe UI", 12)).pack(side="left", padx=5)
+tk.Button(frame_btn, text="i",command=abrir_ventana_autores, bg=GRIS_NIEBLA, fg=NEGRO,relief="flat",highlightthickness=0,width=1, activebackground=VERDE_TERMINAL, activeforeground=NEGRO, font=("Segoe UI", 12)).pack(side="left", padx=5)
 
 # ============================================================================
 # BLOQUE 21: INICIO DEL PROGRAMA
