@@ -237,16 +237,14 @@ entry_dni.grid(row=0, column=5, padx=5, pady=3)
 # BLOQUE 10: CUERPO (VISOR Y LISTA PRINCIPAL)
 # ============================================================================
 cuerpo = tk.Frame(ventana, bg=GRIS_NIEBLA)
-cuerpo.pack(fill="both", expand=True, padx=15, pady=10)
-
+cuerpo.pack(fill="both", expand=True)
 frame_foto = tk.Frame(cuerpo, bg=BLANCO, relief="solid", bd=1)
-frame_foto.pack(side="left", fill="both", expand=True, padx=(0, 15))
-frame_foto.pack_propagate(False)
-visor_foto = tk.Label(frame_foto, text="👤\nSin foto", bg=BLANCO, fg=GRIS_MEDIO, font=("Segoe UI", 18))
-visor_foto.pack(expand=True, fill="both")
+frame_foto.pack(side="left",fill="x", padx=50, pady = 45) #aca hay que cambiar el tamaño del frame
+visor_foto = tk.Label(frame_foto, text="👤\nSin foto", bg=BLANCO, fg=GRIS_MEDIO, font=("Segoe UI", 18)) #texto para la foto
+visor_foto.pack(expand=True, fill="both",padx= 20,pady= 40)
 
 frame_lista = tk.Frame(cuerpo, bg=GRIS_AZULADO, relief="solid", bd=1)
-frame_lista.pack(side="left", fill="both", expand=True, padx=10)
+frame_lista.pack(side="right", fill="both", expand = True,padx = 60, pady = 55)
 titulo_lista = tk.Label(frame_lista, text="Personas registradas", bg=GRIS_AZULADO, fg=BLANCO, font=("Segoe UI", 15, "bold"))
 titulo_lista.pack(anchor="w", padx=5, pady=5)
 
@@ -254,7 +252,7 @@ scroll = tk.Scrollbar(frame_lista, orient="vertical")
 scroll.pack(side="right", fill="y")
 
 lista_personas = tk.Listbox(frame_lista, yscrollcommand=scroll.set, font=("Segoe UI", 12), bg=BLANCO, fg=GRIS_AZULADO, selectbackground=AZUL_SERENO, selectforeground=BLANCO)
-lista_personas.pack(side="left", fill="both", expand=True)
+lista_personas.pack(side="left", fill="both",expand= True)
 scroll.config(command=lista_personas.yview)
 
 # ============================================================================
