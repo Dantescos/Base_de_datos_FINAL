@@ -17,7 +17,7 @@ import re  # (Importado pero no usado en este archivo actualmente)
 # BLOQUE 2: VARIABLES GLOBALES
 # Las variables globales son las que se pueden usar desde cualquier función.
 # ============================================================================
-imagenes_cargadas = []  # Lista vacía donde guardamos las RUTAS de las imágenes que el usuario va agregando en el editor
+imagenes_cargadas = []  # Lista vacia donde guardamos las RUTAS de las imagenes que el usuario va agregando en el editor
 
 # ============================================================================
 # BLOQUE 3: BASE DE DATOS
@@ -52,6 +52,11 @@ nombre_profecional TEXT NOT NULL,
 fecha TEXT NOT NULL,
 nivel_avance INTEGER DEFAULT 0
 )""")
+# Creo una tabla para que guarde la imagen de Sanca, mientras se tenga los archivos descargados la imagen vive aca, recomiendo tener todo descargado
+cursor.execute("""CREATE TABLE IF NOT EXISTS recursos(
+id INTEGER PRIMARY KEY AUTOINCREMENT,
+nombre TEXT UNIQUE NOT NULL,
+contenido BLOB)""")#con esto lo que hago es perdirle a la base de datos que es solo una sola imagen la que guarde y busque
 
 conexion.commit()  # Guarda los cambios
 
@@ -76,19 +81,19 @@ VERDE_AZULADO = "#26A69A"
 # ============================================================================
 # BLOQUE 5: VENTANA PRINCIPAL
 # ============================================================================
-ventana = tk.Tk()                         # Crea la ventana principal
-ventana.title("✚ MEDTRACK")               # Título de la ventana
-ventana.geometry("1000x700")              # Tamaño inicial
-ventana.config(bg=GRIS_NIEBLA)            # Color de fondo
+ventana = tk.Tk()                        # Crea la ventana principal
+ventana.title("✚ MEDTRACK")              # Titulo de la ventana
+ventana.geometry("1000x800")             # Tamaño inicial
+ventana.config(bg=GRIS_NIEBLA)           # Color de fondo
 
 # ============================================================================
-# BLOQUE 6: BANNER (franja del título abajo)
+# BLOQUE 6: BANNER (franja del titulo abajo)
 # ============================================================================
 banner = tk.Frame(ventana, bg=AZUL_SERENO, height=80)  # Frame de 80px
 banner.pack(side="bottom", fill="x")                    # Pegado abajo
 banner.pack_propagate(False)                            # No se achica
-banner_label = tk.Label(banner, text="✚ MEDTRACK", bg=AZUL_SERENO, fg=BLANCO, font=("Segoe UI", 24, "bold"))
-banner_label.pack(pady=20)  # Centrado
+banner_label = tk.Label(banner,text="✚ MEDTRACK",bg=AZUL_SERENO, fg=BLANCO, font=("Segoe UI", 24, "bold"))
+banner_label.pack(pady=20) # Centrado
 
 # ============================================================================
 # BLOQUE 7: FUNCIONES PRINCIPALES
@@ -99,7 +104,6 @@ def refrescar_lista():
     cursor.execute("SELECT nombre, apellido, dni FROM personas ORDER BY apellido, nombre")
     for nombre, apellido, dni in cursor.fetchall():
         lista_personas.insert(tk.END, f"{apellido}, {nombre} — DNI {dni}")
-
 def mostrar_foto(dni):
     # Busca la foto en la BD
     cursor.execute("SELECT foto FROM personas WHERE dni = ?", (dni,))
@@ -115,7 +119,6 @@ def mostrar_foto(dni):
         except Exception:
             pass
     visor_foto.configure(image="", text="Sin foto")
-
 def al_seleccionar(event=None):
     # Se dispara al hacer click en la lista
     sel = lista_personas.curselection()
@@ -130,7 +133,6 @@ def al_seleccionar(event=None):
     entry_apellido.delete(0, tk.END); entry_apellido.insert(0, fila[1])
     entry_dni.delete(0, tk.END); entry_dni.insert(0, fila[2])
     mostrar_foto(dni)
-
 def agregar():
     # Lee los datos
     nombre = entry_nombre.get().strip()
@@ -160,7 +162,6 @@ def agregar():
     refrescar_lista()
     limpiar()
     messagebox.showinfo("OK", "Persona agregada.")
-
 def eliminar():
     dni_txt = entry_dni.get().strip()
     if not dni_txt:
@@ -175,7 +176,6 @@ def eliminar():
     refrescar_lista()
     limpiar()
     visor_foto.configure(image="", text="Sin foto")
-
 def buscar():
     dni_txt = entry_dni.get().strip()
     if not dni_txt:
@@ -196,7 +196,6 @@ def buscar():
             lista_personas.selection_set(i)
             lista_personas.see(i)
             break
-
 def limpiar():
     entry_nombre.delete(0, tk.END)
     entry_apellido.delete(0, tk.END)
@@ -285,7 +284,6 @@ def actualizar_widget(widget, fondo, panel, texto, acento):
 
     for hijo in widget.winfo_children():
         actualizar_widget(hijo, fondo, panel, texto, acento)
-
 def actualizar_ventanas_secundarias():
     if tema_oscuro:
         fondo = "#111111"
@@ -315,7 +313,6 @@ def actualizar_ventanas_secundarias():
         boton_luna = getattr(ventana_hija, "boton_luna", None)
         if boton_luna and boton_luna.winfo_exists():
             boton_luna.config(bg=boton_luna_bg, fg=boton_luna_fg)
-
 def agregar_boton_luna(ventana_hija):
     if ventana_hija not in ventanas_secundarias:
         ventanas_secundarias.append(ventana_hija)
@@ -339,7 +336,6 @@ def agregar_boton_luna(ventana_hija):
         ventana_hija.boton_luna = boton_luna
 
     actualizar_ventanas_secundarias()
-
 def aplicar_tema():
     global tema_oscuro
     tema_oscuro = not tema_oscuro 
@@ -414,7 +410,7 @@ def comprobar(i_del_for, entry_, orden):
         return variable
 
 def comprobar_fecha(entry_fecha):
-    # Reemplaza signos de puntuación por "/"
+    # Reemplaza signos de puntuacion por "/"
     fecha = entry_fecha.get()
     for i in string.punctuation:
         fecha = fecha.replace(i, "/")
@@ -523,7 +519,6 @@ def new_entrevista():
                    (entrevista, dni, nom_profecional, fecha, nivel))
     conexion.commit()
     ver_list_entrevist(lista_entrevistas)
-
 def eliminar_entrevista():
     seleccion = lista_entrevistas.curselection()
     if seleccion:
@@ -532,7 +527,6 @@ def eliminar_entrevista():
         cursor.execute("DELETE FROM entrevistas WHERE id = ?", (id_entrevista,))
         conexion.commit()
         ver_list_entrevist(lista_entrevistas)
-
 def detalles_entrevsit(event=None):
     seleccion = lista_entrevistas.curselection()
     if seleccion:
@@ -663,16 +657,19 @@ def abrir_ventana_perfil():
     Label(frame_izquierdo, text=" Nombre:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=0, column=0, sticky="e", padx=5)
     entry_nombre_perfil = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
     entry_nombre_perfil.grid(row=0, column=1, padx=5, pady=3)
+    entry_nombre_perfil.insert(0, entry_nombre.get())      # <-- precarga desde ventana principal
 
     # Apellido
     Label(frame_izquierdo, text=" Apellido:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=1, column=0, sticky="e", padx=5)
     entry_apellido_perfil = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
     entry_apellido_perfil.grid(row=1, column=1, padx=5, pady=3)
+    entry_apellido_perfil.insert(0, entry_apellido.get())      # <-- precarga desde ventana principal
 
     # DNI y Boton Cargar
     Label(frame_izquierdo, text=" DNI:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=2, column=0, sticky="e", padx=5)
     entry_dni_perfil = tk.Entry(frame_izquierdo, width=15, font=("Segoe UI", 12))
     entry_dni_perfil.grid(row=2, column=1, padx=5, pady=3)
+    entry_dni_perfil.insert(0, entry_dni.get())      # <-- precarga desde ventana principal
 
     # Direccion
     Label(frame_izquierdo, text=" Direccion:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=3, column=0, sticky="e", padx=5)
@@ -724,23 +721,19 @@ def abrir_ventana_perfil():
     # --- FRAME DERECHO ---
     frame_derecha = tk.Frame(ventana_perfil, bg=ROJO)
     frame_derecha.pack(side="right", fill="both", expand=True, padx=(0, 15), pady=15)
-
     frame_foto_perfil = Frame(frame_derecha, bg=BLANCO, relief="solid", bd=1, height=350)
     frame_foto_perfil.pack(side="top", fill="both", expand=True, pady=(0, 10))
     frame_foto_perfil.pack_propagate(False)
     visor_foto_perfil = tk.Label(frame_foto_perfil, text="👤\nSin foto", bg=BLANCO, fg=GRIS_MEDIO, font=("Segoe UI", 20))
     visor_foto_perfil.pack(side="right", fill="both", expand=True, padx=10, pady=10)
-
     frame_lista_perfil = Frame(frame_derecha, bg=GRIS_AZULADO, relief="solid", bd=1)
     frame_lista_perfil.pack(fill="both", expand=True, side="bottom", pady=(0, 20))
     Label(frame_lista_perfil, text="Ordenes registradas", bg=GRIS_AZULADO, fg=BLANCO, font=("Segoe UI", 15, "bold")).pack(side="top", padx=10, pady=10)
-
     scroll_perfil = tk.Scrollbar(frame_lista_perfil, orient="vertical")
     scroll_perfil.pack(side="right", fill="y")
     lista_personas_perfil = Listbox(frame_lista_perfil, yscrollcommand=scroll_perfil.set, font=("Segoe UI", 12), bg=BLANCO, fg=GRIS_AZULADO, selectbackground=AZUL_SERENO, selectforeground=BLANCO)
     lista_personas_perfil.pack(side="left", fill="both", expand=True)
     scroll_perfil.config(command=lista_personas_perfil.yview)
-
     agregar_boton_luna(ventana_perfil)
 
 # ============================================================================
@@ -801,18 +794,95 @@ def abrir_ventana_editor_fotos():
     tk.Button(frame_editor_fotos_inferior, text="Eliminar fotos", command=eliminar_imagen, bg=VERDE_AZULADO, fg="white", width=12, activebackground=VERDE_TERMINAL, activeforeground=NEGRO, font=("Segoe UI", 12)).grid(row=0, column=2, padx=10)
 
     agregar_boton_luna(ventana_editor_fotos)
-
 # ============================================================================
-# BLOQUE 18: BOTONES PRINCIPALES QUE ABREN LAS OTRAS VENTANAS
+# BLOQUE 18: CARGAR IMAGEN DE SANCA
+# ============================================================================
+def cargar_imagen():
+    #1. Pregunto si esta en la base de datos
+    cursor.execute("SELECT 1 FROM recursos WHERE nombre=?",("sanca",))
+    if cursor.fetchall():
+        return True
+    #2. Pregunto si esta, si existe esa imagen
+    ruta = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Sanca.jpg")
+    if not os.path.exists(ruta):
+        return False
+    #3. Si existe la imagen que la lea
+    with open(ruta,"rb") as f: #guardo la imagen como una variable "f"
+        imagen_sanca =sqlite3.Binary(f.read()) #aca le pido a la base de datos que lea la imagen, la imagen son bytes asi que lee esos bytes 
+        cursor.execute('INSERT INTO recursos (nombre,contenido) VALUES(?,?)',("sanca",imagen_sanca))
+        conexion.commit()
+        return True
+# ============================================================================
+# BLOQUE 19: DERECHOS DE AUTOR
+# ============================================================================
+def abrir_ventana_autores():
+    hay_imagen =cargar_imagen() #chequeo si la imagen existe
+    ventana_autores = tk.Toplevel(ventana)
+    ventana_autores.title("Licencia y autores de la aplicacion")
+    ventana_autores.geometry("1000x800")
+    ventana_autores.config(bg=GRIS_NIEBLA)
+    canvas = tk.Canvas(ventana_autores, width=1000, height=800, highlightthickness=0) # esto sirve mucho mas que un frame como queria hacer al principio
+    canvas.pack(fill="both", expand=True)
+    # Imagen de fondo
+    if hay_imagen:
+        cursor.execute("SELECT contenido FROM recursos WHERE nombre =? ",("sanca",))
+        fila = cursor.fetchone()
+        img = Image.open(BytesIO(fila[0])).resize((1000,800))
+        foto = ImageTk.PhotoImage(img)
+        canvas.create_image(0, 0, anchor="nw", image=foto)
+        ventana_autores.fondo = foto
+    else:
+        canvas.configure(bg="black")  # sin imagen, fondo liso
+        canvas.create_text(450, 60,text="AUTORES",fill=NEGRO,font=("Segoe UI", 28, "bold") )
+        canvas.create_text(450, 110,text="EQUIPO DE DESARROLLO ",fill=NEGRO,font=("Segoe UI", 16, "bold"))
+    nombres = ["Antonio Garcia",
+        "Nahuel Villafañe",
+        "Mateo Dabruzzo Wilczek",
+        "Federico 'Fedelobo'",
+        "Ignacio",
+        "Thiago",
+        "Pablo Laporta",
+        "Fernando 'Master'",
+        "Joaquin Arana",]
+
+    y = 150
+    for nombre in nombres:
+        canvas.create_text(
+            450, y,
+            text=f" {nombre} ",
+            fill=NEGRO,
+            font=("Segoe UI", 14)
+        )
+        y += 28
+
+    # Licencia
+    y += 30
+    canvas.create_text(
+        450, y,
+        text=" LICENCIA ",
+        fill=NEGRO,
+        font=("Segoe UI", 16, "bold")
+    )
+
+    y += 35
+    canvas.create_text(450, y,text="© 2026 Equipo de programacion Sanca. Todos los derechos reservados.\n"
+             "Queda prohibida la copia, modificación, distribución,\n"
+             "ingeniería inversa y uso comercial sin autorización escrita.",fill=NEGRO,font=("Segoe UI", 12),
+        justify="center",width=800)
+    # Boton cerrar
+    tk.Button(ventana_autores,text="Cerrar",command=ventana_autores.destroy,bg=VERDE_AZULADO,fg="white",font=("Segoe UI", 12, "bold")).place(relx=0.95, rely=0.95, anchor="se")
+    agregar_boton_luna(ventana_autores)
+# ============================================================================
+# BLOQUE 20: BOTONES PRINCIPALES QUE ABREN LAS OTRAS VENTANAS
 # ============================================================================
 def abrir_desde_principal():
     abrir_ventana_entrevistas(ventana)
-
 tk.Button(frame_btn, text="Entrevistas", command=abrir_desde_principal, bg=VERDE_AZULADO, fg="white", width=12, activebackground=VERDE_TERMINAL, activeforeground=NEGRO, font=("Segoe UI", 12)).pack(side="left", padx=5)
 tk.Button(frame_btn, text="Perfil", command=abrir_ventana_perfil, bg=VERDE_AZULADO, fg=BLANCO, width=12, activebackground=VERDE_TERMINAL, activeforeground=NEGRO, font=("Segoe UI", 12)).pack(side="left", padx=5)
 tk.Button(frame_btn, text="Editor de fotos", command=abrir_ventana_editor_fotos, bg=VERDE_AZULADO, fg=BLANCO, width=12, activebackground=VERDE_TERMINAL, activeforeground=NEGRO, font=("Segoe UI", 12)).pack(side="left", padx=5)
+tk.Button(frame_btn, text="Autores",command=abrir_ventana_autores, bg=VERDE_AZULADO, fg=BLANCO, width=12, activebackground=VERDE_TERMINAL, activeforeground=NEGRO, font=("Segoe UI", 12)).pack(side="left", padx=5)
 
 # ============================================================================
-# BLOQUE 19: INICIO DEL PROGRAMA
+# BLOQUE 21: INICIO DEL PROGRAMA
 # ============================================================================
 ventana.mainloop()
