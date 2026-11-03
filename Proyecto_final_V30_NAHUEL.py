@@ -667,7 +667,7 @@ def abrir_ventana_perfil():
     Label(frame_izquierdo, text=" Cargar pdfs aqui:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=5, column=0, sticky="e", padx=5)
     entry_pdf_perfil = tk.Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
     entry_pdf_perfil.grid(row=5, column=1, sticky="e", padx=5, pady=3)
-
+#fede estubo qui :p
     # BARRA DE PROGRESO REAL
     label_barra_progreso_perfil = tk.Label(frame_izquierdo, text="Progreso:", bg=AZUL_PETROLEO, fg=BLANCO, font=("Segoe UI", 12))
     label_barra_progreso_perfil.grid(row=6, column=0, sticky="e", padx=5, pady=12)
