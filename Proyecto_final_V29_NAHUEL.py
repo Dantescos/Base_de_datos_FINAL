@@ -262,6 +262,83 @@ scroll.config(command=lista_personas.yview)
 # BLOQUE 11: MODO OSCURO
 # ============================================================================
 tema_oscuro = False
+ventanas_secundarias = []
+
+def actualizar_widget(widget, fondo, panel, texto, acento):
+    clase = widget.winfo_class()
+
+    if clase in ("Frame", "Labelframe"):
+        widget.config(bg=fondo)
+    elif clase == "Label":
+        widget.config(bg=fondo, fg=texto)
+    elif clase in ("Entry", "Text"):
+        widget.config(bg=panel, fg=texto, insertbackground=texto)
+    elif clase == "Listbox":
+        widget.config(
+            bg=panel,
+            fg=texto,
+            selectbackground=AZUL_SERENO,
+            selectforeground=BLANCO,
+        )
+    elif clase in ("Button", "Menubutton"):
+        widget.config(bg=acento, fg="white")
+
+    for hijo in widget.winfo_children():
+        actualizar_widget(hijo, fondo, panel, texto, acento)
+
+def actualizar_ventanas_secundarias():
+    if tema_oscuro:
+        fondo = "#111111"
+        panel = "#1B1B1B"
+        texto = "#F5F5F5"
+        acento = "#1A1A1A"
+        boton_luna_bg = "#FFFFFF"
+        boton_luna_fg = "#000000"
+    else:
+        fondo = GRIS_NIEBLA
+        panel = BLANCO
+        texto = GRIS_AZULADO
+        acento = VERDE_AZULADO
+        boton_luna_bg = "#111111"
+        boton_luna_fg = "#FFFFFF"
+
+    ventanas_secundarias[:] = [
+        ventana_hija for ventana_hija in ventanas_secundarias
+        if ventana_hija.winfo_exists()
+    ]
+
+    for ventana_hija in ventanas_secundarias:
+        ventana_hija.config(bg=fondo)
+        for widget in ventana_hija.winfo_children():
+            actualizar_widget(widget, fondo, panel, texto, acento)
+
+        boton_luna = getattr(ventana_hija, "boton_luna", None)
+        if boton_luna and boton_luna.winfo_exists():
+            boton_luna.config(bg=boton_luna_bg, fg=boton_luna_fg)
+
+def agregar_boton_luna(ventana_hija):
+    if ventana_hija not in ventanas_secundarias:
+        ventanas_secundarias.append(ventana_hija)
+
+    boton_luna = getattr(ventana_hija, "boton_luna", None)
+    if boton_luna is None or not boton_luna.winfo_exists():
+        boton_luna = tk.Button(
+            ventana_hija,
+            text="☾",
+            command=aplicar_tema,
+            font=("Segoe UI", 15, "bold"),
+            width=2,
+            height=1,
+            relief="flat",
+            bd=0,
+            cursor="hand2",
+            padx=0,
+            pady=0,
+        )
+        boton_luna.place(relx=1.0, x=-12, y=8, anchor="ne")
+        ventana_hija.boton_luna = boton_luna
+
+    actualizar_ventanas_secundarias()
 
 def aplicar_tema():
     global tema_oscuro
@@ -320,6 +397,7 @@ def aplicar_tema():
             widget.config(bg=boton_accion, fg="white", activebackground=VERDE_TERMINAL if not tema_oscuro else "#444444", activeforeground="white")
 
     btn_tema.config(bg=boton_fill, fg=boton_text, activebackground=active_bg, activeforeground=active_fg)
+    actualizar_ventanas_secundarias()
 
 btn_tema = tk.Button(frame_btn, text="☾", command=aplicar_tema, bg="#111111", fg="#FFFFFF", font=("Segoe UI", 18, "bold"), width=3, height=1, relief="flat", bd=0, cursor="hand2")
 btn_tema.pack(side="right", padx=5)
@@ -549,6 +627,8 @@ def abrir_ventana_entrevistas(ventana_padre):
         pantalla_edit_entrevista(ventana_entrevistas)
     tk.Button(frame_inferior, text="Editar entrevista", bg=AZUL_SERENO, fg=BLANCO, command=abrir_editar, font=("Segoe UI", 12, "bold"), relief="flat", width=15).grid(row=0, column=3, padx=10)
 
+    agregar_boton_luna(ventana_entrevistas)
+
 # ============================================================================
 # BLOQUE 15.5: FUNCION PARA ACTUALIZAR LA BARRA (AHORA ES GLOBAL)
 # ============================================================================
@@ -661,6 +741,8 @@ def abrir_ventana_perfil():
     lista_personas_perfil.pack(side="left", fill="both", expand=True)
     scroll_perfil.config(command=lista_personas_perfil.yview)
 
+    agregar_boton_luna(ventana_perfil)
+
 # ============================================================================
 # BLOQUE 17: VENTANA DEL EDITOR DE FOTOS
 # ============================================================================
@@ -717,6 +799,8 @@ def abrir_ventana_editor_fotos():
 
     tk.Button(frame_editor_fotos_inferior, text="Añadir fotos", command=agregar_imagen, bg=VERDE_AZULADO, fg="white", width=12, activebackground=VERDE_TERMINAL, activeforeground=NEGRO, font=("Segoe UI", 12)).grid(row=0, column=1, padx=10)
     tk.Button(frame_editor_fotos_inferior, text="Eliminar fotos", command=eliminar_imagen, bg=VERDE_AZULADO, fg="white", width=12, activebackground=VERDE_TERMINAL, activeforeground=NEGRO, font=("Segoe UI", 12)).grid(row=0, column=2, padx=10)
+
+    agregar_boton_luna(ventana_editor_fotos)
 
 # ============================================================================
 # BLOQUE 18: BOTONES PRINCIPALES QUE ABREN LAS OTRAS VENTANAS
