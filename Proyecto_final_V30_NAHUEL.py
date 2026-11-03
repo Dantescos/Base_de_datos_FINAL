@@ -649,34 +649,34 @@ def abrir_ventana_perfil():
 
     # DNI y Boton Cargar
     Label(frame_izquierdo, text=" DNI:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=2, column=0, sticky="e", padx=5)
-    entry_dni_perfil = tk.Entry(frame_izquierdo, width=15, font=("Segoe UI", 12))
+    entry_dni_perfil = tk.Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
     entry_dni_perfil.grid(row=2, column=1, padx=5, pady=3)
     entry_dni_perfil.insert(0, entry_dni.get())      # <-- precarga desde ventana principal
 
     # Direccion
     Label(frame_izquierdo, text=" Direccion:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=3, column=0, sticky="e", padx=5)
-    entry_direccion = tk.Entry(frame_izquierdo, width=15, font=("Segoe UI", 12))
+    entry_direccion = tk.Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
     entry_direccion.grid(row=3, column=1, padx=5, pady=3)
 
     # F. Nacimiento
     Label(frame_izquierdo, text=" Fecha de nacimiento:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=4, column=0, sticky="e", padx=5)
-    entry_f_nacimiento = tk.Entry(frame_izquierdo, width=15, font=("Segoe UI", 12))
+    entry_f_nacimiento = tk.Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
     entry_f_nacimiento.grid(row=4, column=1, padx=5, pady=3)
 
     # PDF (Placeholder)
-    Label(frame_izquierdo, text=" Cargar pdfs aqui", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=10, column=1, sticky="e", padx=10)
-    entry_pdf_perfil = tk.Entry(frame_izquierdo, font=("Segoe UI", 12))
-    entry_pdf_perfil.grid(row=11, column=1, sticky="e", padx=10, pady=3)
+    Label(frame_izquierdo, text=" Cargar pdfs aqui:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=5, column=0, sticky="e", padx=5)
+    entry_pdf_perfil = tk.Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
+    entry_pdf_perfil.grid(row=5, column=1, sticky="e", padx=5, pady=3)
 
     # BARRA DE PROGRESO REAL
     label_barra_progreso_perfil = tk.Label(frame_izquierdo, text="Progreso:", bg=AZUL_PETROLEO, fg=BLANCO, font=("Segoe UI", 12))
-    label_barra_progreso_perfil.grid(row=12, column=0, sticky="e", padx=5, pady=10)
+    label_barra_progreso_perfil.grid(row=6, column=0, sticky="e", padx=5, pady=12)
 
     barra_progreso = ttk.Progressbar(frame_izquierdo, orient="horizontal", length=150, mode="determinate")
-    barra_progreso.grid(row=12, column=1, padx=5, pady=10)
+    barra_progreso.grid(row=6, column=1, sticky="w", padx=5, pady=3)
     
     label_porcentaje = tk.Label(frame_izquierdo, text="0%", bg=AZUL_PETROLEO, fg=BLANCO, font=("Segoe UI", 12, "bold"))
-    label_porcentaje.grid(row=13, column=1, sticky="w", padx=5)
+    label_porcentaje.grid(row=6, column=7, sticky="e", padx=5, pady=12)
 
     # --- FUNCION INTERNA PARA CARGAR EL PERFIL ---
     def cargar_perfil():
@@ -698,7 +698,7 @@ def abrir_ventana_perfil():
 
     # Boton para cargar perfil (ubicado al lado del DNI)
     boton_cargar_perfil = tk.Button(frame_izquierdo, text="Cargar", command=cargar_perfil, bg=VERDE_AZULADO, fg="white", font=("Segoe UI", 10))
-    boton_cargar_perfil.grid(row=2, column=2, padx=5)
+    boton_cargar_perfil.grid(row=8, column=1, sticky="e", padx=5, pady=3)
 
     # --- FRAME DERECHO ---
     frame_derecha = tk.Frame(ventana_perfil, bg=ROJO)
