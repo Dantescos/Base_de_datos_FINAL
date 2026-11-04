@@ -162,19 +162,22 @@ def agregar():
     refrescar_lista()
     limpiar()
     messagebox.showinfo("OK", "Persona agregada.")
+
 def eliminar():
-    dni_txt = entry_dni.get().strip()
-    if not dni_txt:
-        messagebox.showwarning("Atención", "Selecciona o escribi un DNI.")
+    seleccion = lista_personas.curselection()
+    if not seleccion:
+        messagebox.showwarning("Atención","Selecciona una persona de la lista para eliminar.")
         return
-    if not messagebox.askyesno("Confirmar", f"¿Eliminar DNI {dni_txt}?"):
+    texto = lista_personas.get(seleccion[0])
+    dni = int(texto.split("DNI ")[1])
+    if not messagebox.askyesno("Confirmar eliminación",f"¿Estás seguro de que deseas eliminar a esta persona?\n\n{texto}"):
         return
-    # Borra entrevistas y luego persona
-    cursor.execute("DELETE FROM entrevistas WHERE dni = ?", (dni_txt,))
-    cursor.execute("DELETE FROM personas WHERE dni = ?", (dni_txt,))
+    cursor.execute("DELETE FROM entrevistas WHERE dni = ?", (dni,))
+    cursor.execute("DELETE FROM personas WHERE dni = ?", (dni,))
     conexion.commit()
     refrescar_lista()
     limpiar()
+    messagebox.showinfo("OK", "Persona eliminada correctamente.")
 def buscar():
     dni_txt = entry_dni.get().strip()
     if not dni_txt:
