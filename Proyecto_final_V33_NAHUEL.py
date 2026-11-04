@@ -175,7 +175,6 @@ def eliminar():
     conexion.commit()
     refrescar_lista()
     limpiar()
-    visor_foto.configure(image="", text="Sin foto")
 def buscar():
     dni_txt = entry_dni.get().strip()
     if not dni_txt:
@@ -200,7 +199,8 @@ def limpiar():
     entry_nombre.delete(0, tk.END)
     entry_apellido.delete(0, tk.END)
     entry_dni.delete(0, tk.END)
-
+    visor_foto.configure(image="", text="Sin foto")
+    visor_foto.image = None
 # ============================================================================
 # BLOQUE 8: FRAME DE BOTONES PRINCIPALES
 # ============================================================================
@@ -442,6 +442,28 @@ def pantalla_edit_entrevista(ventana_padre):
     text_entrevista = tk.Text(frame_editar_medio, bg=AZUL_SERENO, relief="solid", bd=1, font=("Segoe UI", 12))
     text_entrevista.pack(fill="both", expand=True, padx=15, pady=15)
 
+    # Funcion para precargar los datos de la entrevista a partir del ID
+    def cargar_entrevista():
+        p_id = entry_id.get().strip()
+        if not p_id:
+            return
+        cursor.execute("SELECT * FROM entrevistas WHERE id = ?", (p_id,))
+        e = cursor.fetchone()
+        if not e:
+            messagebox.showinfo("Error", "No existe esa entrevista.")
+            return
+        # e = (id, entrevista, dni, nombre_profecional, fecha, nivel_avance)
+        text_entrevista.delete("1.0", tk.END)
+        text_entrevista.insert("1.0", e[1])
+        entry_dni.delete(0, tk.END); entry_dni.insert(0, e[2])
+        entry_nombre_profecional.delete(0, tk.END); entry_nombre_profecional.insert(0, e[3])
+        entry_fecha.delete(0, tk.END); entry_fecha.insert(0, e[4])
+        entry_nivel_editar.delete(0, tk.END); entry_nivel_editar.insert(0, e[5])
+
+    # Boton para cargar los datos de la entrevista existente
+    tk.Button(frame_editar_superior, text="Cargar", command=cargar_entrevista,
+              bg=VERDE_AZULADO, fg=BLANCO, font=("Segoe UI", 10)).grid(row=0, column=2, padx=10)
+
     def edit_entrevista():
         p_id = entry_id.get()
         if p_id == "": return
@@ -520,13 +542,13 @@ def detalles_entrevsit(event=None):
         frame_detalle = Frame(ventana_detalle, bg=BLANCO, relief="solid", bd=1)
         frame_detalle.pack(padx=20, pady=20, fill="both", expand=True)
 
-        tk.Label(frame_detalle, text=datos[1], bg=BLANCO, fg=GRIS_AZULADO, font=("Segoe UI", 12, "bold")).pack(pady=5)
-        tk.Label(frame_detalle, text=datos[2], bg=BLANCO, fg=GRIS_AZULADO, font=("Segoe UI", 12)).pack()
-        tk.Label(frame_detalle, text=datos[3], bg=BLANCO, fg=GRIS_AZULADO, font=("Segoe UI", 12)).pack(pady=10)
+        tk.Label(frame_detalle, text=datos[1].strip(), bg=BLANCO, fg=GRIS_AZULADO, font=("Segoe UI", 12, "bold")).pack(pady=5)
+        tk.Label(frame_detalle, text=datos[2].strip(), bg=BLANCO, fg=GRIS_AZULADO, font=("Segoe UI", 12)).pack()
+        tk.Label(frame_detalle, text=datos[3].strip(), bg=BLANCO, fg=GRIS_AZULADO, font=("Segoe UI", 12)).pack(pady=10)
 
         text_dato_entrevista = tk.Text(frame_detalle, height=8, font=("Segoe UI", 12), relief="solid", bd=1)
         text_dato_entrevista.pack(fill="both", expand=True, padx=10, pady=10)
-        text_dato_entrevista.insert("1.0", datos[4])
+        text_dato_entrevista.insert("1.0", datos[4].replace("Entrevista: ", "").strip())
         text_dato_entrevista.config(state=tk.DISABLED)
 
 # ============================================================================
@@ -577,7 +599,7 @@ def abrir_ventana_entrevistas(ventana_padre):
     tk.Label(frame_lista_medio, text="Historial de Entrevistas", bg=BLANCO, fg=GRIS_AZULADO, font=("Segoe UI", 13, "bold")).pack(pady=5)
     lista_entrevistas = tk.Listbox(frame_lista_medio, bg=BLANCO, fg=GRIS_AZULADO, selectbackground=AZUL_SERENO, selectforeground=BLANCO, bd=0, font=("Segoe UI", 12))
     lista_entrevistas.pack(fill="both", expand=True, padx=5, pady=5)
-    lista_entrevistas.bind("<<ListboxSelect>>", detalles_entrevsit)
+    lista_entrevistas.bind("<Double-Button-1>", detalles_entrevsit)
     ver_list_entrevist(lista_entrevistas)
 
     # LADO DERECHO: texto
@@ -675,21 +697,42 @@ def abrir_ventana_perfil():
     label_porcentaje = tk.Label(frame_izquierdo, text="0%", bg=AZUL_PETROLEO, fg=BLANCO, font=("Segoe UI", 12, "bold"))
     label_porcentaje.grid(row=6, column=7, sticky="e", padx=5, pady=12)
 
+    def mostrar_foto_en_perfil():
+        dni_txt = entry_dni_perfil.get().strip()
+        if not dni_txt:
+            visor_foto_perfil.configure(image="", text="👤\nSin foto")
+            visor_foto_perfil.image = None
+            return
+        cursor.execute("SELECT foto FROM personas WHERE dni = ?", (dni_txt,))
+        fila = cursor.fetchone()
+        if fila and fila[0]:
+            img = Image.open(BytesIO(fila[0]))
+            img.thumbnail((300, 300))
+            foto = ImageTk.PhotoImage(img)
+            visor_foto_perfil.configure(image=foto, text="")
+            visor_foto_perfil.image = foto
+        else:
+            visor_foto_perfil.configure(image="", text="👤\nSin foto")
+            visor_foto_perfil.image = None
     # --- FUNCION INTERNA PARA CARGAR EL PERFIL ---
     def cargar_perfil():
         dni_txt = entry_dni_perfil.get().strip()
         if not dni_txt:
-            messagebox.showwarning("Atención", "Escriba un DNI")
+            messagebox.showwarning("Atencion", "Escriba un DNI")
             return
-            
+        lista_personas_perfil.delete(0, tk.END)
         cursor.execute("SELECT nombre, apellido FROM personas WHERE dni = ?", (dni_txt,))
-        fila = cursor.fetchone()
-        
+        fila = cursor.fetchone()        
         if fila:
             entry_nombre_perfil.delete(0, tk.END); entry_nombre_perfil.insert(0, fila[0])
             entry_apellido_perfil.delete(0, tk.END); entry_apellido_perfil.insert(0, fila[1])
             # Llamamos a la funcion global que calcula el promedio
             actualizar_barra_perfil(dni_txt, barra_progreso, label_porcentaje)
+            mostrar_foto_en_perfil()
+            lista_personas_perfil.delete(0,tk.END)
+            cursor.execute("SELECT id,fecha,nombre_profecional,nivel_avance FROM entrevistas WHERE dni=?",(dni_txt,))
+            for e in cursor.fetchall():
+                lista_personas_perfil.insert(tk.END, f"ID {e[0]} — {e[1]} — {e[2]} — Nivel {e[3]}")            
         else:
             messagebox.showinfo("Error", "No existe ese DNI.")
 
@@ -698,7 +741,7 @@ def abrir_ventana_perfil():
     boton_cargar_perfil.grid(row=8, column=1, sticky="e", padx=5, pady=3)
 
     # --- FRAME DERECHO ---
-    frame_derecha = tk.Frame(ventana_perfil, bg=ROJO)
+    frame_derecha = tk.Frame(ventana_perfil, bg=GRIS_NIEBLA)
     frame_derecha.pack(side="right", fill="both", expand=True, padx=(0, 15), pady=15)
     frame_foto_perfil = Frame(frame_derecha, bg=BLANCO, relief="solid", bd=1, height=350)
     frame_foto_perfil.pack(side="top", fill="both", expand=True, pady=(0, 10))
@@ -713,6 +756,8 @@ def abrir_ventana_perfil():
     lista_personas_perfil = Listbox(frame_lista_perfil, yscrollcommand=scroll_perfil.set, font=("Segoe UI", 12), bg=BLANCO, fg=GRIS_AZULADO, selectbackground=AZUL_SERENO, selectforeground=BLANCO)
     lista_personas_perfil.pack(side="left", fill="both", expand=True)
     scroll_perfil.config(command=lista_personas_perfil.yview)
+    mostrar_foto_en_perfil()
+
 # ============================================================================
 # BLOQUE 17: VENTANA DEL EDITOR DE FOTOS
 # ============================================================================
@@ -792,7 +837,7 @@ def cargar_imagen():
 # BLOQUE 19: DERECHOS DE AUTOR
 # ============================================================================
 def abrir_ventana_autores():
-    hay_imagen = cargar_imagen()   # ya lo tenías, no lo toques
+    hay_imagen = cargar_imagen()   # ya lo tenias, no lo toques
 
     ventana_autores = tk.Toplevel(ventana)
     ventana_autores.title("Licencia y autores de la aplicacion")
@@ -811,14 +856,14 @@ def abrir_ventana_autores():
         canvas.create_image(0, 0, anchor="nw", image=foto)
         ventana_autores.fondo = foto     # ¡importante! mantener referencia
     else:
-        canvas.configure(bg=NEGRO)       # sin imagen, fondo negro
+        canvas.configure(bg=BLANCO)       # sin imagen, fondo negro
 
     # ---- Títulos (x=500 = mitad del ancho de 1000) ----
     canvas.create_text(500, 80, text="AUTORES",
-                       fill=BLANCO, font=("Segoe UI", 28, "bold"))
+                       fill=NEGRO, font=("Segoe UI", 28, "bold"))
 
     canvas.create_text(500, 130, text="EQUIPO DE DESARROLLO",
-                       fill=BLANCO, font=("Segoe UI", 16, "bold"))
+                       fill=NEGRO, font=("Segoe UI", 16, "bold"))
 
     # ---- Nombres ----
     nombres = [
@@ -835,20 +880,20 @@ def abrir_ventana_autores():
     y = 180
     for nombre in nombres:
         canvas.create_text(500, y, text=nombre,
-                           fill=BLANCO, font=("Segoe UI", 14))
+                           fill=NEGRO, font=("Segoe UI", 14))
         y += 30
 
     # ---- Licencia ----
     y += 30
     canvas.create_text(500, y, text="LICENCIA",
-                       fill=BLANCO, font=("Segoe UI", 16, "bold"))
+                       fill=NEGRO, font=("Segoe UI", 16, "bold"))
 
     y += 40
     canvas.create_text(500, y,
                        text=("© 2026 Equipo de programacion Sanca. Todos los derechos reservados.\n"
                              "Queda prohibida la copia, modificación, distribución,\n"
                              "ingeniería inversa y uso comercial sin autorización escrita."),
-                       fill=BLANCO, font=("Segoe UI", 12),
+                       fill=NEGRO, font=("Segoe UI", 12),
                        justify="center", width=800)
 
     # ---- Botón cerrar (encima del canvas) ----
@@ -871,7 +916,6 @@ def abrir_perfil_doble_clic(event=None):
     if not lista_personas.curselection(): #curselection es para que seleccione con el mouse
         return
     al_seleccionar()
-    refrescar_lista()
     abrir_ventana_perfil()
 lista_personas.bind("<Double-Button-1>", abrir_perfil_doble_clic)
 
