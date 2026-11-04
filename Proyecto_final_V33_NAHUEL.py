@@ -239,10 +239,10 @@ def limpiar():
 frame_btn = tk.Frame(ventana, bg=GRIS_NIEBLA)
 frame_btn.pack(side="top", fill="x", padx=15, pady=10)
 
-tk.Button(frame_btn, text="Agregar", font=("Segoe UI", 12), command=agregar, bg=VERDE_AZULADO, fg="white", width=12, activebackground=VERDE_TERMINAL, activeforeground=NEGRO, relief="flat").pack(side="left", padx=5)
-tk.Button(frame_btn, text="Eliminar", font=("Segoe UI", 12), command=eliminar, bg=VERDE_AZULADO, fg="white", width=12, activebackground=VERDE_TERMINAL, activeforeground=NEGRO, relief="flat").pack(side="left", padx=5)
-tk.Button(frame_btn, text="Buscar", font=("Segoe UI", 12), command=buscar, bg=VERDE_AZULADO, fg="white", width=12, activebackground=VERDE_TERMINAL, activeforeground=NEGRO, relief="flat").pack(side="left", padx=5)
-tk.Button(frame_btn, text="Limpiar", font=("Segoe UI", 12), command=limpiar, bg=VERDE_AZULADO, fg="white", width=12, activebackground=VERDE_TERMINAL, activeforeground=NEGRO, relief="flat").pack(side="left", padx=5)
+tk.Button(frame_btn, text="Agregar", font=("Segoe UI", 12), command=agregar, bg=VERDE_AZULADO, fg="white", activebackground=VERDE_TERMINAL, activeforeground=NEGRO, relief="flat").pack(side="left", padx=5, expand=True, fill="both")
+tk.Button(frame_btn, text="Eliminar", font=("Segoe UI", 12), command=eliminar, bg=VERDE_AZULADO, fg="white", activebackground=VERDE_TERMINAL, activeforeground=NEGRO, relief="flat").pack(side="left", padx=5, expand=True, fill="both")
+tk.Button(frame_btn, text="Buscar", font=("Segoe UI", 12), command=buscar, bg=VERDE_AZULADO, fg="white", activebackground=VERDE_TERMINAL, activeforeground=NEGRO, relief="flat").pack(side="left", padx=5, expand=True, fill="both")
+tk.Button(frame_btn, text="Limpiar", font=("Segoe UI", 12), command=limpiar, bg=VERDE_AZULADO, fg="white", activebackground=VERDE_TERMINAL, activeforeground=NEGRO, relief="flat").pack(side="left", padx=5, expand=True, fill="both")
 
 #####################################
 boton_buscar_definitivo=tk.Button(frame_btn,text="buscar_definitivo",command=buscar_definitivo)
@@ -522,8 +522,7 @@ def pantalla_edit_entrevista(ventana_padre):
         entry_nivel_editar.delete(0, tk.END); entry_nivel_editar.insert(0, e[5])
 
     # Boton para cargar los datos de la entrevista existente
-    tk.Button(frame_editar_superior, text="Cargar", command=cargar_entrevista,
-              bg=VERDE_AZULADO, fg=BLANCO, font=("Segoe UI", 10)).grid(row=0, column=2, padx=10)
+    tk.Button(frame_editar_superior, text="Cargar", command=cargar_entrevista, bg=VERDE_AZULADO, fg=BLANCO, font=("Segoe UI", 10)).grid(row=0, column=2, padx=10, sticky="ew")
 
     def edit_entrevista():
         p_id = entry_id.get()
@@ -560,8 +559,10 @@ def pantalla_edit_entrevista(ventana_padre):
     frame_editar_inferior.pack(fill="x", expand=True)
     frame_editar_inferior.grid_columnconfigure(0, weight=1)
     frame_editar_inferior.grid_columnconfigure(1, weight=1)
-    boton_edit_entrevista = Button(frame_editar_inferior, text="Guardar cambios", font=("Segoe UI", 12, "bold"), command=edit_entrevista, bg=VERDE_AZULADO, fg=BLANCO, relief="flat", width=15)
-    boton_edit_entrevista.grid(row=0, column=1)
+    frame_editar_inferior.grid_columnconfigure(1, weight=0)
+    frame_editar_inferior.grid_columnconfigure(2, weight=1)
+    boton_edit_entrevista = Button(frame_editar_inferior, text="Guardar cambios", font=("Segoe UI", 12, "bold"), width=12, command=edit_entrevista, bg=VERDE_AZULADO, fg=BLANCO, relief="flat")
+    boton_edit_entrevista.grid(row=0, column=1, sticky="ew")
 
 # ============================================================================
 # BLOQUE 14: FUNCIONES DE LA VENTANA DE ENTREVISTAS
@@ -675,12 +676,16 @@ def abrir_ventana_entrevistas(ventana_padre):
     frame_inferior.grid_columnconfigure(0, weight=1)
     frame_inferior.grid_columnconfigure(4, weight=1)
 
-    tk.Button(frame_inferior, text="Nueva entrevista", command=new_entrevista, bg=VERDE_AZULADO, fg=BLANCO, font=("Segoe UI", 12, "bold"), relief="flat", width=15).grid(row=0, column=1, padx=10)
-    tk.Button(frame_inferior, text="Eliminar entrevista", command=eliminar_entrevista, bg=ROJO, fg=BLANCO, font=("Segoe UI", 12, "bold"), relief="flat", width=15).grid(row=0, column=2, padx=10)
+    frame_inferior.columnconfigure(1, weight=1)
+    frame_inferior.columnconfigure(2, weight=1)
+    frame_inferior.columnconfigure(3, weight=1)
+
+    tk.Button(frame_inferior, text="Nueva entrevista", command=new_entrevista, bg=VERDE_AZULADO, fg=BLANCO, font=("Segoe UI", 12, "bold"), relief="flat").grid(row=0, column=1, padx=10, sticky="ew")
+    tk.Button(frame_inferior, text="Eliminar entrevista", command=eliminar_entrevista, bg=ROJO, fg=BLANCO, font=("Segoe UI", 12, "bold"), relief="flat").grid(row=0, column=2, padx=10, sticky="ew")
 
     def abrir_editar():
         pantalla_edit_entrevista(ventana_entrevistas)
-    tk.Button(frame_inferior, text="Editar entrevista", bg=AZUL_SERENO, fg=BLANCO, command=abrir_editar, font=("Segoe UI", 12, "bold"), relief="flat", width=15).grid(row=0, column=3, padx=10)
+    tk.Button(frame_inferior, text="Editar entrevista", bg=AZUL_SERENO, fg=BLANCO, command=abrir_editar, font=("Segoe UI", 12, "bold"), relief="flat").grid(row=0, column=3, padx=10, sticky="ew")
 
 
 # ============================================================================
@@ -872,8 +877,11 @@ def abrir_ventana_editor_fotos():
         visor_foto_perfil.config(image="", text="👤\nSin foto")
         visor_foto_perfil.image = None
 
-    tk.Button(frame_editor_fotos_inferior, text="Añadir fotos", command=agregar_imagen, bg=VERDE_AZULADO, fg="white", width=12, activebackground=VERDE_TERMINAL, activeforeground=NEGRO, font=("Segoe UI", 12)).grid(row=0, column=1, padx=10)
-    tk.Button(frame_editor_fotos_inferior, text="Eliminar fotos", command=eliminar_imagen, bg=VERDE_AZULADO, fg="white", width=12, activebackground=VERDE_TERMINAL, activeforeground=NEGRO, font=("Segoe UI", 12)).grid(row=0, column=2, padx=10)
+    frame_editor_fotos_inferior.columnconfigure(1, weight=1)
+    frame_editor_fotos_inferior.columnconfigure(2, weight=1)
+
+    tk.Button(frame_editor_fotos_inferior, text="Añadir fotos", command=agregar_imagen, bg=VERDE_AZULADO, fg="white", activebackground=VERDE_TERMINAL, activeforeground=NEGRO, font=("Segoe UI", 12)).grid(row=0, column=1, padx=10, sticky="ew")
+    tk.Button(frame_editor_fotos_inferior, text="Eliminar fotos", command=eliminar_imagen, bg=VERDE_AZULADO, fg="white", activebackground=VERDE_TERMINAL, activeforeground=NEGRO, font=("Segoe UI", 12)).grid(row=0, column=2, padx=10, sticky="ew")
 
 # ============================================================================
 # BLOQUE 18: CARGAR IMAGEN DE SANCA
