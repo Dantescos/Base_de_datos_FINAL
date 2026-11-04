@@ -961,8 +961,61 @@ def abrir_perfil_doble_clic(event=None):
     al_seleccionar()
     abrir_ventana_perfil()
 lista_personas.bind("<Double-Button-1>", abrir_perfil_doble_clic)
+# ============================================================================
+# BLOQUE 22: FUNCION GENERAR PDF
+# ============================================================================
+def generar_pdf():
+    seleccion = lista_entrevistas.curselection()
+    if not seleccion:
+        messagebox.showwarning("Atencion", "Selecciona una entrevista de la lista.")
+        return
+    
+    dato = lista_entrevistas.get(seleccion[0])
+    id_entrevista = dato.split("//")[0].replace("ID: ", "").strip()
+    
+    # 2. Consultar base de datos
+    cursor.execute("SELECT entrevista, dni, nombre_profecional, fecha, nivel_avance FROM entrevistas WHERE id = ?", (id_entrevista,))
+    registro = cursor.fetchone()
+    if not registro:
+        messagebox.showerror("Error", "No se encontro el registro.")
+        return
+    #3.Aca se deberia crear el pdf 
+    archivo_pdf = filedialog.asksaveasfilename(defaultextension=".pdf",filetypes=[("Archivos PDF", "*.pdf")],initialfile=f"Entrevista_DNI_{dni}.pdf")
+    texto, dni, profesional, fecha, nivel,nombre_paciente,apellido_paciente = registro
+    # 4.Intenta crearse un pdf de forma automaticamente
+    try:
+        pdf = FPDF()
+        pdf.add_page()
+        
+        # Titulo
+        pdf.set_font("Arial", "B", 16) 
+        pdf.cell(0, 10, "Reporte de Entrevista", new_x="LMARGIN", new_y="NEXT", align="C")
+        pdf.ln(10) # Espacio
+
+        # Datos generales
+        pdf.set_font("Arial", "B", 12)
+        pdf.cell(0, 8, f"Fecha: {fecha}", new_x="LMARGIN", new_y="NEXT")
+        pdf.cell(0,8, f" Apellido del paciente: {apellido_paciente} ",new_x ="LMARGIN", new_y = "NEXT")
+        pdf.cell(0,8,f"Nombre del paciente: {nombre_paciente}",new_x="L_MARGIN",new_y="NEXT")
+        pdf.cell(0, 8, f"DNI del Paciente: {dni}", new_x="LMARGIN", new_y="NEXT")
+        pdf.cell(0, 8, f"Profesional a cargo: {profesional}", new_x="LMARGIN", new_y="NEXT")
+        pdf.cell(0, 8, f"Nivel de avance: {nivel}/10", new_x="LMARGIN", new_y="NEXT")
+        pdf.ln(10)
+
+        # Anotaciones (fpdf2 hace los saltos de línea solo si el texto es largo)
+        pdf.set_font("Arial", "B", 12)
+        pdf.cell(0, 8, "Anotaciones de la entrevista:", new_x="LMARGIN", new_y="NEXT")
+        pdf.set_font("Arial", "", 11)
+        pdf.multi_cell(0, 8, texto)
+
+        # Guardar archivo
+        pdf.output(archivo_pdf)
+        messagebox.showinfo("Exito","¡PDF generado!")
+
+    except Exception as e:
+        messagebox.showerror("Error", 'No se pudo generar el PDF')
 
 # ============================================================================
-# BLOQUE 22: INICIO DEL PROGRAMA
+# BLOQUE 23: INICIO DEL PROGRAMA
 # ============================================================================
 ventana.mainloop()
