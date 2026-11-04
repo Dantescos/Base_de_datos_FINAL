@@ -85,7 +85,8 @@ ventana = tk.Tk()                        # Crea la ventana principal
 ventana.title("✚ MEDTRACK")              # Titulo de la ventana
 ventana.geometry("1000x800")             # Tamaño inicial
 ventana.config(bg=GRIS_NIEBLA)           # Color de fondo
-
+ventana.resizable(0,0)
+#fede estubo aqui :3
 # ============================================================================
 # BLOQUE 6: BANNER (franja del titulo abajo)
 # ============================================================================
