@@ -400,7 +400,7 @@ def ver_list_entrevist(lista_widget):
     lista_widget.delete(0, tk.END)
     cursor.execute("SELECT * FROM entrevistas")
     for i in cursor.fetchall():
-        dato = f"ID: {i[0]} // Fecha: {i[4]} // DNI: {i[2]} // Profecional: {i[3]} // Entrevista: {i[1]}"
+        dato = f"ID: {i[0]} // Fecha: {i[4]} // DNI: {i[2]} // Profesional: {i[3]} // Entrevista: {i[1]}"
         lista_widget.insert(tk.END, dato)
 
 # ============================================================================
@@ -516,8 +516,7 @@ def new_entrevista():
         messagebox.showwarning("Faltan datos", "Complete la entrevista, DNI y Profesional.")
         return
 
-    cursor.execute("INSERT INTO entrevistas (entrevista, dni, nombre_profecional, fecha, nivel_avance) VALUES (?,?,?,?,?)",
-                   (entrevista, dni, nom_profecional, fecha, nivel))
+    cursor.execute("INSERT INTO entrevistas (entrevista, dni, nombre_profecional, fecha, nivel_avance) VALUES (?,?,?,?,?)",(entrevista, dni, nom_profecional, fecha, nivel))
     conexion.commit()
     ver_list_entrevist(lista_entrevistas)
 def eliminar_entrevista():
@@ -686,7 +685,7 @@ def abrir_ventana_perfil():
     Label(frame_izquierdo, text=" Cargar pdfs aqui:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=5, column=0, sticky="e", padx=5)
     entry_pdf_perfil = tk.Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
     entry_pdf_perfil.grid(row=5, column=1, sticky="e", padx=5, pady=3)
-#fede estubo qui :p
+    #fede estubo qui :p
     # BARRA DE PROGRESO REAL
     label_barra_progreso_perfil = tk.Label(frame_izquierdo, text="Progreso:", bg=AZUL_PETROLEO, fg=BLANCO, font=("Segoe UI", 12))
     label_barra_progreso_perfil.grid(row=6, column=0, sticky="e", padx=5, pady=12)
