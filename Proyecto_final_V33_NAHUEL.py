@@ -237,6 +237,8 @@ def limpiar():
 # BLOQUE 8: FRAME DE BOTONES PRINCIPALES
 # ============================================================================
 frame_btn = tk.Frame(ventana, bg=GRIS_NIEBLA)
+frame_btn_info = tk.Frame(ventana, bg=GRIS_NIEBLA)
+frame_btn_info.pack(side="bottom", fill="x", padx=10, pady=15)
 frame_btn.pack(side="top", fill="x", padx=15, pady=10)
 
 tk.Button(frame_btn, text="Agregar", font=("Segoe UI", 12), command=agregar, bg=VERDE_AZULADO, fg="white", activebackground=VERDE_TERMINAL, activeforeground=NEGRO, relief="flat").pack(side="left", padx=5, expand=True, fill="both")
@@ -976,7 +978,7 @@ def abrir_desde_principal():
     abrir_ventana_entrevistas(ventana)
 Button(frame_btn, text="Entrevistas", command=abrir_desde_principal, bg=VERDE_AZULADO, fg="white", activebackground=VERDE_TERMINAL, activeforeground=NEGRO, font=("Segoe UI", 12)).pack(side="left", padx=5, expand=True, fill="both")
 Button(frame_btn, text="Editor de fotos", command=abrir_ventana_editor_fotos, bg=VERDE_AZULADO, fg=BLANCO, activebackground=VERDE_TERMINAL, activeforeground=NEGRO, font=("Segoe UI", 12)).pack(side="left", padx=5, expand=True, fill="both")
-Button(frame_btn, text="i",command=abrir_ventana_autores, bg=VERDE_AZULADO, fg=BLANCO,relief="flat",highlightthickness=0, activebackground=VERDE_TERMINAL, activeforeground=NEGRO, font=("Segoe UI", 12)).pack(side="left", padx=5, expand=True, fill="both")
+tk.Button(frame_btn_info, text="info",command=abrir_ventana_autores, bg=VERDE_AZULADO, fg=BLANCO,relief="flat",highlightthickness=0, activebackground=VERDE_TERMINAL, activeforeground=NEGRO, width=1, font=("Segoe UI", 12)).pack(side="bottom", padx=5, anchor="sw")
 Button(frame_btn, text="Imprimir PDF",command=generar_pdf, bg=VERDE_AZULADO, fg=BLANCO,relief="flat",highlightthickness=0, activebackground=VERDE_TERMINAL, activeforeground=NEGRO, font=("Segoe UI", 12)).pack(side="left", padx=5, expand=True, fill="both")
 
 refrescar_lista()
