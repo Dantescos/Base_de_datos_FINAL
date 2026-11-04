@@ -860,7 +860,7 @@ def abrir_desde_principal():
 tk.Button(frame_btn, text="Entrevistas", command=abrir_desde_principal, bg=VERDE_AZULADO, fg="white", width=12, activebackground=VERDE_TERMINAL, activeforeground=NEGRO, font=("Segoe UI", 12)).pack(side="left", padx=5)
 tk.Button(frame_btn, text="Perfil", command=abrir_ventana_perfil, bg=VERDE_AZULADO, fg=BLANCO, width=12, activebackground=VERDE_TERMINAL, activeforeground=NEGRO, font=("Segoe UI", 12)).pack(side="left", padx=5)
 tk.Button(frame_btn, text="Editor de fotos", command=abrir_ventana_editor_fotos, bg=VERDE_AZULADO, fg=BLANCO, width=12, activebackground=VERDE_TERMINAL, activeforeground=NEGRO, font=("Segoe UI", 12)).pack(side="left", padx=5)
-tk.Button(frame_btn, text="i",command=abrir_ventana_autores, bg=GRIS_NIEBLA, fg=NEGRO,relief="flat",highlightthickness=0,width=1, activebackground=VERDE_TERMINAL, activeforeground=NEGRO, font=("Segoe UI", 12)).pack(side="left", padx=5)
+tk.Button(frame_btn, text="i",command=abrir_ventana_autores, bg=VERDE_AZULADO, fg=BLANCO,relief="flat",highlightthickness=0,width=1, activebackground=VERDE_TERMINAL, activeforeground=NEGRO, font=("Segoe UI", 12)).pack(side="left", padx=5)
 refrescar_lista()
 # ============================================================================
 # BLOQUE 21: INICIO DEL PROGRAMA
