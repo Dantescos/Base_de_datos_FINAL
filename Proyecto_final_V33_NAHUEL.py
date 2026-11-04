@@ -472,7 +472,7 @@ def ver_list_entrevist(lista_widget):
 def pantalla_edit_entrevista(ventana_padre):
     ventana_editar = tk.Toplevel(ventana_padre)
     ventana_editar.title("Editar datos de entrevista")
-    ventana_editar.geometry("800x650")
+    ventana_editar.geometry("800x900")
     ventana_editar.config(bg=GRIS_NIEBLA)
 
     frame_editar_superior = tk.Frame(ventana_editar, bg=AZUL_PETROLEO, relief="solid", bd=1)
