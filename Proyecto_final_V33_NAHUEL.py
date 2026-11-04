@@ -119,7 +119,10 @@ def mostrar_foto(dni):
         except Exception:
             pass
     visor_foto.configure(image="", text="Sin foto")
+
 def al_seleccionar(event=None):
+    grids_nom_ape()
+    grids_dni()
     # Se dispara al hacer click en la lista
     sel = lista_personas.curselection()
     if not sel: return
@@ -133,37 +136,44 @@ def al_seleccionar(event=None):
     entry_apellido.delete(0, tk.END); entry_apellido.insert(0, fila[1])
     entry_dni.delete(0, tk.END); entry_dni.insert(0, fila[2])
     mostrar_foto(dni)
+
 def agregar():
-    # Lee los datos
-    nombre = entry_nombre.get().strip()
-    apellido = entry_apellido.get().strip()
-    dni_txt = entry_dni.get().strip()
-    if not (nombre and apellido and dni_txt):
-        messagebox.showwarning("Faltan datos", "Completa nombre, apellido y DNI.")
-        return
-    try:
-        dni = int(dni_txt)
-    except ValueError:
-        messagebox.showerror("DNI invalido", "El DNI debe ser numerico.")
-        return
-    # Pide foto (opcional)
-    ruta = filedialog.askopenfilename(title="Foto (opcional)", filetypes=[("Imagenes", "*.png *.jpg *.jpeg *.webp")])
-    contenido = None
-    if ruta:
-        with open(ruta, "rb") as f:
-            contenido = sqlite3.Binary(f.read())
-    # Inserta en BD
-    try:
-        cursor.execute("INSERT INTO personas (nombre, apellido, dni, foto) VALUES (?,?,?,?)", (nombre, apellido, dni, contenido))
-        conexion.commit()
-    except sqlite3.IntegrityError:
-        messagebox.showerror("Error", "Ya existe una persona con ese DNI.")
-        return
-    refrescar_lista()
-    limpiar()
-    messagebox.showinfo("OK", "Persona agregada.")
+    if not entry_nombre.winfo_ismapped():
+        grids_nom_ape()
+        grids_dni()
+    else:
+        # Lee los datos
+        nombre = entry_nombre.get().strip()
+        apellido = entry_apellido.get().strip()
+        dni_txt = entry_dni.get().strip()
+        if not (nombre and apellido and dni_txt):
+            messagebox.showwarning("Faltan datos", "Completa nombre, apellido y DNI.")
+            return
+        try:
+            dni = int(dni_txt)
+        except ValueError:
+            messagebox.showerror("DNI invalido", "El DNI debe ser numerico.")
+            return
+        # Pide foto (opcional)
+        ruta = filedialog.askopenfilename(title="Foto (opcional)", filetypes=[("Imagenes", "*.png *.jpg *.jpeg *.webp")])
+        contenido = None
+        if ruta:
+            with open(ruta, "rb") as f:
+                contenido = sqlite3.Binary(f.read())
+        # Inserta en BD
+        try:
+            cursor.execute("INSERT INTO personas (nombre, apellido, dni, foto) VALUES (?,?,?,?)", (nombre, apellido, dni, contenido))
+            conexion.commit()
+        except sqlite3.IntegrityError:
+            messagebox.showerror("Error", "Ya existe una persona con ese DNI.")
+            return
+        refrescar_lista()
+        limpiar()
+        messagebox.showinfo("OK", "Persona agregada.")
 
 def eliminar():
+    grids_remove_nom_ape()
+    grids_remove_dni()
     seleccion = lista_personas.curselection()
     if not seleccion:
         messagebox.showwarning("Atención","Selecciona una persona de la lista para eliminar.")
@@ -172,32 +182,39 @@ def eliminar():
     dni = int(texto.split("DNI ")[1])
     if not messagebox.askyesno("Confirmar eliminación",f"¿Estás seguro de que deseas eliminar a esta persona?\n\n{texto}"):
         return
+    # Borra entrevistas y luego persona
     cursor.execute("DELETE FROM entrevistas WHERE dni = ?", (dni,))
     cursor.execute("DELETE FROM personas WHERE dni = ?", (dni,))
     conexion.commit()
     refrescar_lista()
-    limpiar()
     messagebox.showinfo("OK", "Persona eliminada correctamente.")
+
 def buscar():
-    dni_txt = entry_dni.get().strip()
-    if not dni_txt:
-        messagebox.showwarning("Atencion", "Escribi de forma numerica un DNI para buscar.")
-        return
-    cursor.execute("SELECT nombre, apellido, dni FROM personas WHERE dni = ?", (dni_txt,))
-    fila = cursor.fetchone()
-    if not fila:
-        messagebox.showinfo("Sin resultados", "No existe esa persona.")
-        return
-    entry_nombre.delete(0, tk.END); entry_nombre.insert(0, fila[0])
-    entry_apellido.delete(0, tk.END); entry_apellido.insert(0, fila[1])
-    mostrar_foto(fila[2])
-    # Resalta en lista
-    for i in range(lista_personas.size()):
-        if f"DNI {fila[2]}" in lista_personas.get(i):
-            lista_personas.selection_clear(0, tk.END)
-            lista_personas.selection_set(i)
-            lista_personas.see(i)
-            break
+    grids_remove_nom_ape()
+    if not entry_dni.winfo_ismapped():
+        grids_dni()
+    else:
+        dni_txt = entry_dni.get().strip()
+        if not dni_txt:
+            messagebox.showwarning("Atencion", "Escribi de forma numerica un DNI para buscar.")
+            return
+        cursor.execute("SELECT nombre, apellido, dni FROM personas WHERE dni = ?", (dni_txt,))
+        fila = cursor.fetchone()
+        if not fila:
+            messagebox.showinfo("Sin resultados", "No existe esa persona.")
+            return
+        else:
+            grids_nom_ape()
+            entry_nombre.delete(0, tk.END); entry_nombre.insert(0, fila[0])
+            entry_apellido.delete(0, tk.END); entry_apellido.insert(0, fila[1])
+            mostrar_foto(fila[2])
+            # Resalta en lista
+            for i in range(lista_personas.size()):
+                if f"DNI {fila[2]}" in lista_personas.get(i):
+                    lista_personas.selection_clear(0, tk.END)
+                    lista_personas.selection_set(i)
+                    lista_personas.see(i)
+                    break
 def limpiar():
     entry_nombre.delete(0, tk.END)
     entry_apellido.delete(0, tk.END)
@@ -235,6 +252,29 @@ label_dni = tk.Label(frame_form, text="DNI:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, f
 label_dni.grid(row=0, column=4, sticky="e", padx=5)
 entry_dni = tk.Entry(frame_form, width=15, font=("Segoe UI", 12))
 entry_dni.grid(row=0, column=5, padx=5, pady=3)
+
+def grids_nom_ape():
+    label_nombre.grid()
+    entry_nombre.grid()
+    label_apellido.grid()
+    entry_apellido.grid()
+
+def grids_dni():
+    label_dni.grid()
+    entry_dni.grid()
+
+def grids_remove_nom_ape():
+    label_nombre.grid_remove()
+    entry_nombre.grid_remove()
+    label_apellido.grid_remove()
+    entry_apellido.grid_remove()
+
+def grids_remove_dni():
+    label_dni.grid_remove()
+    entry_dni.grid_remove()
+
+grids_remove_nom_ape()
+grids_remove_dni()
 
 # ============================================================================
 # BLOQUE 10: CUERPO (VISOR Y LISTA PRINCIPAL)
