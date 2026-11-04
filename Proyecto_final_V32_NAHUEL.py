@@ -792,19 +792,69 @@ def cargar_imagen():
 # BLOQUE 19: DERECHOS DE AUTOR
 # ============================================================================
 def abrir_ventana_autores():
-    ventana_autores = Toplevel(ventana)
+    hay_imagen = cargar_imagen()   # ya lo tenías, no lo toques
+
+    ventana_autores = tk.Toplevel(ventana)
     ventana_autores.title("Licencia y autores de la aplicacion")
     ventana_autores.geometry("1000x800")
-    ventana_autores.config(bg=NEGRO)
-    ventana_autores_fondo = Frame(ventana_autores,bg=NEGRO)    
-    ventana_autores_fondo.pack(expand=True,fill="both",padx=20,pady=20)
-    ventana_autores_titulo = Label(ventana_autores_fondo,text="AUTORES",fg=BLANCO,bg=NEGRO,font=("Segoe UI", 28, "bold"))
-    ventana_autores_titulo.pack(side="top" )
-    nombres = ["Antonio Garcia","Nahuel Villafañe", "Mateo Dabruzzo Wilczek","Federico 'Fedelobo'","Ignacio","Thiago","Pablo Laporta","Fernando 'Master'","Joaquin Arana",]
+
+    # ---- Canvas: acá sí se puede imagen de fondo + texto encima ----
+    canvas = tk.Canvas(ventana_autores, width=1000, height=800, highlightthickness=0)
+    canvas.pack(fill="both", expand=True)
+
+    # ---- Imagen de fondo (si existe) ----
+    if hay_imagen:
+        cursor.execute("SELECT contenido FROM recursos WHERE nombre = ?", ("sanca",))
+        fila = cursor.fetchone()
+        img = Image.open(BytesIO(fila[0])).resize((1000, 800))
+        foto = ImageTk.PhotoImage(img)
+        canvas.create_image(0, 0, anchor="nw", image=foto)
+        ventana_autores.fondo = foto     # ¡importante! mantener referencia
+    else:
+        canvas.configure(bg=NEGRO)       # sin imagen, fondo negro
+
+    # ---- Títulos (x=500 = mitad del ancho de 1000) ----
+    canvas.create_text(500, 80, text="AUTORES",
+                       fill=BLANCO, font=("Segoe UI", 28, "bold"))
+
+    canvas.create_text(500, 130, text="EQUIPO DE DESARROLLO",
+                       fill=BLANCO, font=("Segoe UI", 16, "bold"))
+
+    # ---- Nombres ----
+    nombres = [
+        "Antonio Garcia",
+        "Nahuel Villafañe",
+        "Mateo Dabruzzo Wilczek",
+        "Federico 'Fedelobo'",
+        "Ignacio",
+        "Thiago",
+        "Pablo Laporta",
+        "Fernando 'Master'",
+        "Joaquin Arana",
+    ]
+    y = 180
     for nombre in nombres:
-        Label(ventana_autores_fondo,text=nombre,bg=NEGRO,fg=BLANCO,font=("Segoe UI", 16, "bold")).pack(pady=1)
-    # Boton cerrar
-    Button(ventana_autores,text="X",command=ventana_autores.destroy, bg=NEGRO, fg=BLANCO, font=("Segoe UI", 12, "bold")).place(relx=0.95, rely=0.05, anchor="ne")
+        canvas.create_text(500, y, text=nombre,
+                           fill=BLANCO, font=("Segoe UI", 14))
+        y += 30
+
+    # ---- Licencia ----
+    y += 30
+    canvas.create_text(500, y, text="LICENCIA",
+                       fill=BLANCO, font=("Segoe UI", 16, "bold"))
+
+    y += 40
+    canvas.create_text(500, y,
+                       text=("© 2026 Equipo de programacion Sanca. Todos los derechos reservados.\n"
+                             "Queda prohibida la copia, modificación, distribución,\n"
+                             "ingeniería inversa y uso comercial sin autorización escrita."),
+                       fill=BLANCO, font=("Segoe UI", 12),
+                       justify="center", width=800)
+
+    # ---- Botón cerrar (encima del canvas) ----
+    tk.Button(ventana_autores, text="X", command=ventana_autores.destroy,
+              bg=BLANCO, fg=NEGRO,
+              font=("Segoe UI", 12, "bold")).place(relx=0.95, rely=0.05, anchor="ne")
 # ============================================================================
 # BLOQUE 20: BOTONES PRINCIPALES QUE ABREN LAS OTRAS VENTANAS
 # ============================================================================
