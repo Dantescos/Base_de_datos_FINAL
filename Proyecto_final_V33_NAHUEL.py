@@ -12,6 +12,7 @@ import string  # Lo usamos para sacar los signos de puntuación en comprobar_fec
 import os  # Para manejar rutas y archivos (os.path.basename, os.remove, etc.)
 import shutil  # Para copiar archivos (shutil.copy)
 import re  # (Importado pero no usado en este archivo actualmente)
+from fpdf import FPDF # Improtar para generar el pdf
 
 # ============================================================================
 # BLOQUE 2: VARIABLES GLOBALES
