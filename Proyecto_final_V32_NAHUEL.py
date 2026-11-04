@@ -23,7 +23,7 @@ imagenes_cargadas = []  # Lista vacia donde guardamos las RUTAS de las imagenes 
 # BLOQUE 3: BASE DE DATOS
 # Acá conectamos a SQLite y creamos las tablas si no existen.
 # ============================================================================
-conexion = sqlite3.connect("Trabajo_FINAL.db")  # Abre (o crea) el archivo de base de datos
+conexion = sqlite3.connect("Trabajo_FINAl.db")  # Abre (o crea) el archivo de base de datos
 cursor = conexion.cursor()  # El cursor es el que ejecuta las consultas SQL
 cursor.execute("PRAGMA foreign_keys = ON;")  # Activa las claves foráneas
 
@@ -254,7 +254,6 @@ scroll.pack(side="right", fill="y")
 lista_personas = tk.Listbox(frame_lista, yscrollcommand=scroll.set, font=("Segoe UI", 12), bg=BLANCO, fg=GRIS_AZULADO, selectbackground=AZUL_SERENO, selectforeground=BLANCO)
 lista_personas.pack(side="left", fill="both",expand= True)
 scroll.config(command=lista_personas.yview)
-
 # ============================================================================
 # BLOQUE 11: MODO OSCURO
 # ============================================================================
@@ -601,7 +600,6 @@ def abrir_ventana_entrevistas(ventana_padre):
         pantalla_edit_entrevista(ventana_entrevistas)
     tk.Button(frame_inferior, text="Editar entrevista", bg=AZUL_SERENO, fg=BLANCO, command=abrir_editar, font=("Segoe UI", 12, "bold"), relief="flat", width=15).grid(row=0, column=3, padx=10)
 
-    agregar_boton_luna(ventana_entrevistas)
 
 # ============================================================================
 # BLOQUE 15.5: FUNCION PARA ACTUALIZAR LA BARRA (AHORA ES GLOBAL)
@@ -715,8 +713,6 @@ def abrir_ventana_perfil():
     lista_personas_perfil = Listbox(frame_lista_perfil, yscrollcommand=scroll_perfil.set, font=("Segoe UI", 12), bg=BLANCO, fg=GRIS_AZULADO, selectbackground=AZUL_SERENO, selectforeground=BLANCO)
     lista_personas_perfil.pack(side="left", fill="both", expand=True)
     scroll_perfil.config(command=lista_personas_perfil.yview)
-    agregar_boton_luna(ventana_perfil)
-
 # ============================================================================
 # BLOQUE 17: VENTANA DEL EDITOR DE FOTOS
 # ============================================================================
@@ -774,7 +770,6 @@ def abrir_ventana_editor_fotos():
     tk.Button(frame_editor_fotos_inferior, text="Añadir fotos", command=agregar_imagen, bg=VERDE_AZULADO, fg="white", width=12, activebackground=VERDE_TERMINAL, activeforeground=NEGRO, font=("Segoe UI", 12)).grid(row=0, column=1, padx=10)
     tk.Button(frame_editor_fotos_inferior, text="Eliminar fotos", command=eliminar_imagen, bg=VERDE_AZULADO, fg="white", width=12, activebackground=VERDE_TERMINAL, activeforeground=NEGRO, font=("Segoe UI", 12)).grid(row=0, column=2, padx=10)
 
-    agregar_boton_luna(ventana_editor_fotos)
 # ============================================================================
 # BLOQUE 18: CARGAR IMAGEN DE SANCA
 # ============================================================================
@@ -797,72 +792,40 @@ def cargar_imagen():
 # BLOQUE 19: DERECHOS DE AUTOR
 # ============================================================================
 def abrir_ventana_autores():
-    hay_imagen =cargar_imagen() #chequeo si la imagen existe
-    ventana_autores = tk.Toplevel(ventana)
+    ventana_autores = Toplevel(ventana)
     ventana_autores.title("Licencia y autores de la aplicacion")
     ventana_autores.geometry("1000x800")
-    ventana_autores.config(bg=GRIS_NIEBLA)
-    canvas = tk.Canvas(ventana_autores, width=1000, height=800, highlightthickness=0) # esto sirve mucho mas que un frame como queria hacer al principio
-    canvas.pack(fill="both", expand=True)
-    # Imagen de fondo
-    if hay_imagen:
-        cursor.execute("SELECT contenido FROM recursos WHERE nombre =? ",("sanca",))
-        fila = cursor.fetchone()
-        img = Image.open(BytesIO(fila[0])).resize((1000,800))
-        foto = ImageTk.PhotoImage(img)
-        canvas.create_image(0, 0, anchor="nw", image=foto)
-        ventana_autores.fondo = foto
-    else:
-        canvas.configure(bg="black")  # sin imagen, fondo liso
-        canvas.create_text(450, 60,text="AUTORES",fill=NEGRO,font=("Segoe UI", 28, "bold") )
-        canvas.create_text(450, 110,text="EQUIPO DE DESARROLLO ",fill=NEGRO,font=("Segoe UI", 16, "bold"))
-    nombres = ["Antonio Garcia",
-        "Nahuel Villafañe",
-        "Mateo Dabruzzo Wilczek",
-        "Federico 'Fedelobo'",
-        "Ignacio",
-        "Thiago",
-        "Pablo Laporta",
-        "Fernando 'Master'",
-        "Joaquin Arana",]
-
-    y = 150
+    ventana_autores.config(bg=NEGRO)
+    ventana_autores_fondo = Frame(ventana_autores,bg=NEGRO)    
+    ventana_autores_fondo.pack(expand=True,fill="both",padx=20,pady=20)
+    ventana_autores_titulo = Label(ventana_autores_fondo,text="AUTORES",fg=BLANCO,bg=NEGRO,font=("Segoe UI", 28, "bold"))
+    ventana_autores_titulo.pack(side="top" )
+    nombres = ["Antonio Garcia","Nahuel Villafañe", "Mateo Dabruzzo Wilczek","Federico 'Fedelobo'","Ignacio","Thiago","Pablo Laporta","Fernando 'Master'","Joaquin Arana",]
     for nombre in nombres:
-        canvas.create_text(
-            450, y,
-            text=f" {nombre} ",
-            fill=NEGRO,
-            font=("Segoe UI", 14)
-        )
-        y += 28
-
-    # Licencia
-    y += 30
-    canvas.create_text(
-        450, y,
-        text=" LICENCIA ",
-        fill=NEGRO,
-        font=("Segoe UI", 16, "bold")
-    )
-
-    y += 35
-    canvas.create_text(450, y,text="© 2026 Equipo de programacion Sanca. Todos los derechos reservados.\n"
-             "Queda prohibida la copia, modificación, distribución,\n"
-             "ingeniería inversa y uso comercial sin autorización escrita.",fill=NEGRO,font=("Segoe UI", 12),
-        justify="center",width=800)
+        Label(ventana_autores_fondo,text=nombre,bg=NEGRO,fg=BLANCO,font=("Segoe UI", 16, "bold")).pack(pady=1)
     # Boton cerrar
-    tk.Button(ventana_autores,text="X",command=ventana_autores.destroy, bg=NEGRO, fg=BLANCO, font=("Segoe UI", 12, "bold")).place(relx=0.95, rely=0.05, anchor="ne")
+    Button(ventana_autores,text="X",command=ventana_autores.destroy, bg=NEGRO, fg=BLANCO, font=("Segoe UI", 12, "bold")).place(relx=0.95, rely=0.05, anchor="ne")
 # ============================================================================
 # BLOQUE 20: BOTONES PRINCIPALES QUE ABREN LAS OTRAS VENTANAS
 # ============================================================================
 def abrir_desde_principal():
     abrir_ventana_entrevistas(ventana)
 tk.Button(frame_btn, text="Entrevistas", command=abrir_desde_principal, bg=VERDE_AZULADO, fg="white", width=12, activebackground=VERDE_TERMINAL, activeforeground=NEGRO, font=("Segoe UI", 12)).pack(side="left", padx=5)
-tk.Button(frame_btn, text="Perfil", command=abrir_ventana_perfil, bg=VERDE_AZULADO, fg=BLANCO, width=12, activebackground=VERDE_TERMINAL, activeforeground=NEGRO, font=("Segoe UI", 12)).pack(side="left", padx=5)
 tk.Button(frame_btn, text="Editor de fotos", command=abrir_ventana_editor_fotos, bg=VERDE_AZULADO, fg=BLANCO, width=12, activebackground=VERDE_TERMINAL, activeforeground=NEGRO, font=("Segoe UI", 12)).pack(side="left", padx=5)
 tk.Button(frame_btn, text="i",command=abrir_ventana_autores, bg=VERDE_AZULADO, fg=BLANCO,relief="flat",highlightthickness=0,width=1, activebackground=VERDE_TERMINAL, activeforeground=NEGRO, font=("Segoe UI", 12)).pack(side="left", padx=5)
 refrescar_lista()
 # ============================================================================
-# BLOQUE 21: INICIO DEL PROGRAMA
+# BLOQUE 21: DOBLE CLICK PARA ABRIR EL PERFIL
+# ============================================================================
+def abrir_perfil_doble_clic(event=None):
+    if not lista_personas.curselection(): #curselection es para que seleccione con el mouse
+        return
+    al_seleccionar()
+    refrescar_lista()
+    abrir_ventana_perfil()
+lista_personas.bind("<Double-Button-1>", abrir_perfil_doble_clic)
+
+# ============================================================================
+# BLOQUE 22: INICIO DEL PROGRAMA
 # ============================================================================
 ventana.mainloop()
