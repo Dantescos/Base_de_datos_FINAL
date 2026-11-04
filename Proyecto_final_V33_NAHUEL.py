@@ -228,10 +228,10 @@ def limpiar():
 frame_btn = tk.Frame(ventana, bg=GRIS_NIEBLA)
 frame_btn.pack(side="top", fill="x", padx=15, pady=10)
 
-tk.Button(frame_btn, text="Agregar", font=("Segoe UI", 12), command=agregar, bg=VERDE_AZULADO, fg="white", width=12, activebackground=VERDE_TERMINAL, activeforeground=NEGRO, relief="flat").pack(side="left", padx=5)
-tk.Button(frame_btn, text="Eliminar", font=("Segoe UI", 12), command=eliminar, bg=VERDE_AZULADO, fg="white", width=12, activebackground=VERDE_TERMINAL, activeforeground=NEGRO, relief="flat").pack(side="left", padx=5)
-tk.Button(frame_btn, text="Buscar", font=("Segoe UI", 12), command=buscar, bg=VERDE_AZULADO, fg="white", width=12, activebackground=VERDE_TERMINAL, activeforeground=NEGRO, relief="flat").pack(side="left", padx=5)
-tk.Button(frame_btn, text="Limpiar", font=("Segoe UI", 12), command=limpiar, bg=VERDE_AZULADO, fg="white", width=12, activebackground=VERDE_TERMINAL, activeforeground=NEGRO, relief="flat").pack(side="left", padx=5)
+tk.Button(frame_btn, text="Agregar", font=("Segoe UI", 12), command=agregar, bg=VERDE_AZULADO, fg="white", activebackground=VERDE_TERMINAL, activeforeground=NEGRO, relief="flat").pack(side="left", padx=5, expand=True, fill="both")
+tk.Button(frame_btn, text="Eliminar", font=("Segoe UI", 12), command=eliminar, bg=VERDE_AZULADO, fg="white", activebackground=VERDE_TERMINAL, activeforeground=NEGRO, relief="flat").pack(side="left", padx=5, expand=True, fill="both")
+tk.Button(frame_btn, text="Buscar", font=("Segoe UI", 12), command=buscar, bg=VERDE_AZULADO, fg="white", activebackground=VERDE_TERMINAL, activeforeground=NEGRO, relief="flat").pack(side="left", padx=5, expand=True, fill="both")
+tk.Button(frame_btn, text="Limpiar", font=("Segoe UI", 12), command=limpiar, bg=VERDE_AZULADO, fg="white", activebackground=VERDE_TERMINAL, activeforeground=NEGRO, relief="flat").pack(side="left", padx=5, expand=True, fill="both")
 
 # ============================================================================
 # BLOQUE 9: FORMULARIO PRINCIPAL
@@ -949,9 +949,9 @@ def abrir_ventana_autores():
 # ============================================================================
 def abrir_desde_principal():
     abrir_ventana_entrevistas(ventana)
-tk.Button(frame_btn, text="Entrevistas", command=abrir_desde_principal, bg=VERDE_AZULADO, fg="white", width=12, activebackground=VERDE_TERMINAL, activeforeground=NEGRO, font=("Segoe UI", 12)).pack(side="left", padx=5)
-tk.Button(frame_btn, text="Editor de fotos", command=abrir_ventana_editor_fotos, bg=VERDE_AZULADO, fg=BLANCO, width=12, activebackground=VERDE_TERMINAL, activeforeground=NEGRO, font=("Segoe UI", 12)).pack(side="left", padx=5)
-tk.Button(frame_btn, text="i",command=abrir_ventana_autores, bg=VERDE_AZULADO, fg=BLANCO,relief="flat",highlightthickness=0,width=1, activebackground=VERDE_TERMINAL, activeforeground=NEGRO, font=("Segoe UI", 12)).pack(side="left", padx=5)
+tk.Button(frame_btn, text="Entrevistas", command=abrir_desde_principal, bg=VERDE_AZULADO, fg="white", activebackground=VERDE_TERMINAL, activeforeground=NEGRO, font=("Segoe UI", 12)).pack(side="left", padx=5, expand=True, fill="both")
+tk.Button(frame_btn, text="Editor de fotos", command=abrir_ventana_editor_fotos, bg=VERDE_AZULADO, fg=BLANCO, activebackground=VERDE_TERMINAL, activeforeground=NEGRO, font=("Segoe UI", 12)).pack(side="left", padx=5, expand=True, fill="both")
+tk.Button(frame_btn, text="i",command=abrir_ventana_autores, bg=VERDE_AZULADO, fg=BLANCO,relief="flat",highlightthickness=0, activebackground=VERDE_TERMINAL, activeforeground=NEGRO, font=("Segoe UI", 12)).pack(side="left", padx=5, expand=True, fill="both")
 refrescar_lista()
 # ============================================================================
 # BLOQUE 21: DOBLE CLICK PARA ABRIR EL PERFIL
