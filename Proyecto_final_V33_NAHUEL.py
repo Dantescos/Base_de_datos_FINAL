@@ -883,18 +883,19 @@ def abrir_ventana_autores():
         y += 30
 
     # ---- Licencia ----
+    
     y += 30
     canvas.create_text(500, y, text="LICENCIA",
                        fill=NEGRO, font=("Segoe UI", 16, "bold"))
 
     y += 40
     canvas.create_text(500, y,
-                       text=("© 2026 Equipo de programacion Sanca. Todos los derechos reservados.\n"
-                             "Queda prohibida la copia, modificación, distribución,\n"
-                             "ingeniería inversa y uso comercial sin autorización escrita."),
-                       fill=NEGRO, font=("Segoe UI", 12),
+                       text=("© 2026 Equipo de programación Sanca. Todos los derechos reservados.\n\n"
+                             "Prohibida la copia, modificación, distribución y uso comercial\n"
+                             "del software sin autorización escrita del titular.\n"
+                             "Ley 11.723 de Propiedad Intelectual (Argentina)."),
+                       fill=NEGRO, font=("Segoe UI", 11),
                        justify="center", width=800)
-
     # ---- Botón cerrar (encima del canvas) ----
     tk.Button(ventana_autores, text="X", command=ventana_autores.destroy,
               bg=BLANCO, fg=NEGRO,
