@@ -122,6 +122,8 @@ def mostrar_foto(dni):
     visor_foto.configure(image="", text="Sin foto")
 
 def al_seleccionar(event=None):
+    boton_buscar_definitivo.pack_forget()
+    boton_agregar_definitivo.pack_forget()
     grids_nom_ape()
     grids_dni()
     # Se dispara al hacer click en la lista
@@ -139,40 +141,45 @@ def al_seleccionar(event=None):
     mostrar_foto(dni)
 
 def agregar():
+    boton_buscar_definitivo.pack_forget()
     if not entry_nombre.winfo_ismapped():
         grids_nom_ape()
         grids_dni()
-    else:
-        # Lee los datos
-        nombre = entry_nombre.get().strip()
-        apellido = entry_apellido.get().strip()
-        dni_txt = entry_dni.get().strip()
-        if not (nombre and apellido and dni_txt):
-            messagebox.showwarning("Faltan datos", "Completa nombre, apellido y DNI.")
-            return
-        try:
-            dni = int(dni_txt)
-        except ValueError:
-            messagebox.showerror("DNI invalido", "El DNI debe ser numerico.")
-            return
-        # Pide foto (opcional)
-        ruta = filedialog.askopenfilename(title="Foto (opcional)", filetypes=[("Imagenes", "*.png *.jpg *.jpeg *.webp")])
-        contenido = None
-        if ruta:
-            with open(ruta, "rb") as f:
-                contenido = sqlite3.Binary(f.read())
-        # Inserta en BD
-        try:
-            cursor.execute("INSERT INTO personas (nombre, apellido, dni, foto) VALUES (?,?,?,?)", (nombre, apellido, dni, contenido))
-            conexion.commit()
-        except sqlite3.IntegrityError:
-            messagebox.showerror("Error", "Ya existe una persona con ese DNI.")
-            return
-        refrescar_lista()
-        limpiar()
-        messagebox.showinfo("OK", "Persona agregada.")
+    boton_agregar_definitivo.pack()
+
+
+def agregar_definitivo():
+    nombre = entry_nombre.get().strip()
+    apellido = entry_apellido.get().strip()
+    dni_txt = entry_dni.get().strip()
+    if not (nombre and apellido and dni_txt):
+        messagebox.showwarning("Faltan datos", "Completa nombre, apellido y DNI.")
+        return
+    try:
+        dni = int(dni_txt)
+    except ValueError:
+        messagebox.showerror("DNI invalido", "El DNI debe ser numerico.")
+        return
+    # Pide foto (opcional)
+    ruta = filedialog.askopenfilename(title="Foto (opcional)", filetypes=[("Imagenes", "*.png *.jpg *.jpeg *.webp")])
+    contenido = None
+    if ruta:
+        with open(ruta, "rb") as f:
+            contenido = sqlite3.Binary(f.read())
+    # Inserta en BD
+    try:
+        cursor.execute("INSERT INTO personas (nombre, apellido, dni, foto) VALUES (?,?,?,?)", (nombre, apellido, dni, contenido))
+        conexion.commit()
+    except sqlite3.IntegrityError:
+        messagebox.showerror("Error", "Ya existe una persona con ese DNI.")
+        return
+    refrescar_lista()
+    limpiar()
+    messagebox.showinfo("OK", "Persona agregada.")
 
 def eliminar():
+    boton_buscar_definitivo.pack_forget()
+    boton_agregar_definitivo.pack_forget()
     grids_remove_nom_ape()
     grids_remove_dni()
     seleccion = lista_personas.curselection()
@@ -191,31 +198,35 @@ def eliminar():
     messagebox.showinfo("OK", "Persona eliminada correctamente.")
 
 def buscar():
+    boton_agregar_definitivo.pack_forget()
     grids_remove_nom_ape()
     if not entry_dni.winfo_ismapped():
         grids_dni()
+    boton_buscar_definitivo.pack()
+
+def buscar_definitivo():
+    dni_txt = entry_dni.get().strip()
+    if not dni_txt:
+        messagebox.showwarning("Atencion", "Escribi de forma numerica un DNI para buscar.")
+        return
+    cursor.execute("SELECT nombre, apellido, dni FROM personas WHERE dni = ?", (dni_txt,))
+    fila = cursor.fetchone()
+    if not fila:
+        messagebox.showinfo("Sin resultados", "No existe esa persona.")
+        return
     else:
-        dni_txt = entry_dni.get().strip()
-        if not dni_txt:
-            messagebox.showwarning("Atencion", "Escribi de forma numerica un DNI para buscar.")
-            return
-        cursor.execute("SELECT nombre, apellido, dni FROM personas WHERE dni = ?", (dni_txt,))
-        fila = cursor.fetchone()
-        if not fila:
-            messagebox.showinfo("Sin resultados", "No existe esa persona.")
-            return
-        else:
-            grids_nom_ape()
-            entry_nombre.delete(0, tk.END); entry_nombre.insert(0, fila[0])
-            entry_apellido.delete(0, tk.END); entry_apellido.insert(0, fila[1])
-            mostrar_foto(fila[2])
-            # Resalta en lista
-            for i in range(lista_personas.size()):
-                if f"DNI {fila[2]}" in lista_personas.get(i):
-                    lista_personas.selection_clear(0, tk.END)
-                    lista_personas.selection_set(i)
-                    lista_personas.see(i)
-                    break
+        grids_nom_ape()
+        entry_nombre.delete(0, tk.END); entry_nombre.insert(0, fila[0])
+        entry_apellido.delete(0, tk.END); entry_apellido.insert(0, fila[1])
+        mostrar_foto(fila[2])
+        # Resalta en lista
+        for i in range(lista_personas.size()):
+            if f"DNI {fila[2]}" in lista_personas.get(i):
+                lista_personas.selection_clear(0, tk.END)
+                lista_personas.selection_set(i)
+                lista_personas.see(i)
+                break
+
 def limpiar():
     entry_nombre.delete(0, tk.END)
     entry_apellido.delete(0, tk.END)
@@ -228,11 +239,17 @@ def limpiar():
 frame_btn = tk.Frame(ventana, bg=GRIS_NIEBLA)
 frame_btn.pack(side="top", fill="x", padx=15, pady=10)
 
-tk.Button(frame_btn, text="Agregar", font=("Segoe UI", 12), command=agregar, bg=VERDE_AZULADO, fg="white", activebackground=VERDE_TERMINAL, activeforeground=NEGRO, relief="flat").pack(side="left", padx=5, expand=True, fill="both")
-tk.Button(frame_btn, text="Eliminar", font=("Segoe UI", 12), command=eliminar, bg=VERDE_AZULADO, fg="white", activebackground=VERDE_TERMINAL, activeforeground=NEGRO, relief="flat").pack(side="left", padx=5, expand=True, fill="both")
-tk.Button(frame_btn, text="Buscar", font=("Segoe UI", 12), command=buscar, bg=VERDE_AZULADO, fg="white", activebackground=VERDE_TERMINAL, activeforeground=NEGRO, relief="flat").pack(side="left", padx=5, expand=True, fill="both")
-tk.Button(frame_btn, text="Limpiar", font=("Segoe UI", 12), command=limpiar, bg=VERDE_AZULADO, fg="white", activebackground=VERDE_TERMINAL, activeforeground=NEGRO, relief="flat").pack(side="left", padx=5, expand=True, fill="both")
+tk.Button(frame_btn, text="Agregar", font=("Segoe UI", 12), command=agregar, bg=VERDE_AZULADO, fg="white", width=12, activebackground=VERDE_TERMINAL, activeforeground=NEGRO, relief="flat").pack(side="left", padx=5)
+tk.Button(frame_btn, text="Eliminar", font=("Segoe UI", 12), command=eliminar, bg=VERDE_AZULADO, fg="white", width=12, activebackground=VERDE_TERMINAL, activeforeground=NEGRO, relief="flat").pack(side="left", padx=5)
+tk.Button(frame_btn, text="Buscar", font=("Segoe UI", 12), command=buscar, bg=VERDE_AZULADO, fg="white", width=12, activebackground=VERDE_TERMINAL, activeforeground=NEGRO, relief="flat").pack(side="left", padx=5)
+tk.Button(frame_btn, text="Limpiar", font=("Segoe UI", 12), command=limpiar, bg=VERDE_AZULADO, fg="white", width=12, activebackground=VERDE_TERMINAL, activeforeground=NEGRO, relief="flat").pack(side="left", padx=5)
 
+#####################################
+boton_buscar_definitivo=tk.Button(frame_btn,text="buscar_definitivo",command=buscar_definitivo)
+boton_buscar_definitivo.pack_forget()
+
+boton_agregar_definitivo=tk.Button(frame_btn,text="agregar_definitivo",command=agregar_definitivo)
+boton_agregar_definitivo.pack_forget()
 # ============================================================================
 # BLOQUE 9: FORMULARIO PRINCIPAL
 # ============================================================================
