@@ -601,10 +601,14 @@ def pantalla_edit_entrevista(ventana_padre):
 def new_entrevista():
     entrevista = text_entrevista.get("1.0", tk.END).strip() # .strip() borra los enters de mas
     dni = entry_dni_entrevista.get().strip()
+    dni_profesional = entry_dni_profesional.get().strip()
     nom_profecional = entry_nombre_profecional.get().strip()
     fecha = comprobar_fecha(entry_fecha)
+    matricula = entry_matricula.get().strip()
+    especialidad = entry_especialidad.get().strip()
     hora = entry_hora_entrevista.get().strip()
     tipo = var_tipo_entrevista.get()
+    proxima_sesion = entry_proxima_sesion.get().strip()
 
     if entrevista == "" or dni == "" or nom_profecional == "":
         messagebox.showwarning("Faltan datos", "Complete la entrevista, DNI del paciente y Profesional.")
@@ -612,9 +616,9 @@ def new_entrevista():
 
     try:
         cursor.execute("""INSERT INTO entrevistas
-            (nombre_profecional, entrevista, dni_paciente, fecha_entrevista, hora_entrevista, tipo_entrevista)
-            VALUES (?,?,?,?,?,?)""",
-            (nom_profecional, entrevista, dni, fecha, hora, tipo))
+            (nombre_profecional, dni_profesional, entrevista, dni_paciente, matricula, especialidad, fecha_entrevista, hora_entrevista, tipo_entrevista, proxima_sesion)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+            (nom_profecional, dni_profesional, entrevista, dni, matricula, especialidad, fecha, hora, tipo, proxima_sesion))
         conexion.commit()
     except Exception as e:
         messagebox.showerror("Error", f"No se pudo guardar la entrevista: {e}")
@@ -639,10 +643,10 @@ def detalles_entrevsit(event=None):
     dato = lista_entrevistas.get(seleccion[0])
     id_entrevista = dato.split("//")[0].replace("ID: ", "").strip()
 
-    cursor.execute("""SELECT nombre_profecional, apellido_profecional, dni_profecional,
+    cursor.execute("""SELECT nombre_profecional, apellido_profecional, dni_profesional,
                              matricula, especialidad, entrevista, dni_paciente,
                              fecha_entrevista, hora_entrevista, tipo_entrevista,
-                             proxima_sesion_entrevista
+                             proxima_sesion
                       FROM entrevistas WHERE id = ?""", (id_entrevista,))
     e = cursor.fetchone()
     if not e:
@@ -682,57 +686,57 @@ def detalles_entrevsit(event=None):
     text_dato.insert("1.0", e[5] or "")
     text_dato.config(state=tk.DISABLED)
 
-# ============================================================================
-# BLOQUE 15: VENTANA EMERGENTE DE ENTREVISTAS
-# ============================================================================
-def abrir_ventana_entrevistas(ventana_padre):
-    ventana_entrevistas = tk.Toplevel(ventana_padre)
-    ventana_entrevistas.title("ENTREVISTAS")
-    ventana_entrevistas.geometry("1000x800")
-    ventana_entrevistas.config(bg=GRIS_NIEBLA)
 
-    global lista_entrevistas, text_entrevista, entry_dni_entrevista
-    global entry_nombre_profecional, entry_fecha
-    global entry_hora_entrevista, var_tipo_entrevista
+    tk.Label(frame_superior, text="Fecha:", bg=GRIS_AZULADO, fg=BLANCO, font=("Segoe UI", 11, "bold")).grid(row=0, column=2, sticky="e", padx=10, pady=8)
+    entry_fecha = tk.Entry(frame_superior, font=("Segoe UI", 11), width=15)
+    entry_fecha.grid(row=0, column=3, sticky="w", padx=5)
 
-    frame_superior = Frame(ventana_entrevistas, bg=GRIS_AZULADO)
-    frame_superior.pack(side="top", fill="x", padx=20, pady=10)
+    tk.Label(frame_superior, text="Hora:", bg=GRIS_AZULADO, fg=BLANCO, font=("Segoe UI", 11, "bold")).grid(row=0, column=4, sticky="e", padx=10, pady=8)
+    entry_hora_entrevista = tk.Entry(frame_superior, font=("Segoe UI", 11), width=15)
+    entry_hora_entrevista.grid(row=0, column=5, sticky="w", padx=5)
 
-    # DNI paciente
-    tk.Label(frame_superior, text="DNI del paciente:", bg=GRIS_AZULADO, fg=BLANCO, font=("Segoe UI", 12)).grid(row=0, column=0, sticky="e", padx=5, pady=10)
-    entry_dni_entrevista = tk.Entry(frame_superior, font=("Segoe UI", 12))
-    entry_dni_entrevista.grid(row=0, column=1, sticky="e", padx=5)
+    # ---FILA 1: Datos del Profesional e Identificacion---
+    tk.Label(frame_superior, text="Profesional:", bg=GRIS_AZULADO, fg=BLANCO, font=("Segoe UI", 11, "bold")).grid(row=1, column=0, sticky="e", padx=10, pady=8)
+    entry_nombre_profecional = tk.Entry(frame_superior, font=("Segoe UI", 11), width=15)
+    entry_nombre_profecional.grid(row=1, column=1, sticky="w", padx=5)
 
-    # Profesional
-    tk.Label(frame_superior, text="Profesional:", bg=GRIS_AZULADO, fg=BLANCO, font=("Segoe UI", 12)).grid(row=0, column=2, sticky="e", padx=5)
-    entry_nombre_profecional = tk.Entry(frame_superior, font=("Segoe UI", 12))
-    entry_nombre_profecional.grid(row=0, column=3, sticky="e", padx=5)
+    tk.Label(frame_superior, text="DNI Profesional:", bg=GRIS_AZULADO, fg=BLANCO, font=("Segoe UI", 11, "bold")).grid(row=1, column=2, sticky="e", padx=10, pady=8)
+    entry_dni_profesional = tk.Entry(frame_superior, font=("Segoe UI", 11), width=15)
+    entry_dni_profesional.grid(row=1, column=3, sticky="w", padx=5)
 
-    # Fecha
-    tk.Label(frame_superior, text="Fecha:", bg=GRIS_AZULADO, fg=BLANCO, font=("Segoe UI", 12)).grid(row=0, column=4, sticky="e", padx=5)
-    entry_fecha = tk.Entry(frame_superior, font=("Segoe UI", 12))
-    entry_fecha.grid(row=0, column=5, sticky="e", padx=5)
-
-    # Hora
-    tk.Label(frame_superior, text="Hora:", bg=GRIS_AZULADO, fg=BLANCO, font=("Segoe UI", 12)).grid(row=1, column=0, sticky="e", padx=5)
-    entry_hora_entrevista = tk.Entry(frame_superior, font=("Segoe UI", 12))
-    entry_hora_entrevista.grid(row=1, column=1, sticky="e", padx=5, pady=(0, 10))
-
-    # Tipo
-    tk.Label(frame_superior, text="Tipo:", bg=GRIS_AZULADO, fg=BLANCO, font=("Segoe UI", 12)).grid(row=1, column=2, sticky="e", padx=5)
+    tk.Label(frame_superior, text="Tipo:", bg=GRIS_AZULADO, fg=BLANCO, font=("Segoe UI", 11, "bold")).grid(row=1, column=4, sticky="e", padx=10, pady=8)
     var_tipo_entrevista = tk.StringVar(value="individual")
-    tk.OptionMenu(frame_superior, var_tipo_entrevista, "individual", "grupal", "familiar").grid(row=1, column=3, sticky="w", padx=5, pady=(0, 10))
+    menu_tipo = tk.OptionMenu(frame_superior, var_tipo_entrevista, "individual", "grupal", "familiar")
+    menu_tipo.config(font=("Segoe UI", 10), width=12)
+    menu_tipo.grid(row=1, column=5, sticky="w", padx=5)
 
+    # ---FILA 2: Datos adicionales---
+    tk.Label(frame_superior, text="Matrícula:", bg=GRIS_AZULADO, fg=BLANCO, font=("Segoe UI", 11, "bold")).grid(row=2, column=0, sticky="e", padx=10, pady=8)
+    entry_matricula = tk.Entry(frame_superior, font=("Segoe UI", 11), width=15)
+    entry_matricula.grid(row=2, column=1, sticky="w", padx=5)
+
+    tk.Label(frame_superior, text="Especialidad:", bg=GRIS_AZULADO, fg=BLANCO, font=("Segoe UI", 11, "bold")).grid(row=2, column=2, sticky="e", padx=10, pady=8)
+    entry_especialidad = tk.Entry(frame_superior, font=("Segoe UI", 11), width=15)
+    entry_especialidad.grid(row=2, column=3, sticky="w", padx=5)
+
+    tk.Label(frame_superior, text="Próxima Sesión:", bg=GRIS_AZULADO, fg=BLANCO, font=("Segoe UI", 11, "bold")).grid(row=2, column=4, sticky="e", padx=10, pady=8)
+    entry_proxima_sesion = tk.Entry(frame_superior, font=("Segoe UI", 11), width=15)
+    entry_proxima_sesion.grid(row=2, column=5, sticky="w", padx=5)
+
+    # ---CUERPO MEDIO (Lista e Historial)---
     frame_medio_cuerpo = tk.Frame(ventana_entrevistas, bg=GRIS_NIEBLA)
     frame_medio_cuerpo.pack(fill="both", expand=True, padx=15, pady=10)
 
     # LADO IZQUIERDO: lista
     frame_lista_medio = Frame(frame_medio_cuerpo, bg=BLANCO, relief="solid", bd=1)
     frame_lista_medio.pack(side="left", fill="both", expand=True, padx=(0, 10))
+    
     tk.Label(frame_lista_medio, text="Historial de Entrevistas", bg=BLANCO, fg=GRIS_AZULADO, font=("Segoe UI", 13, "bold")).pack(pady=5)
+    
     lista_entrevistas = tk.Listbox(frame_lista_medio, bg=BLANCO, fg=GRIS_AZULADO, selectbackground=AZUL_SERENO, selectforeground=BLANCO, bd=0, font=("Segoe UI", 10))
     lista_entrevistas.pack(fill="both", expand=True, padx=5, pady=5)
     lista_entrevistas.bind("<Double-Button-1>", detalles_entrevsit)
+    
     ver_list_entrevist(lista_entrevistas)
 
     # LADO DERECHO: texto
