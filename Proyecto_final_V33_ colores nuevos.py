@@ -1026,6 +1026,68 @@ def generar_pdf():
         pdf.cell(0, 8, f"DNI del Paciente: {dni}", new_x="LMARGIN", new_y="NEXT")
         pdf.cell(0, 8, f"Profesional a cargo: {profesional}", new_x="LMARGIN", new_y="NEXT")
         pdf.cell(0, 8, f"Nivel de avance: {nivel}/10", new_x="LMARGIN", new_y="NEXT")
+
+
+
+
+# IGNACIO ESTE ES EL CODIGO
+        import tkinter as tk
+
+class RoundedButton(tk.Canvas):
+    def __init__(self, parent, width, height, corner_radius, bg_color, fg_color, text="", command=None):
+        super().__init__(parent, width=width, height=height, bg=parent["bg"], highlightthickness=0)
+        self.command = command
+        self.bg_color = bg_color
+        
+        # Dibujar esquinas redondeadas en el Canvas
+        self.rect = self.round_rectangle(0, 0, width, height, radius=corner_radius, fill=bg_color, outline="")
+        self.text_id = self.create_text(width / 2, height / 2, text=text, fill=fg_color, font=("Helvetica", 12, "bold"))
+        
+        # Eventos para simular el botón
+        self.tag_bind(self.rect, "<ButtonPress-1>", self._on_press)
+        self.tag_bind(self.text_id, "<ButtonPress-1>", self._on_press)
+
+    def round_rectangle(self, x1, y1, x2, y2, radius=25, **kwargs):
+        points = [
+            x1 + radius, y1,
+            x1 + radius, y1,
+            x2 - radius, y1,
+            x2 - radius, y1,
+            x2, y1,
+            x2, y1 + radius,
+            x2, y1 + radius,
+            x2, y2 - radius,
+            x2, y2 - radius,
+            x2, y2,
+            x2 - radius, y2,
+            x2 - radius, y2,
+            x1 + radius, y2,
+            x1 + radius, y2,
+            x1, y2,
+            x1, y2 - radius,
+            x1, y2 - radius,
+            x1, y1 + radius,
+            x1, y1 + radius,
+            x1, y1
+        ]
+        return self.create_polygon(points, **kwargs, smooth=True)
+
+    def _on_press(self, event):
+        if self.command:
+            self.command()
+
+# Ejemplo de uso:
+def accion():
+    print("¡Botón presionado!")
+
+root = tk.Tk()
+root.geometry("300x200")
+
+btn = RoundedButton(root, width=160, height=50, corner_radius=20, bg_color="#1f6aa5", fg_color="white", text="Botón Redondo", command=accion)
+btn.pack(pady=50)
+
+root.mainloop()
+
         pdf.ln(10)
 
         # Anotaciones (fpdf2 hace los saltos de línea solo si el texto es largo)
