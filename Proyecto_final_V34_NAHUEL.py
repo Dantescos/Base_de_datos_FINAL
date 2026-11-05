@@ -24,7 +24,7 @@ imagenes_cargadas = []  # Lista vacia donde guardamos las RUTAS de las imagenes 
 # BLOQUE 3: BASE DE DATOS
 # Acá conectamos a SQLite y creamos las tablas si no existen.
 # ============================================================================
-conexion = sqlite3.connect("Trabajo_FINAl.db")  # Abre (o crea) el archivo de base de datos
+conexion = sqlite3.connect("Trabajo_FINAL.db")  # Abre (o crea) el archivo de base de datos
 cursor = conexion.cursor()  # El cursor es el que ejecuta las consultas SQL
 cursor.execute("PRAGMA foreign_keys = ON;")  # Activa las claves foráneas
 
@@ -50,8 +50,7 @@ id INTEGER PRIMARY KEY AUTOINCREMENT,
 entrevista TEXT NOT NULL,
 dni INTEGER NOT NULL,
 nombre_profecional TEXT NOT NULL,
-fecha TEXT NOT NULL,
-nivel_avance INTEGER DEFAULT 0
+fecha TEXT NOT NULL
 )""")
 # Creo una tabla para que guarde la imagen de Sanca, mientras se tenga los archivos descargados la imagen vive aca, recomiendo tener todo descargado
 cursor.execute("""CREATE TABLE IF NOT EXISTS recursos(
@@ -436,8 +435,7 @@ def aplicar_tema():
 
     btn_tema.config(bg=boton_fill, fg=boton_text, activebackground=active_bg, activeforeground=active_fg)
     actualizar_ventanas_secundarias()
-
-btn_tema = tk.Button(frame_btn, text="☾", command=aplicar_tema, bg="#111111", fg="#FFFFFF", font=("Segoe UI", 18, "bold"), width=3, height=1, relief="flat", bd=0, cursor="hand2")
+btn_tema = Button(frame_btn, text="☾", command=aplicar_tema, bg="#111111", fg="#FFFFFF", font=("Segoe UI", 18, "bold"), width=3, height=1, relief="flat", bd=0, cursor="hand2")
 btn_tema.pack(side="right", padx=5)
 
 # ============================================================================
@@ -494,15 +492,10 @@ def pantalla_edit_entrevista(ventana_padre):
     entry_fecha = tk.Entry(frame_editar_superior, width=30, relief="solid", bd=1, font=("Segoe UI", 12))
     entry_fecha.grid(row=3, column=1)
 
-    # NUEVO CAMPO: Nivel de avance para editar
-    Label(frame_editar_superior, text="Nivel de avance (1-10):", bg=AZUL_PETROLEO, fg=BLANCO_HUESO, font=("Segoe UI", 12)).grid(row=4, column=0)
-    entry_nivel_editar = tk.Entry(frame_editar_superior, width=30, relief="solid", bd=1, font=("Segoe UI", 12))
-    entry_nivel_editar.grid(row=4, column=1)
-
     frame_editar_medio = tk.Frame(ventana_editar, bg=GRIS_NIEBLA, relief="solid", bd=1)
     frame_editar_medio.pack(fill="both", expand=True, padx=20, pady=10)
     Label(frame_editar_medio, text="Texto de la entrevista:", bg=AZUL_PETROLEO, fg=BLANCO_HUESO, font=("Segoe UI", 12)).pack(fill="x", side="top", padx=20, pady=5)
-    text_entrevista = tk.Text(frame_editar_medio, bg=AZUL_SERENO, relief="solid", bd=1, font=("Segoe UI", 12))
+    text_entrevista = tk.Text(frame_editar_medio, bg=GRIS_NIEBLA, relief="solid", bd=1, font=("Segoe UI", 12))
     text_entrevista.pack(fill="both", expand=True, padx=15, pady=15)
 
     # Funcion para precargar los datos de la entrevista a partir del ID
@@ -521,11 +514,11 @@ def pantalla_edit_entrevista(ventana_padre):
         entry_dni.delete(0, tk.END); entry_dni.insert(0, e[2])
         entry_nombre_profecional.delete(0, tk.END); entry_nombre_profecional.insert(0, e[3])
         entry_fecha.delete(0, tk.END); entry_fecha.insert(0, e[4])
-        entry_nivel_editar.delete(0, tk.END); entry_nivel_editar.insert(0, e[5])
 
     # Boton para cargar los datos de la entrevista existente
-    tk.Button(frame_editar_superior, text="Cargar", command=cargar_entrevista, bg=VERDE_AZULADO, fg=BLANCO, font=("Segoe UI", 10)).grid(row=0, column=2, padx=10, sticky="ew")
-
+    boton_cargar= Button(frame_editar_superior, text="Cargar datos", command=cargar_entrevista, bg=VERDE_AZULADO, fg=BLANCO, font=("Segoe UI", 10))
+    boton_cargar.grid(row=0, column=2, padx=10, sticky="ew")
+   
     def edit_entrevista():
         p_id = entry_id.get()
         if p_id == "": return
@@ -543,15 +536,10 @@ def pantalla_edit_entrevista(ventana_padre):
                 if fecha == "":
                     fecha = entrevista[4]
                 else:
-                    fecha = comprobar_fecha(entry_fecha)
-                # Toma nivel nuevo o mantiene viejo
-                nivel = entry_nivel_editar.get()
-                if nivel == "":
-                    nivel = entrevista[5] 
-                
+                    fecha = comprobar_fecha(entry_fecha)                
                 # UPDATE de todos los campos
-                conexion.execute("UPDATE entrevistas SET entrevista = ?, dni = ?, nombre_profecional = ?, fecha = ?, nivel_avance = ? WHERE id = ?",
-                                 (entrevist, dni, nom_profecional, fecha, nivel, p_id))
+                conexion.execute("UPDATE entrevistas SET entrevista = ?, dni = ?, nombre_profecional = ?, fecha = ? WHERE id = ?",
+                                 (entrevist, dni, nom_profecional, fecha, p_id))
                 conexion.commit()
                 break
         ver_list_entrevist(lista_entrevistas)
@@ -563,8 +551,8 @@ def pantalla_edit_entrevista(ventana_padre):
     frame_editar_inferior.grid_columnconfigure(1, weight=1)
     frame_editar_inferior.grid_columnconfigure(1, weight=0)
     frame_editar_inferior.grid_columnconfigure(2, weight=1)
-    boton_edit_entrevista = Button(frame_editar_inferior, text="Guardar cambios", font=("Segoe UI", 12, "bold"), width=12, command=edit_entrevista, bg=VERDE_AZULADO, fg=BLANCO, relief="flat")
-    boton_edit_entrevista.grid(row=0, column=1, sticky="ew")
+    boton_edit_entrevista = Button(frame_editar_superior, text="Guardar cambios", font=("Segoe UI", 10), command=edit_entrevista, bg=VERDE_AZULADO, fg=BLANCO)
+    boton_edit_entrevista.grid(row=0, column=3, padx=10, sticky="ew")
 
 # ============================================================================
 # BLOQUE 14: FUNCIONES DE LA VENTANA DE ENTREVISTAS
@@ -583,6 +571,7 @@ def new_entrevista():
     cursor.execute("INSERT INTO entrevistas (entrevista, dni, nombre_profecional, fecha, nivel_avance) VALUES (?,?,?,?,?)",(entrevista, dni, nom_profecional, fecha, nivel))
     conexion.commit()
     ver_list_entrevist(lista_entrevistas)
+
 def eliminar_entrevista():
     seleccion = lista_entrevistas.curselection()
     if seleccion:
@@ -591,6 +580,7 @@ def eliminar_entrevista():
         cursor.execute("DELETE FROM entrevistas WHERE id = ?", (id_entrevista,))
         conexion.commit()
         ver_list_entrevist(lista_entrevistas)
+
 def detalles_entrevsit(event=None):
     seleccion = lista_entrevistas.curselection()
     if seleccion:
@@ -633,7 +623,7 @@ def abrir_ventana_entrevistas(ventana_padre):
     frame_superior.pack(side="top", fill="x", padx=20, pady=10)
 
     # DNI
-    tk.Label(frame_superior, text="DNI:", bg=GRIS_AZULADO, fg=BLANCO, font=("Segoe UI", 12)).grid(row=0, column=0, sticky="e", padx=5, pady=10)
+    tk.Label(frame_superior, text="DNI del paciente:", bg=GRIS_AZULADO, fg=BLANCO, font=("Segoe UI", 12)).grid(row=0, column=0, sticky="e", padx=5, pady=10)
     entry_dni_entrevista = tk.Entry(frame_superior, font=("Segoe UI", 12))
     entry_dni_entrevista.grid(row=0, column=1, sticky="e", padx=5)
 
@@ -646,12 +636,6 @@ def abrir_ventana_entrevistas(ventana_padre):
     tk.Label(frame_superior, text="Fecha:", bg=GRIS_AZULADO, fg=BLANCO, font=("Segoe UI", 12)).grid(row=0, column=4, sticky="e", padx=5)
     entry_fecha = tk.Entry(frame_superior, font=("Segoe UI", 12))
     entry_fecha.grid(row=0, column=5, sticky="e", padx=5)
-
-    # Nivel de avance (Nota del 1 al 10)
-    tk.Label(frame_superior, text="Nivel (1-10):", bg=GRIS_AZULADO, fg=BLANCO, font=("Segoe UI", 12)).grid(row=0, column=6, sticky="e", padx=5)
-    opciones_nivel = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]
-    menu_nivel = tk.OptionMenu(frame_superior, nivel_avance_var, *opciones_nivel)
-    menu_nivel.grid(row=0, column=7, sticky="e", padx=5)
 
     frame_medio_cuerpo = tk.Frame(ventana_entrevistas, bg=GRIS_NIEBLA)
     frame_medio_cuerpo.pack(fill="both", expand=True, padx=15, pady=10)
@@ -682,31 +666,12 @@ def abrir_ventana_entrevistas(ventana_padre):
     frame_inferior.columnconfigure(2, weight=1)
     frame_inferior.columnconfigure(3, weight=1)
 
-    tk.Button(frame_inferior, text="Nueva entrevista", command=new_entrevista, bg=VERDE_AZULADO, fg=BLANCO, font=("Segoe UI", 12, "bold"), relief="flat").grid(row=0, column=1, padx=10, sticky="ew")
-    tk.Button(frame_inferior, text="Eliminar entrevista", command=eliminar_entrevista, bg=ROJO, fg=BLANCO, font=("Segoe UI", 12, "bold"), relief="flat").grid(row=0, column=2, padx=10, sticky="ew")
+    Button(frame_inferior, text="Nueva entrevista", command=new_entrevista, bg=VERDE_AZULADO, fg=BLANCO, font=("Segoe UI", 12, "bold"), relief="flat").grid(row=0, column=1, padx=10, sticky="ew")
+    Button(frame_inferior, text="Eliminar entrevista", command=eliminar_entrevista, bg=ROJO, fg=BLANCO, font=("Segoe UI", 12, "bold"), relief="flat").grid(row=0, column=2, padx=10, sticky="ew")
 
     def abrir_editar():
         pantalla_edit_entrevista(ventana_entrevistas)
-    tk.Button(frame_inferior, text="Editar entrevista", bg=AZUL_SERENO, fg=BLANCO, command=abrir_editar, font=("Segoe UI", 12, "bold"), relief="flat").grid(row=0, column=3, padx=10, sticky="ew")
-
-
-# ============================================================================
-# BLOQUE 15.5: FUNCION PARA ACTUALIZAR LA BARRA (AHORA ES GLOBAL)
-# ============================================================================
-def actualizar_barra_perfil(dni, barra, label):
-    # Buscamos el promedio de las notas de ese paciente
-    cursor.execute("SELECT AVG(nivel_avance) FROM entrevistas WHERE dni = ?", (dni,))
-    promedio = cursor.fetchone()[0]
-    
-    if promedio is not None:
-        # Si el promedio es 7.5, la barra va al 75%
-        porcentaje = promedio * 10
-        barra['value'] = porcentaje
-        label.config(text=f"{porcentaje:.1f}%")
-    else:
-        # Si no tiene entrevistas, queda en 0
-        barra['value'] = 0
-        label.config(text="0%")
+    Button(frame_inferior, text="Editar entrevista", bg=AZUL_SERENO, fg=BLANCO, command=abrir_editar, font=("Segoe UI", 12, "bold"), relief="flat").grid(row=0, column=3, padx=10, sticky="ew")
 
 # ============================================================================
 # BLOQUE 16: VENTANA DE PERFIL
@@ -718,7 +683,7 @@ def abrir_ventana_perfil():
     ventana_perfil.config(bg=GRIS_NIEBLA)
     ventana_perfil.resizable(False, False)
 
-    frame_izquierdo = tk.Frame(ventana_perfil, bg=AZUL_PETROLEO)
+    frame_izquierdo = tk.Frame(ventana_perfil, bg=GRIS_NIEBLA)
     frame_izquierdo.pack(side="left", fill="y", padx=15, pady=15)
 
     # Nombre
@@ -754,16 +719,6 @@ def abrir_ventana_perfil():
     entry_pdf_perfil = tk.Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
     entry_pdf_perfil.grid(row=5, column=1, sticky="e", padx=5, pady=3)
     #fede estubo qui :p
-    # BARRA DE PROGRESO REAL
-    label_barra_progreso_perfil = tk.Label(frame_izquierdo, text="Progreso:", bg=AZUL_PETROLEO, fg=BLANCO, font=("Segoe UI", 12))
-    label_barra_progreso_perfil.grid(row=6, column=0, sticky="e", padx=5, pady=12)
-
-    barra_progreso = ttk.Progressbar(frame_izquierdo, orient="horizontal", length=150, mode="determinate")
-    barra_progreso.grid(row=6, column=1, sticky="w", padx=5, pady=3)
-    
-    label_porcentaje = tk.Label(frame_izquierdo, text="0%", bg=AZUL_PETROLEO, fg=BLANCO, font=("Segoe UI", 12, "bold"))
-    label_porcentaje.grid(row=6, column=7, sticky="e", padx=5, pady=12)
-
     def mostrar_foto_en_perfil():
         dni_txt = entry_dni_perfil.get().strip()
         if not dni_txt:
@@ -794,7 +749,6 @@ def abrir_ventana_perfil():
             entry_nombre_perfil.delete(0, tk.END); entry_nombre_perfil.insert(0, fila[0])
             entry_apellido_perfil.delete(0, tk.END); entry_apellido_perfil.insert(0, fila[1])
             # Llamamos a la funcion global que calcula el promedio
-            actualizar_barra_perfil(dni_txt, barra_progreso, label_porcentaje)
             mostrar_foto_en_perfil()
             lista_personas_perfil.delete(0,tk.END)
             cursor.execute("SELECT id,fecha,nombre_profecional,nivel_avance FROM entrevistas WHERE dni=?",(dni_txt,))
@@ -803,9 +757,11 @@ def abrir_ventana_perfil():
         else:
             messagebox.showinfo("Error", "No existe ese DNI.")
 
-    # Boton para cargar perfil (ubicado al lado del DNI)
-    boton_cargar_perfil = tk.Button(frame_izquierdo, text="Cargar", command=cargar_perfil, bg=VERDE_AZULADO, fg="white", font=("Segoe UI", 10))
-    boton_cargar_perfil.grid(row=8, column=1, sticky="e", padx=5, pady=3)
+    # Botones
+    boton_entrevistas = Button(frame_izquierdo,text="Entrevistas", command=abrir_desde_principal, bg=VERDE_AZULADO, fg="white", activebackground=VERDE_TERMINAL, activeforeground=NEGRO, font=("Segoe UI", 12))
+    boton_entrevistas.grid(row=8, column=0, sticky="e", padx=5, pady=3)
+    boton_editor_fotos =Button(frame_izquierdo,text="Editor de fotos", command=abrir_ventana_editor_fotos, bg=VERDE_AZULADO, fg=BLANCO, activebackground=VERDE_TERMINAL, activeforeground=NEGRO, font=("Segoe UI", 12))
+    boton_editor_fotos.grid(row=8, column=1, sticky="e", padx=5, pady=3)
 
     # --- FRAME DERECHO ---
     frame_derecha = tk.Frame(ventana_perfil, bg=GRIS_NIEBLA)
@@ -837,14 +793,14 @@ def abrir_ventana_editor_fotos():
     frame_editor_fotos_superior = Frame(ventana_editor_fotos, bg=GRIS_NIEBLA)
     frame_editor_fotos_superior.pack(side="top", fill="both", expand=True)
 
-    visor_foto_perfil = tk.Label(frame_editor_fotos_superior, text="👤\nSin foto", bg=BLANCO, fg=NEGRO, relief="solid", bd=1, font=("Segoe UI", 20))
+    visor_foto_perfil = Label(frame_editor_fotos_superior, text="👤\nSin foto", bg=BLANCO, fg=NEGRO, relief="solid", bd=1, font=("Segoe UI", 20))
     visor_foto_perfil.pack(fill="both", expand=True, padx=10, pady=10)
 
     frame_lista_imgs = Frame(ventana_editor_fotos, bg=GRIS_NIEBLA)
     frame_lista_imgs.pack(fill="both", expand=True, padx=10, pady=5)
 
-    tk.Label(frame_lista_imgs, text="Imágenes cargadas:", font=("Segoe UI", 11, "bold"), bg=VERDE_AZULADO, fg="white").pack(fill="x")
-    lista_imagenes = tk.Listbox(frame_lista_imgs, height=6, font=("Segoe UI", 10))
+    Label(frame_lista_imgs, text="Imagenes cargadas:", font=("Segoe UI", 11, "bold"), bg=VERDE_AZULADO, fg="white").pack(fill="x")
+    lista_imagenes = Listbox(frame_lista_imgs, height=6, font=("Segoe UI", 10))
     lista_imagenes.pack(fill="both", expand=True, pady=5)
 
     frame_editor_fotos_inferior = Frame(ventana_editor_fotos, bg=GRIS_NIEBLA)
@@ -859,8 +815,8 @@ def abrir_ventana_editor_fotos():
             imagen_tk = ImageTk.PhotoImage(imagen)
             visor_foto_perfil.config(image=imagen_tk, text="")
             visor_foto_perfil.image = imagen_tk
-        except Exception as e:
-            print("Error al mostrar la imagen:", e)
+        except Exception:
+            print("Error al mostrar la imagen:")
 
     def agregar_imagen():
         ruta = filedialog.askopenfilename(title="Seleccionar imagen", filetypes=[("Imágenes", "*.png *.jpg *.jpeg *.bmp")])
@@ -882,8 +838,8 @@ def abrir_ventana_editor_fotos():
     frame_editor_fotos_inferior.columnconfigure(1, weight=1)
     frame_editor_fotos_inferior.columnconfigure(2, weight=1)
 
-    tk.Button(frame_editor_fotos_inferior, text="Añadir fotos", command=agregar_imagen, bg=VERDE_AZULADO, fg="white", activebackground=VERDE_TERMINAL, activeforeground=NEGRO, font=("Segoe UI", 12)).grid(row=0, column=1, padx=10, sticky="ew")
-    tk.Button(frame_editor_fotos_inferior, text="Eliminar fotos", command=eliminar_imagen, bg=VERDE_AZULADO, fg="white", activebackground=VERDE_TERMINAL, activeforeground=NEGRO, font=("Segoe UI", 12)).grid(row=0, column=2, padx=10, sticky="ew")
+    Button(frame_editor_fotos_inferior, text="Añadir fotos", command=agregar_imagen, bg=VERDE_AZULADO, fg="white", activebackground=VERDE_TERMINAL, activeforeground=NEGRO, font=("Segoe UI", 12)).grid(row=0, column=1, padx=10, sticky="ew")
+    Button(frame_editor_fotos_inferior, text="Eliminar fotos", command=eliminar_imagen, bg=VERDE_AZULADO, fg="white", activebackground=VERDE_TERMINAL, activeforeground=NEGRO, font=("Segoe UI", 12)).grid(row=0, column=2, padx=10, sticky="ew")
 
 # ============================================================================
 # BLOQUE 18: CARGAR IMAGEN DE SANCA
@@ -976,10 +932,9 @@ def abrir_ventana_autores():
 # ============================================================================
 def abrir_desde_principal():
     abrir_ventana_entrevistas(ventana)
-Button(frame_btn, text="Entrevistas", command=abrir_desde_principal, bg=VERDE_AZULADO, fg="white", activebackground=VERDE_TERMINAL, activeforeground=NEGRO, font=("Segoe UI", 12)).pack(side="left", padx=5, expand=True, fill="both")
-Button(frame_btn, text="Editor de fotos", command=abrir_ventana_editor_fotos, bg=VERDE_AZULADO, fg=BLANCO, activebackground=VERDE_TERMINAL, activeforeground=NEGRO, font=("Segoe UI", 12)).pack(side="left", padx=5, expand=True, fill="both")
-tk.Button(frame_btn_info, text="info",command=abrir_ventana_autores, bg=VERDE_AZULADO, fg=BLANCO,relief="flat",highlightthickness=0, activebackground=VERDE_TERMINAL, activeforeground=NEGRO, width=1, font=("Segoe UI", 12)).pack(side="bottom", padx=5, anchor="sw")
-Button(frame_btn, text="Imprimir PDF",command=generar_pdf, bg=VERDE_AZULADO, fg=BLANCO,relief="flat",highlightthickness=0, activebackground=VERDE_TERMINAL, activeforeground=NEGRO, font=("Segoe UI", 12)).pack(side="left", padx=5, expand=True, fill="both")
+Button(frame_btn_info, text="info",command=abrir_ventana_autores, bg=VERDE_AZULADO, fg=BLANCO,relief="flat",highlightthickness=0, activebackground=VERDE_TERMINAL, activeforeground=NEGRO, width=1, font=("Segoe UI", 12)).pack(side="bottom", padx=5, anchor="sw")
+
+#Button(frame_btn, text="Imprimir PDF",command=generar_pdf, bg=VERDE_AZULADO, fg=BLANCO,relief="flat",highlightthickness=0, activebackground=VERDE_TERMINAL, activeforeground=NEGRO, font=("Segoe UI", 12)).pack(side="left", padx=5, expand=True, fill="both")
 
 refrescar_lista()
 # ============================================================================
@@ -994,56 +949,8 @@ lista_personas.bind("<Double-Button-1>", abrir_perfil_doble_clic)
 # ============================================================================
 # BLOQUE 22: FUNCION GENERAR PDF
 # ============================================================================
-def generar_pdf():
-    seleccion = lista_entrevistas.curselection()
-    if not seleccion:
-        messagebox.showwarning("Atencion", "Selecciona una entrevista de la lista.")
-        return
-    
-    dato = lista_entrevistas.get(seleccion[0])
-    id_entrevista = dato.split("//")[0].replace("ID: ", "").strip()
-    
-    # 2. Consultar base de datos
-    cursor.execute("SELECT entrevista, dni, nombre_profecional, fecha, nivel_avance FROM entrevistas WHERE id = ?", (id_entrevista,))
-    registro = cursor.fetchone()
-    if not registro:
-        messagebox.showerror("Error", "No se encontro el registro.")
-        return
-    #3.Aca se deberia crear el pdf 
-    archivo_pdf = filedialog.asksaveasfilename(defaultextension=".pdf",filetypes=[("Archivos PDF", "*.pdf")],initialfile=f"Entrevista_DNI_{dni}.pdf")
-    texto, dni, profesional, fecha, nivel,nombre_paciente,apellido_paciente = registro
-    # 4.Intenta crearse un pdf de forma automaticamente
-    try:
-        pdf = FPDF()
-        pdf.add_page()
-        
-        # Titulo
-        pdf.set_font("Arial", "B", 16) 
-        pdf.cell(0, 10, "Reporte de Entrevista", new_x="LMARGIN", new_y="NEXT", align="C")
-        pdf.ln(10) # Espacio
-
-        # Datos generales
-        pdf.set_font("Arial", "B", 12)
-        pdf.cell(0, 8, f"Fecha: {fecha}", new_x="LMARGIN", new_y="NEXT")
-        pdf.cell(0,8, f" Apellido del paciente: {apellido_paciente} ",new_x ="LMARGIN", new_y = "NEXT")
-        pdf.cell(0,8,f"Nombre del paciente: {nombre_paciente}",new_x="L_MARGIN",new_y="NEXT")
-        pdf.cell(0, 8, f"DNI del Paciente: {dni}", new_x="LMARGIN", new_y="NEXT")
-        pdf.cell(0, 8, f"Profesional a cargo: {profesional}", new_x="LMARGIN", new_y="NEXT")
-        pdf.cell(0, 8, f"Nivel de avance: {nivel}/10", new_x="LMARGIN", new_y="NEXT")
-        pdf.ln(10)
-
-        # Anotaciones (fpdf2 hace los saltos de línea solo si el texto es largo)
-        pdf.set_font("Arial", "B", 12)
-        pdf.cell(0, 8, "Anotaciones de la entrevista:", new_x="LMARGIN", new_y="NEXT")
-        pdf.set_font("Arial", "", 11)
-        pdf.multi_cell(0, 8, texto)
-
-        # Guardar archivo
-        pdf.output(archivo_pdf)
-        messagebox.showinfo("Exito","¡PDF generado!")
-
-    except Exception as e:
-        messagebox.showerror("Error", 'No se pudo generar el PDF')
+#def generar_pdf():
+    #0.Voy a guarda la ventana de ventana que tiene que estar abierta
 
 # ============================================================================
 # BLOQUE 23: INICIO DEL PROGRAMA
