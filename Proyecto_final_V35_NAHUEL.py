@@ -1218,7 +1218,7 @@ def abrir_ventana_autores():
 # ============================================================================
 def abrir_desde_principal():
     abrir_ventana_entrevistas(ventana)
-Button(frame_btn_info, text="info",command=abrir_ventana_autores, bg=VERDE_AZULADO, fg=BLANCO,relief="flat",highlightthickness=0, activebackground=VERDE_TERMINAL, activeforeground=NEGRO, width=1, font=("Segoe UI", 12)).pack(side="bottom", padx=5, anchor="sw")
+Button(frame_btn_info, text="Info", command=abrir_ventana_autores, bg=VERDE_AZULADO, fg=BLANCO, relief="flat", highlightthickness=0, activebackground=VERDE_TERMINAL, activeforeground=NEGRO, width=6, font=("Segoe UI", 10, "bold")).pack(side="left", padx=5, pady=5)
 refrescar_lista()
 
 # ============================================================================
