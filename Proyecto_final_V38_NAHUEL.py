@@ -1379,14 +1379,14 @@ def crear_pdf_entrevistas(ruta, entrevistas):
 
     nueva_pagina()
     for datos in entrevistas:
-        # Desempaqueto las 26 variables correctamente
+        # Desempaqueto las 25 variables (saqué el ", texto" del final)
         (nombre_paciente, apellido_paciente, id_entrevista, fecha_nacimiento_paciente, 
          fecha_ingreso, telefono_paciente, direccion_paciente, nombre_contacto_emergencia, 
          telefono_emergencia, nombre_obra_social, estado_paciente, consentimiento, 
          nombre_profecional, apellido_profecional, dni_profesional, matricula, 
          especialidad, telefono_profecional, email_profecional, entrevista, 
          Dni_paciente, fecha_entrevista, hora_entrevista, tipo_entrevista, 
-         proxima_sesion, texto) = datos
+         proxima_sesion) = datos
 
         agregar_linea(f"Entrevista {id_entrevista}", negrita=True, tamano=12)
         agregar_linea(f"Fecha: {fecha_entrevista}  Hora:{hora_entrevista}  DNI del paciente: {Dni_paciente}")
@@ -1412,7 +1412,8 @@ def crear_pdf_entrevistas(ruta, entrevistas):
         agregar_linea(f"Texto: {entrevista}")
         agregar_linea(f"Proxima sesion del paciente:{proxima_sesion}")
         
-        parrafos = (texto or "").splitlines() or ["Sin anotaciones"]
+        # ACA ESTABA EL PROBLEMA: usaba 'texto', ahora usa 'entrevista', ahora se puede ver las anotaciones
+        parrafos = (entrevista or "").splitlines() or ["Sin anotaciones"]
         for parrafo in parrafos:
             lineas = textwrap.wrap(parrafo, width=88, break_long_words=True, break_on_hyphens=False) or [""]
             for linea in lineas:
