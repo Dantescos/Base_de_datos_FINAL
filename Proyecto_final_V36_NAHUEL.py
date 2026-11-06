@@ -601,10 +601,14 @@ def pantalla_edit_entrevista(ventana_padre):
 def new_entrevista():
     entrevista = text_entrevista.get("1.0", tk.END).strip() # .strip() borra los enters de mas
     dni = entry_dni_entrevista.get().strip()
+    dni_profesional = entry_dni_profesional.get().strip()
     nom_profecional = entry_nombre_profecional.get().strip()
     fecha = comprobar_fecha(entry_fecha)
+    matricula = entry_matricula.get().strip()
+    especialidad = entry_especialidad.get().strip()
     hora = entry_hora_entrevista.get().strip()
     tipo = var_tipo_entrevista.get()
+    proxima_sesion = entry_proxima_sesion.get().strip()
 
     if entrevista == "" or dni == "" or nom_profecional == "":
         messagebox.showwarning("Faltan datos", "Complete la entrevista, DNI del paciente y Profesional.")
@@ -612,9 +616,9 @@ def new_entrevista():
 
     try:
         cursor.execute("""INSERT INTO entrevistas
-            (nombre_profecional, entrevista, dni_paciente, fecha_entrevista, hora_entrevista, tipo_entrevista)
-            VALUES (?,?,?,?,?,?)""",
-            (nom_profecional, entrevista, dni, fecha, hora, tipo))
+            (nombre_profecional, dni_profesional, entrevista, dni_paciente, matricula, especialidad, fecha_entrevista, hora_entrevista, tipo_entrevista, proxima_sesion)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+            (nom_profecional, dni_profesional, entrevista, dni, matricula, especialidad, fecha, hora, tipo, proxima_sesion))
         conexion.commit()
     except Exception as e:
         messagebox.showerror("Error", f"No se pudo guardar la entrevista: {e}")
@@ -639,10 +643,10 @@ def detalles_entrevsit(event=None):
     dato = lista_entrevistas.get(seleccion[0])
     id_entrevista = dato.split("//")[0].replace("ID: ", "").strip()
 
-    cursor.execute("""SELECT nombre_profecional, apellido_profecional, dni_profecional,
+    cursor.execute("""SELECT nombre_profecional, apellido_profecional, dni_profesional,
                              matricula, especialidad, entrevista, dni_paciente,
                              fecha_entrevista, hora_entrevista, tipo_entrevista,
-                             proxima_sesion_entrevista
+                             proxima_sesion
                       FROM entrevistas WHERE id = ?""", (id_entrevista,))
     e = cursor.fetchone()
     if not e:
@@ -688,51 +692,71 @@ def detalles_entrevsit(event=None):
 def abrir_ventana_entrevistas(ventana_padre):
     ventana_entrevistas = tk.Toplevel(ventana_padre)
     ventana_entrevistas.title("ENTREVISTAS")
-    ventana_entrevistas.geometry("1000x800")
+    ventana_entrevistas.geometry("1150x800")
     ventana_entrevistas.config(bg=GRIS_NIEBLA)
 
     global lista_entrevistas, text_entrevista, entry_dni_entrevista
-    global entry_nombre_profecional, entry_fecha
-    global entry_hora_entrevista, var_tipo_entrevista
+    global entry_nombre_profecional, entry_dni_profesional, entry_fecha
+    global entry_matricula, entry_especialidad, entry_hora_entrevista, var_tipo_entrevista, entry_proxima_sesion
 
     frame_superior = Frame(ventana_entrevistas, bg=GRIS_AZULADO)
     frame_superior.pack(side="top", fill="x", padx=20, pady=10)
 
-    # DNI paciente
-    tk.Label(frame_superior, text="DNI del paciente:", bg=GRIS_AZULADO, fg=BLANCO, font=("Segoe UI", 12)).grid(row=0, column=0, sticky="e", padx=5, pady=10)
-    entry_dni_entrevista = tk.Entry(frame_superior, font=("Segoe UI", 12))
-    entry_dni_entrevista.grid(row=0, column=1, sticky="e", padx=5)
+    # ---FILA 0: Datos del Paciente, Fecha y Hora---
+    tk.Label(frame_superior, text="DNI Paciente:", bg=GRIS_AZULADO, fg=BLANCO, font=("Segoe UI", 11, "bold")).grid(row=0, column=0, sticky="e", padx=10, pady=8)
+    entry_dni_entrevista = tk.Entry(frame_superior, font=("Segoe UI", 11), width=15)
+    entry_dni_entrevista.grid(row=0, column=1, sticky="w", padx=5)
 
-    # Profesional
-    tk.Label(frame_superior, text="Profesional:", bg=GRIS_AZULADO, fg=BLANCO, font=("Segoe UI", 12)).grid(row=0, column=2, sticky="e", padx=5)
-    entry_nombre_profecional = tk.Entry(frame_superior, font=("Segoe UI", 12))
-    entry_nombre_profecional.grid(row=0, column=3, sticky="e", padx=5)
+    tk.Label(frame_superior, text="Fecha:", bg=GRIS_AZULADO, fg=BLANCO, font=("Segoe UI", 11, "bold")).grid(row=0, column=2, sticky="e", padx=10, pady=8)
+    entry_fecha = tk.Entry(frame_superior, font=("Segoe UI", 11), width=15)
+    entry_fecha.grid(row=0, column=3, sticky="w", padx=5)
 
-    # Fecha
-    tk.Label(frame_superior, text="Fecha:", bg=GRIS_AZULADO, fg=BLANCO, font=("Segoe UI", 12)).grid(row=0, column=4, sticky="e", padx=5)
-    entry_fecha = tk.Entry(frame_superior, font=("Segoe UI", 12))
-    entry_fecha.grid(row=0, column=5, sticky="e", padx=5)
+    tk.Label(frame_superior, text="Hora:", bg=GRIS_AZULADO, fg=BLANCO, font=("Segoe UI", 11, "bold")).grid(row=0, column=4, sticky="e", padx=10, pady=8)
+    entry_hora_entrevista = tk.Entry(frame_superior, font=("Segoe UI", 11), width=15)
+    entry_hora_entrevista.grid(row=0, column=5, sticky="w", padx=5)
 
-    # Hora
-    tk.Label(frame_superior, text="Hora:", bg=GRIS_AZULADO, fg=BLANCO, font=("Segoe UI", 12)).grid(row=1, column=0, sticky="e", padx=5)
-    entry_hora_entrevista = tk.Entry(frame_superior, font=("Segoe UI", 12))
-    entry_hora_entrevista.grid(row=1, column=1, sticky="e", padx=5, pady=(0, 10))
+    # ---FILA 1: Datos del Profesional e Identificacion---
+    tk.Label(frame_superior, text="Profesional:", bg=GRIS_AZULADO, fg=BLANCO, font=("Segoe UI", 11, "bold")).grid(row=1, column=0, sticky="e", padx=10, pady=8)
+    entry_nombre_profecional = tk.Entry(frame_superior, font=("Segoe UI", 11), width=15)
+    entry_nombre_profecional.grid(row=1, column=1, sticky="w", padx=5)
 
-    # Tipo
-    tk.Label(frame_superior, text="Tipo:", bg=GRIS_AZULADO, fg=BLANCO, font=("Segoe UI", 12)).grid(row=1, column=2, sticky="e", padx=5)
+    tk.Label(frame_superior, text="DNI Profesional:", bg=GRIS_AZULADO, fg=BLANCO, font=("Segoe UI", 11, "bold")).grid(row=1, column=2, sticky="e", padx=10, pady=8)
+    entry_dni_profesional = tk.Entry(frame_superior, font=("Segoe UI", 11), width=15)
+    entry_dni_profesional.grid(row=1, column=3, sticky="w", padx=5)
+
+    tk.Label(frame_superior, text="Tipo:", bg=GRIS_AZULADO, fg=BLANCO, font=("Segoe UI", 11, "bold")).grid(row=1, column=4, sticky="e", padx=10, pady=8)
     var_tipo_entrevista = tk.StringVar(value="individual")
-    tk.OptionMenu(frame_superior, var_tipo_entrevista, "individual", "grupal", "familiar").grid(row=1, column=3, sticky="w", padx=5, pady=(0, 10))
+    menu_tipo = tk.OptionMenu(frame_superior, var_tipo_entrevista, "individual", "grupal", "familiar")
+    menu_tipo.config(font=("Segoe UI", 10), width=12)
+    menu_tipo.grid(row=1, column=5, sticky="w", padx=5)
 
+    # ---FILA 2: Datos adicionales---
+    tk.Label(frame_superior, text="Matrícula:", bg=GRIS_AZULADO, fg=BLANCO, font=("Segoe UI", 11, "bold")).grid(row=2, column=0, sticky="e", padx=10, pady=8)
+    entry_matricula = tk.Entry(frame_superior, font=("Segoe UI", 11), width=15)
+    entry_matricula.grid(row=2, column=1, sticky="w", padx=5)
+
+    tk.Label(frame_superior, text="Especialidad:", bg=GRIS_AZULADO, fg=BLANCO, font=("Segoe UI", 11, "bold")).grid(row=2, column=2, sticky="e", padx=10, pady=8)
+    entry_especialidad = tk.Entry(frame_superior, font=("Segoe UI", 11), width=15)
+    entry_especialidad.grid(row=2, column=3, sticky="w", padx=5)
+
+    tk.Label(frame_superior, text="Próxima Sesión:", bg=GRIS_AZULADO, fg=BLANCO, font=("Segoe UI", 11, "bold")).grid(row=2, column=4, sticky="e", padx=10, pady=8)
+    entry_proxima_sesion = tk.Entry(frame_superior, font=("Segoe UI", 11), width=15)
+    entry_proxima_sesion.grid(row=2, column=5, sticky="w", padx=5)
+
+    # ---CUERPO MEDIO (Lista e Historial)---
     frame_medio_cuerpo = tk.Frame(ventana_entrevistas, bg=GRIS_NIEBLA)
     frame_medio_cuerpo.pack(fill="both", expand=True, padx=15, pady=10)
 
     # LADO IZQUIERDO: lista
     frame_lista_medio = Frame(frame_medio_cuerpo, bg=BLANCO, relief="solid", bd=1)
     frame_lista_medio.pack(side="left", fill="both", expand=True, padx=(0, 10))
+    
     tk.Label(frame_lista_medio, text="Historial de Entrevistas", bg=BLANCO, fg=GRIS_AZULADO, font=("Segoe UI", 13, "bold")).pack(pady=5)
+    
     lista_entrevistas = tk.Listbox(frame_lista_medio, bg=BLANCO, fg=GRIS_AZULADO, selectbackground=AZUL_SERENO, selectforeground=BLANCO, bd=0, font=("Segoe UI", 10))
     lista_entrevistas.pack(fill="both", expand=True, padx=5, pady=5)
     lista_entrevistas.bind("<Double-Button-1>", detalles_entrevsit)
+    
     ver_list_entrevist(lista_entrevistas)
 
     # LADO DERECHO: texto
@@ -814,6 +838,7 @@ def abrir_ventana_perfil():
             visor_foto_perfil.configure(image="", text="👤\nClic para subir foto")
             visor_foto_perfil.image = None
             return
+
         # Si hay foto pendiente nueva, mostrarla
         if foto_pendiente["bytes"] is not None:
             try:
@@ -825,6 +850,7 @@ def abrir_ventana_perfil():
                 return
             except Exception:
                 pass
+
         # Si no, mostrar la de la base
         dni_txt = entry_dni_perfil.get().strip()
         if not dni_txt:
@@ -846,7 +872,7 @@ def abrir_ventana_perfil():
     def subir_foto_perfil(event=None):
         ruta = filedialog.askopenfilename(
             title="Seleccionar foto",
-            filetypes=[("Imagenes", "*.png *.jpg *.jpeg *.bmp *.webp")])
+            filetypes=[("Imágenes", "*.png *.jpg *.jpeg *.bmp *.webp")])
         if not ruta:
             return
         try:
@@ -854,7 +880,7 @@ def abrir_ventana_perfil():
                 foto_pendiente["bytes"] = f.read()
             mostrar_foto_en_perfil()
         except Exception as e:
-            messagebox.showerror("Error", 'No se pudo cargar la foto')
+            messagebox.showerror("Error", f"No se pudo cargar la foto: {e}")
 
     def asignar_foto_galeria(event=None):
         sel = lista_fotos_galeria.curselection()
@@ -889,7 +915,9 @@ def abrir_ventana_perfil():
         if existe:
             # Tres casos: foto nueva, quitar foto, o no tocar
             if foto_pendiente["bytes"] == b"":
-                cursor.execute("""UPDATE personas SET nombre = ?, apellido = ?, direccion = ?, fecha_nacimiento = ?, foto = NULL WHERE dni = ?""",
+                cursor.execute("""UPDATE personas
+                                  SET nombre = ?, apellido = ?, direccion = ?, fecha_nacimiento = ?, foto = NULL
+                                  WHERE dni = ?""",
                                (nombre, apellido,
                                 entry_direccion_perfil.get().strip(),
                                 entry_f_nacimiento_perfil.get().strip(),
@@ -1031,7 +1059,9 @@ def abrir_ventana_editor_fotos():
     frame_editor_fotos_superior = Frame(ventana_editor_fotos, bg=GRIS_NIEBLA)
     frame_editor_fotos_superior.pack(side="top", fill="both", expand=True)
 
-    visor_foto_editor = Label(frame_editor_fotos_superior, text="👤\nSin foto",bg=BLANCO, fg=NEGRO, relief="solid", bd=1, font=("Segoe UI", 20))
+    visor_foto_editor = Label(frame_editor_fotos_superior, text="👤\nSin foto",
+                              bg=BLANCO, fg=NEGRO, relief="solid", bd=1,
+                              font=("Segoe UI", 20))
     visor_foto_editor.pack(fill="both", expand=True, padx=10, pady=10)
 
     frame_lista_imgs = Frame(ventana_editor_fotos, bg=GRIS_NIEBLA)
@@ -1108,11 +1138,14 @@ def abrir_ventana_editor_fotos():
         visor_foto_editor.config(image="", text="👤\nSin foto")
         visor_foto_editor.image = None
         actualizar_contador()
+
     Button(frame_editor_fotos_inferior, text="Añadir fotos", command=agregar_imagen,bg=VERDE_AZULADO, fg=BLANCO, activebackground=VERDE_TERMINAL,activeforeground=NEGRO, font=("Segoe UI", 12)).grid(row=0, column=1, padx=10, sticky="ew")
     Button(frame_editor_fotos_inferior, text="Eliminar fotos", command=eliminar_imagen,bg=VERDE_AZULADO, fg=BLANCO, activebackground=VERDE_TERMINAL,activeforeground=NEGRO, font=("Segoe UI", 12)).grid(row=0, column=2, padx=10, sticky="ew")
     Button(frame_editor_fotos_inferior, text="Limpiar TODAS fotos", command=limpiar_todas,bg=VERDE_AZULADO, fg=BLANCO, activebackground=VERDE_TERMINAL,activeforeground=NEGRO, font=("Segoe UI", 12)).grid(row=0, column=3, padx=10, sticky="ew")
+
     frame_editor_fotos_inferior.columnconfigure(1, weight=1)
     frame_editor_fotos_inferior.columnconfigure(3, weight=1)
+
     # Esto deberia generar la lista para ver las fotos
     for ruta in imagenes_cargadas:
         lista_imagenes.insert(tk.END, os.path.basename(ruta))
@@ -1139,6 +1172,7 @@ def cargar_imagen():
         cursor.execute('INSERT INTO recursos (nombre,contenido) VALUES(?,?)',("sanca",imagen_sanca))
         conexion.commit()
         return True
+
 # ============================================================================
 # BLOQUE 19: DERECHOS DE AUTOR
 # ============================================================================
@@ -1150,6 +1184,7 @@ def abrir_ventana_autores():
     ventana_autores.geometry("1000x800")
     canvas = tk.Canvas(ventana_autores, width=1000, height=800, highlightthickness=0)
     canvas.pack(fill="both", expand=True)
+
     # ---- Imagen de fondo (si existe) ----
     if hay_imagen:
         cursor.execute("SELECT contenido FROM recursos WHERE nombre = ?", ("sanca",))
@@ -1169,7 +1204,17 @@ def abrir_ventana_autores():
                        fill=NEGRO, font=("Segoe UI", 16, "bold"))
 
     # ---- Nombres ----
-    nombres = ["Antonio Garcia","Nahuel Villafañe","Mateo Dabruzzo Wilczek","Federico 'Fedelobo'","Ignacio","Thiago","Pablo Laporta","Fernando 'Master'","Joaquin Arana",]
+    nombres = [
+        "Antonio Garcia",
+        "Nahuel Villafañe",
+        "Mateo Dabruzzo Wilczek",
+        "Federico 'Fedelobo'",
+        "Ignacio",
+        "Thiago",
+        "Pablo Laporta",
+        "Fernando 'Master'",
+        "Joaquin Arana",
+    ]
     y = 180
     for nombre in nombres:
         canvas.create_text(500, y, text=nombre,
@@ -1184,9 +1229,9 @@ def abrir_ventana_autores():
     y += 40
     canvas.create_text(500, y,
                        text=("© 2026 Equipo de programación Sanca. Todos los derechos reservados.\n\n"
-                            "Prohibida la copia, modificación, distribución y uso comercial\n"
-                            "del software sin autorización escrita del titular.\n"
-                            "Ley 11.723 de Propiedad Intelectual (Argentina)."),
+                             "Prohibida la copia, modificación, distribución y uso comercial\n"
+                             "del software sin autorización escrita del titular.\n"
+                             "Ley 11.723 de Propiedad Intelectual (Argentina)."),
                        fill=NEGRO, font=("Segoe UI", 11),
                        justify="center", width=800)
     # ---- Boton cerrar (encima del canvas) ----
@@ -1210,6 +1255,7 @@ def abrir_perfil_doble_clic(event=None):
     abrir_ventana_perfil()
 lista_personas.bind("<Double-Button-1>", abrir_perfil_doble_clic)
 lista_personas.bind("<<ListboxSelect>>", al_seleccionar)
+
 # ============================================================================
 # BLOQUE 22: FUNCION GENERAR PDF
 # ============================================================================
@@ -1236,8 +1282,9 @@ def crear_pdf_entrevistas(ruta, entrevistas):
         fuente = "F2" if negrita else "F1"
         lineas_pagina.append((texto, fuente, tamano, 50 + sangria, y))
         y -= tamano + 5
+
     nueva_pagina()
-    for entrevista in entrevistas:    
+    for entrevista in entrevistas:
         nombre_paciente, apellido_paciente,id_entrevista,fecha_nacimiento_paciente,fecha_ingreso,telefono_paciente,direccion_paciente,nombre_contacto_emergencia,telefono_emergencia,nombre_obra_social,estado_paciente,consentimiento,nombre_profecional,apellido_profecional,dni_profesional,matricula,especialidad,telefono_profecional,email_profecional,entrevista,Dni_paciente,fecha_entrevista,hora_entrevista,tipo_entrevista,proxima_sesion,texto= entrevista
         agregar_linea(f"Entrevista {id_entrevista}", negrita=True, tamano=12)
         agregar_linea(f"Fecha: {fecha_entrevista}  Hora:{hora_entrevista}  DNI del paciente: {Dni_paciente}")
@@ -1260,7 +1307,7 @@ def crear_pdf_entrevistas(ruta, entrevistas):
         agregar_linea(f"Telefono del profesional: {telefono_profecional}")
         agregar_linea(f"Email del profesional: {email_profecional}")
         agregar_linea(f"Tipo de entrevista realizada al paciente: {tipo_entrevista}")
-        agregar_linea(f"Texto: {entrevista}")   
+        agregar_linea(f"Texto: {entrevista}")
         parrafos = (texto or "").splitlines() or ["Sin anotaciones"]
         for parrafo in parrafos:
             lineas = textwrap.wrap(
@@ -1310,7 +1357,7 @@ def crear_pdf_entrevistas(ruta, entrevistas):
     salida.extend(b"0000000000 65535 f \n")
     for offset in offsets[1:]:
         salida.extend(f"{offset:010d} 00000 n \n".encode("ascii"))
-    salida.extend(f"trailer\n<< /Size {len(objetos)+1} /Root 1 0 R >>\n"   
+    salida.extend(f"trailer\n<< /Size {len(objetos)+1} /Root 1 0 R >>\n"
                   f"startxref\n{posicion_xref}\n%%EOF\n".encode("ascii"))
 
     with open(ruta, "wb") as archivo:
@@ -1320,21 +1367,7 @@ def crear_pdf_entrevistas(ruta, entrevistas):
 def exportar_entrevistas_pdf(dni_paciente=None):
     try:
         if dni_paciente:
-# Ejemplo de cómo debería verse la consulta para traer todos los campos
-            cursor.execute("""
-                SELECT 
-                    p.nombre, p.apellido, e.id, p.fecha_nacimiento, p.fecha_ingreso, 
-                    p.telefono, p.direccion, p.contacto_emergencia, p.telefono_emergencia, 
-                    p.obra_social, p.estado, p.consentimiento, e.nombre_profecional, 
-                    e.apellido_profecional, e.dni_profecional, e.matricula, e.especialidad, 
-                    e.telefono_profecional, e.email_profecional, e.entrevista, e.dni_paciente, 
-                    e.fecha_entrevista, e.hora_entrevista, e.tipo_entrevista, 
-                    e.proxima_sesion_entrevista, e.entrevista
-                FROM entrevistas AS e 
-                LEFT JOIN personas AS p ON p.dni = e.dni_paciente 
-                WHERE e.dni_paciente = ? 
-                ORDER BY e.id
-            """, (dni_paciente,))
+            cursor.execute("""SELECT e.id, e.fecha_entrevista, e.dni_paciente,e.nombre_profecional, e.entrevista,p.nombre, p.apellido FROM entrevistas AS e LEFT JOIN personas AS p ON p.dni = e.dni_paciente WHERE e.dni_paciente = ? ORDER BY e.id""", (dni_paciente,))
         else:
             cursor.execute("""SELECT e.id, e.fecha_entrevista, e.dni_paciente,e.nombre_profecional, e.entrevista,p.nombre, p.apellido FROM entrevistas AS e LEFT JOIN personas AS p ON p.dni = e.dni_paciente ORDER BY e.id""")
         entrevistas = cursor.fetchall()
@@ -1362,7 +1395,7 @@ def exportar_entrevistas_pdf(dni_paciente=None):
         messagebox.showerror("Error al exportar","El texto contiene caracteres no compatibles con la fuente PDF.")
         return
     messagebox.showinfo("PDF creado", f"Entrevistas guardadas en:\n{ruta}")
-    
+
 # ============================================================================
 # BLOQUE 23: INICIO DEL PROGRAMA
 # ============================================================================
