@@ -594,6 +594,9 @@ def pantalla_edit_entrevista(ventana_padre):
     frame_editar_inferior.pack(fill="x", expand=True)
     boton_guardar_entrevista = Button(frame_editar_superior, text="Guardar cambios",font=("Segoe UI", 10), command=guardar_entrevista,bg=VERDE_AZULADO, fg=BLANCO)
     boton_guardar_entrevista.grid(row=0, column=3, padx=5, sticky="ew")
+    
+    agregar_boton_luna(ventana_editar)
+
 
 # ============================================================================
 # BLOQUE 14: FUNCIONES DE LA VENTANA DE ENTREVISTAS
@@ -685,6 +688,8 @@ def detalles_entrevsit(event=None):
     text_dato.pack(fill="both", expand=True, padx=10, pady=(0, 10))
     text_dato.insert("1.0", e[5] or "")
     text_dato.config(state=tk.DISABLED)
+    agregar_boton_luna(ventana_detalle)
+
 
 # ============================================================================
 # BLOQUE 15: VENTANA EMERGENTE DE ENTREVISTAS
@@ -778,7 +783,7 @@ def abrir_ventana_entrevistas(ventana_padre):
 
     Button(frame_inferior, text="Nueva entrevista", command=new_entrevista, bg=VERDE_AZULADO, fg=BLANCO, font=("Segoe UI", 12, "bold"), relief="flat").grid(row=0, column=1, padx=10, sticky="ew")
     Button(frame_inferior, text="Eliminar entrevista", command=eliminar_entrevista, bg=ROJO, fg=BLANCO, font=("Segoe UI", 12, "bold"), relief="flat").grid(row=0, column=2, padx=10, sticky="ew")
-
+    agregar_boton_luna(ventana_entrevistas)
     def abrir_editar():
         pantalla_edit_entrevista(ventana_entrevistas)
     Button(frame_inferior, text="Editar entrevista", bg=AZUL_SERENO, fg=BLANCO, command=abrir_editar, font=("Segoe UI", 12, "bold"), relief="flat").grid(row=0, column=3, padx=10, sticky="ew")
@@ -1046,6 +1051,8 @@ bg=ROJO, fg=BLANCO, font=("Segoe UI", 10))
     scroll_perfil.config(command=lista_personas_perfil.yview)
 
     mostrar_foto_en_perfil()
+    agregar_boton_luna(ventana_perfil)
+    
 
 # ============================================================================
 # BLOQUE 17: VENTANA DEL EDITOR DE FOTOS
@@ -1145,6 +1152,7 @@ def abrir_ventana_editor_fotos():
 
     frame_editor_fotos_inferior.columnconfigure(1, weight=1)
     frame_editor_fotos_inferior.columnconfigure(3, weight=1)
+    agregar_boton_luna(ventana_editor_fotos)
 
     # Esto deberia generar la lista para ver las fotos
     for ruta in imagenes_cargadas:
@@ -1236,6 +1244,7 @@ def abrir_ventana_autores():
                        justify="center", width=800)
     # ---- Boton cerrar (encima del canvas) ----
     tk.Button(ventana_autores, text="X", command=ventana_autores.destroy,bg=BLANCO, fg=NEGRO,font=("Segoe UI", 12, "bold")).place(relx=0.95, rely=0.05, anchor="ne")
+    agregar_boton_luna(ventana_autores)
 
 # ============================================================================
 # BLOQUE 20: BOTONES PRINCIPALES QUE ABREN LAS OTRAS VENTANAS
