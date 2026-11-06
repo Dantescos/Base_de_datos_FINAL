@@ -304,7 +304,7 @@ def limpiar():
     entry_nombre.delete(0, tk.END)
     entry_apellido.delete(0, tk.END)
     entry_dni.delete(0, tk.END)
-    visor_foto.configure(image="", text="Sin foto")
+    visor_foto.configure(image="", text="👤\nSin foto")
     visor_foto.image = None
 
 # ============================================================================
@@ -1266,7 +1266,7 @@ def abrir_ventana_editor_fotos():
 # BLOQUE 20: CARGAR IMAGEN DE SANCA
 # ============================================================================
 def cargar_imagen():
-    # 1. Pregunto si ya está en la base de datos
+    # 1. Pregunto si ya esta en la base de datos
     cursor.execute("SELECT 1 FROM recursos WHERE nombre=?",("sanca",))
     if cursor.fetchall():
         return True
