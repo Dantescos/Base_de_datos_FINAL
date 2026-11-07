@@ -701,7 +701,7 @@ def detalles_entrevista(event=None):
     dato = lista_entrevistas.get(seleccion[0])
     id_entrevista = dato.split("//")[0].replace("ID: ", "").strip()
 
-    cursor.execute("""SELECT nombre_profecional, apellido_profecional, dni_profecional,matricula, especialidad, entrevista, dni_paciente,fecha_entrevista, hora_entrevista, tipo_entrevista,proxima_sesion_entrevista FROM entrevistas WHERE id = ?""", (id_entrevista,))
+    cursor.execute("""SELECT nombre_profecional, apellido_profecional, dni_profecional,matricula, especialidad, telefono_profecional, email_profecional,activo_profecional, entrevista, dni_paciente,fecha_entrevista, hora_entrevista, tipo_entrevista, proxima_sesion_entrevista FROM entrevistas WHERE id = ?""", (id_entrevista,))
     e = cursor.fetchone()
     if not e:
         return
@@ -716,14 +716,19 @@ def detalles_entrevista(event=None):
 
     info = [
         ("ID", id_entrevista),
-        ("Profesional", f"{e[0]} {e[1] or ''}"),
-        ("DNI profesional", e[2] or "-"),
+        ("Nombre del profesional", e[0] or "-"),
+        ("Apellido del profesional", e[1] or "-"),
+        ("DNI del profesional", e[2] or "-"),
         ("Matricula", e[3] or "-"),
         ("Especialidad", e[4] or "-"),
-        ("DNI paciente", e[6]),
-        ("Fecha", f"{e[7]} {e[8] or ''}"),
-        ("Tipo", e[9] or "-"),
-        ("Proxima sesion", e[10] or "-"),
+        ("Telefono profesional", e[5] or "-"),
+        ("Email profesional", e[6] or "-"),
+        ("Estado profesional", e[7] or "-"),
+        ("DNI paciente", e[9] or "-"),
+        ("Fecha", e[10] or "-"),
+        ("Hora", e[11] or "-"),
+        ("Tipo de entrevista", e[12] or "-"),
+        ("Proxima sesion", e[13] or "-"),
     ]
     for etiqueta, valor in info:
         fila = Frame(frame_detalle, bg=BLANCO)
@@ -819,8 +824,24 @@ def abrir_ventana_entrevistas(ventana_padre):
     menu_estado.config(font=("Segoe UI", 10), width=12)
     menu_estado.grid(row=1, column=7, sticky="w", padx=5)
 
+    frame_inferior = Frame(ventana_entrevistas, bg=GRIS_NIEBLA,height = 80)
+    frame_inferior.pack(side="bottom", fill="x", padx=20, pady=20)
+    frame_inferior.pack_propagate(False)
 
-    # ---CUERPO MEDIO (Lista e Historial)---
+    frame_inferior.columnconfigure(1, weight=1)
+    frame_inferior.columnconfigure(2, weight=1)
+    frame_inferior.columnconfigure(3, weight=1)
+    frame_inferior.columnconfigure(4, weight=1)
+
+    RoundedButton(frame_inferior, 150, 40, 20,VERDE_AZULADO, BLANCO,  text="Nueva entrevista", command=new_entrevista).grid(row=0, column=1, padx=10, sticky="ew")
+    RoundedButton(frame_inferior, 160, 40, 20, VERDE_AZULADO, BLANCO, text="Eliminar entrevista", command=eliminar_entrevista).grid(row=0, column=2, padx=10, sticky="ew")
+
+    def abrir_editar():
+        pantalla_edit_entrevista(ventana_entrevistas)
+    RoundedButton(frame_inferior,  180, 40, 20,VERDE_AZULADO, BLANCO, text="Editar entrevista", command=abrir_editar).grid(row=0, column=3, padx=10, sticky="ew")
+    RoundedButton(frame_inferior,  150, 40, 20,VERDE_AZULADO, BLANCO, text="Generar PDF", command=exportar_entrevistas_pdf).grid(row=0, column=4, padx=10, sticky="ew")
+
+        # ---CUERPO MEDIO (Lista e Historial)---
     frame_medio_cuerpo = Frame(ventana_entrevistas, bg=GRIS_NIEBLA)
     frame_medio_cuerpo.pack(fill="both", expand=True, padx=15, pady=10)
 
@@ -842,25 +863,6 @@ def abrir_ventana_entrevistas(ventana_padre):
     Label(frame_texto, text="Anotaciones de la entrevista", bg=BLANCO, fg=GRIS_AZULADO, font=("Segoe UI", 13, "bold")).pack(pady=5)
     text_entrevista = tk.Text(frame_texto, relief="solid", bd=1, bg=GRIS_NIEBLA, font=("Segoe UI", 12))
     text_entrevista.pack(fill="both", expand=True, padx=5, pady=5)
-
-    frame_inferior = Frame(ventana_entrevistas, bg=GRIS_NIEBLA)
-    frame_inferior.pack(side="bottom", fill="x", padx=20, pady=20)
-
-    frame_inferior.grid_columnconfigure(0, weight=1)
-    frame_inferior.grid_columnconfigure(4, weight=1)
-
-    frame_inferior.columnconfigure(1, weight=1)
-    frame_inferior.columnconfigure(2, weight=1)
-    frame_inferior.columnconfigure(3, weight=1)
-
-
-    RoundedButton(frame_inferior, 150, 40, 20,VERDE_AZULADO, BLANCO,  text="Nueva entrevista", command=new_entrevista).grid(row=0, column=1, padx=10, sticky="ew")
-    RoundedButton(frame_inferior, 160, 40, 20, VERDE_AZULADO, BLANCO, text="Eliminar entrevista", command=eliminar_entrevista).grid(row=0, column=2, padx=10, sticky="ew")
-
-    def abrir_editar():
-        pantalla_edit_entrevista(ventana_entrevistas)
-    RoundedButton(frame_inferior,  180, 40, 20,VERDE_AZULADO, BLANCO, text="Editar entrevista", command=abrir_editar).grid(row=0, column=3, padx=10, sticky="ew")
-    RoundedButton(frame_inferior,  150, 40, 20,VERDE_AZULADO, BLANCO, text="Generar PDF", command=exportar_entrevistas_pdf).grid(row=0, column=4, padx=10, sticky="ew")
 
     agregar_boton_luna(ventana_entrevistas)
 
@@ -1390,13 +1392,15 @@ lista_personas.bind("<<ListboxSelect>>", al_seleccionar)
 def crear_pdf_entrevistas(ruta, entrevistas):
     paginas = []
     lineas_pagina = []
+    rectangulos_pagina = []  # Lista de rectangulos (para el marco de la foto)
     y = 0
 
     def nueva_pagina():
-        nonlocal lineas_pagina, y
-        if lineas_pagina:
-            paginas.append(lineas_pagina)
+        nonlocal lineas_pagina, rectangulos_pagina, y
+        if lineas_pagina or rectangulos_pagina:
+            paginas.append((lineas_pagina, rectangulos_pagina))
         lineas_pagina = []
+        rectangulos_pagina = []
         y = 790
         lineas_pagina.append(("MEDTRACK | Archivos de perfil", "F2", 16, 50, y))
         y -= 25
@@ -1413,38 +1417,44 @@ def crear_pdf_entrevistas(ruta, entrevistas):
 
     nueva_pagina()
     for datos in entrevistas:
+        # Desempaquetamos las 25 columnas del SELECT
         (nombre_paciente, apellido_paciente, id_entrevista, fecha_nacimiento_paciente,
-         fecha_ingreso, telefono_paciente, direccion_paciente, nombre_contacto_emergencia,
-         telefono_emergencia, nombre_obra_social, estado_paciente, consentimiento,
-         nombre_profecional, apellido_profecional, dni_profesional, matricula,
-         especialidad, telefono_profecional, email_profecional, entrevista,
-         Dni_paciente, fecha_entrevista, hora_entrevista, tipo_entrevista,
-         proxima_sesion) = datos
+        fecha_ingreso, telefono_paciente, direccion_paciente, nombre_contacto_emergencia,
+        telefono_emergencia, nombre_obra_social, estado_paciente, consentimiento,
+        nombre_profecional, apellido_profecional, dni_profesional, matricula,
+        especialidad, telefono_profecional, email_profecional, activo_profecional,
+        entrevista, Dni_paciente, fecha_entrevista, hora_entrevista, tipo_entrevista,
+        proxima_sesion) = datos
 
         agregar_linea(f"Entrevista {id_entrevista}", negrita=True, tamano=12)
-        agregar_linea(f"Fecha: {fecha_entrevista}  Hora:{hora_entrevista}  DNI del paciente: {Dni_paciente}")
+        agregar_linea(f"Fecha: {fecha_entrevista}  Hora: {hora_entrevista or '-'}  DNI del paciente: {Dni_paciente}")
         paciente = " ".join(parte for parte in (nombre_paciente, apellido_paciente) if parte) or "No registrado"
         agregar_linea(f"Paciente: {paciente}")
-        agregar_linea(f"Profesional Apellido {apellido_profecional} ,Nombre{nombre_profecional}")
-        agregar_linea("Anotaciones:", negrita=True)
-        agregar_linea(f"Fecha de nacimiento del paciente: {fecha_nacimiento_paciente}")
-        agregar_linea(f"Fecha de ingreso del paciente al instituto:{fecha_ingreso}")
-        agregar_linea(f"Telefono del paciente: {telefono_paciente}")
-        agregar_linea(f"Direccion de domicilio del paciente: {direccion_paciente}")
-        agregar_linea(f"Nombre de contacto de emergencia del paciente: {nombre_contacto_emergencia}")
-        agregar_linea(f"Telefono de contacto de emergencia del paciente: {telefono_emergencia}")
-        agregar_linea(f"Nombre de obra social del paciente: {nombre_obra_social}")
-        agregar_linea(f"Estado del paciente: {estado_paciente}")
-        agregar_linea(f"Consentimiento: {consentimiento}")
-        agregar_linea(f"Dni del profesional: {dni_profesional}")
-        agregar_linea(f"Matricula del prosional: {matricula}")
-        agregar_linea(f"Especialidad del profesional: {especialidad}")
-        agregar_linea(f"Telefono del profesional: {telefono_profecional}")
-        agregar_linea(f"Email del profesional: {email_profecional}")
-        agregar_linea(f"Tipo de entrevista realizada al paciente: {tipo_entrevista}")
-        agregar_linea(f"Texto: {entrevista}")
-        agregar_linea(f"Proxima sesion del paciente:{proxima_sesion}")
 
+        agregar_linea("--- Datos del profesional ---", negrita=True)
+        agregar_linea(f"Nombre: {nombre_profecional or '-'}")
+        agregar_linea(f"Apellido: {apellido_profecional or '-'}")
+        agregar_linea(f"DNI: {dni_profesional or '-'}")
+        agregar_linea(f"Matricula: {matricula or '-'}")
+        agregar_linea(f"Especialidad: {especialidad or '-'}")
+        agregar_linea(f"Telefono: {telefono_profecional or '-'}")
+        agregar_linea(f"Email: {email_profecional or '-'}")
+        agregar_linea(f"Estado:{activo_profecional}")
+        agregar_linea(f"Tipo de entrevista: {tipo_entrevista or '-'}")
+        agregar_linea(f"Proxima sesion: {proxima_sesion or '-'}")
+
+        agregar_linea("--- Datos del paciente ---", negrita=True)
+        agregar_linea(f"Fecha de nacimiento: {fecha_nacimiento_paciente or '-'}")
+        agregar_linea(f"Fecha de ingreso al instituto: {fecha_ingreso or '-'}")
+        agregar_linea(f"Telefono: {telefono_paciente or '-'}")
+        agregar_linea(f"Domicilio: {direccion_paciente or '-'}")
+        agregar_linea(f"Contacto de emergencia: {nombre_contacto_emergencia or '-'}")
+        agregar_linea(f"Telefono de emergencia: {telefono_emergencia or '-'}")
+        agregar_linea(f"Obra social: {nombre_obra_social or '-'}")
+        agregar_linea(f"Estado del paciente: {estado_paciente or '-'}")
+        agregar_linea(f"Consentimiento: {consentimiento or '-'}")
+
+        agregar_linea("--- Anotaciones ---", negrita=True)
         parrafos = (entrevista or "").splitlines() or ["Sin anotaciones"]
         for parrafo in parrafos:
             lineas = textwrap.wrap(parrafo, width=88, break_long_words=True, break_on_hyphens=False) or [""]
@@ -1452,26 +1462,46 @@ def crear_pdf_entrevistas(ruta, entrevistas):
                 agregar_linea(linea, sangria=12)
         agregar_linea("")
 
-    paginas.append(lineas_pagina)
+    # Guardar la ultima pagina
+    if lineas_pagina or rectangulos_pagina:
+        paginas.append((lineas_pagina, rectangulos_pagina))
 
+    # --- Armado del PDF ---
     objetos = [None, None]
     referencias_paginas = []
     id_fuente_regular = 3 + 2 * len(paginas)
     id_fuente_negrita = id_fuente_regular + 1
 
-    for numero, lineas in enumerate(paginas, start=1):
+    for numero, (lineas, rectangulos) in enumerate(paginas, start=1):
         lineas.append((f"Pagina {numero} de {len(paginas)}", "F1", 9, 490, 35))
-        contenido = "".join(f"BT /{fuente} {tamano} Tf 1 0 0 1 {x} {pos_y} Tm "
+
+        # Textos
+        contenido_texto = "".join(
+            f"BT /{fuente} {tamano} Tf 1 0 0 1 {x} {pos_y} Tm "
             f"<{texto.encode('cp1252', errors='replace').hex().upper()}> Tj ET\n"
-            for texto, fuente, tamano, x, pos_y in lineas).encode("ascii")
+            for texto, fuente, tamano, x, pos_y in lineas
+        )
+
+        # Rectangulos (marco de foto simbolico)
+        contenido_rect = ""
+        for x, y_rect, w_rect, h_rect in rectangulos:
+            contenido_rect += (
+                f"0.8 0.8 0.8 RG "       # color de borde: gris claro
+                f"{x} {y_rect} {w_rect} {h_rect} re S\n"  # rectangulo sin relleno
+            )
+
+        contenido = (contenido_texto + contenido_rect).encode("ascii")
+
         id_pagina = len(objetos) + 1
         id_contenido = id_pagina + 1
         referencias_paginas.append(f"{id_pagina} 0 R")
-        objetos.append(f"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] "
+        objetos.append(
+            f"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] "
             f"/Resources << /Font << /F1 {id_fuente_regular} 0 R "
-            f"/F2 {id_fuente_negrita} 0 R >> >> /Contents {id_contenido} 0 R >>".encode("ascii")
-        )
-        objetos.append(f"<< /Length {len(contenido)} >>\nstream\n".encode("ascii")+ contenido+ b"\nendstream")
+            f"/F2 {id_fuente_negrita} 0 R >> >> /Contents {id_contenido} 0 R >>".encode("ascii"))
+        objetos.append(
+            f"<< /Length {len(contenido)} >>\nstream\n".encode("ascii")
+            + contenido + b"\nendstream")
 
     objetos[0] = b"<< /Type /Catalog /Pages 2 0 R >>"
     objetos[1] = (f"<< /Type /Pages /Kids [{' '.join(referencias_paginas)}] "
@@ -1501,11 +1531,9 @@ def crear_pdf_entrevistas(ruta, entrevistas):
 
 def exportar_entrevistas_pdf(dni_paciente=None):
     try:
-        query = """
-            SELECT p.nombre, p.apellido, e.id, p.fecha_nacimiento, p.fecha_ingreso,p.telefono, p.direccion, p.contacto_emergencia, p.telefono_emergencia, p.obra_social, p.estado, p.consentimiento, e.nombre_profecional, e.apellido_profecional, e.dni_profecional,e.matricula, e.especialidad, e.telefono_profecional, e.email_profecional, e.entrevista, e.dni_paciente, e.fecha_entrevista, e.hora_entrevista, e.tipo_entrevista, e.proxima_sesion_entrevista
-            FROM entrevistas AS e 
-            LEFT JOIN personas AS p ON p.dni = e.dni_paciente
-        """
+        query = """SELECT p.nombre, p.apellido, e.id, p.fecha_nacimiento, p.fecha_ingreso, p.telefono, p.direccion, p.contacto_emergencia, p.telefono_emergencia, p.obra_social, p.estado, p.consentimiento, e.nombre_profecional, e.apellido_profecional, e.dni_profecional, e.matricula, e.especialidad, e.telefono_profecional, e.email_profecional, e.activo_profecional, e.entrevista, e.dni_paciente, e.fecha_entrevista, e.hora_entrevista, e.tipo_entrevista, e.proxima_sesion_entrevista
+    FROM entrevistas AS e 
+    LEFT JOIN personas AS p ON p.dni = e.dni_paciente"""
 
         if dni_paciente:
             cursor.execute(query + " WHERE e.dni_paciente = ? ORDER BY e.id", (dni_paciente,))
