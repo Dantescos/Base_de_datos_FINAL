@@ -189,7 +189,7 @@ def mostrar_foto(dni):# Busca la foto en la BD
             return
         except Exception:
             pass
-    visor_foto.configure(image="", text="Sin foto")
+    visor_foto.configure(image="", text="👤\nSin foto")
 
 def al_seleccionar(event=None):
     # Ocultar confirmaciones
@@ -267,7 +267,7 @@ def eliminar():
     cursor.execute("DELETE FROM personas WHERE dni = ?", (dni,))
     conexion.commit()
     refrescar_lista()
-    visor_foto.configure(image="", text="Sin foto")
+    visor_foto.configure(image="", text="👤\nSin foto")
     visor_foto.image = None
     messagebox.showinfo("OK", "Persona eliminada correctamente.")
 
@@ -804,6 +804,8 @@ def abrir_ventana_entrevistas(ventana_padre):
 
     frame_superior = Frame(ventana_entrevistas, bg=GRIS_AZULADO)
     frame_superior.pack(side="top", fill="x", padx=20, pady=10)
+ frame_superior = Frame(ventana_entrevistas, bg=GRIS_AZULADO)
+    frame_superior.pack(side="top", fill="x", padx=20, pady=10)
 
     # ---FILA 0: Datos del Paciente, Fecha y Hora---
     Label(frame_superior, text="DNI Paciente:", bg=GRIS_AZULADO, fg=BLANCO, font=("Segoe UI", 11, "bold")).grid(row=0, column=0, sticky="e", padx=10, pady=8)
@@ -819,22 +821,21 @@ def abrir_ventana_entrevistas(ventana_padre):
     entry_hora_entrevista.grid(row=0, column=5, sticky="w", padx=5)
 
     # ---FILA 1: Datos del Profesional e Identificacion---
-    Label(frame_superior, text="Profesional:", bg=GRIS_AZULADO, fg=BLANCO, font=("Segoe UI", 11, "bold")).grid(row=1, column=0, sticky="e", padx=10, pady=8)
+    Label(frame_superior, text="Nombre del profesional:", bg=GRIS_AZULADO, fg=BLANCO, font=("Segoe UI", 11, "bold")).grid(row=1, column=0, sticky="e", padx=10, pady=8)
     entry_nombre_profecional = Entry(frame_superior, font=("Segoe UI", 11), width=15)
     entry_nombre_profecional.grid(row=1, column=1, sticky="w", padx=5)
 
-    Label(frame_superior, text="DNI Profesional:", bg=GRIS_AZULADO, fg=BLANCO, font=("Segoe UI", 11, "bold")).grid(row=1, column=2, sticky="e", padx=10, pady=8)
-    entry_dni_profesional = Entry(frame_superior, font=("Segoe UI", 11), width=15)
-    entry_dni_profesional.grid(row=1, column=3, sticky="w", padx=5)
+    Label(frame_superior, text="Apellido del profesional:", bg=GRIS_AZULADO, fg=BLANCO, font=("Segoe UI", 11, "bold")).grid(row=1, column=2, sticky="e", padx=10, pady=8)
+    entry_nombre_profecional = Entry(frame_superior, font=("Segoe UI", 11), width=15)
+    entry_nombre_profecional.grid(row=1, column=3, sticky="w", padx=5)
 
-    Label(frame_superior, text="Tipo:", bg=GRIS_AZULADO, fg=BLANCO, font=("Segoe UI", 11, "bold")).grid(row=1, column=4, sticky="e", padx=10, pady=8)
-    var_tipo_entrevista = tk.StringVar(value="individual")
-    menu_tipo = tk.OptionMenu(frame_superior, var_tipo_entrevista, "individual", "grupal", "familiar")
-    menu_tipo.config(font=("Segoe UI", 10), width=12)
-    menu_tipo.grid(row=1, column=5, sticky="w", padx=5)
+    Label(frame_superior, text="DNI del profesional:", bg=GRIS_AZULADO, fg=BLANCO, font=("Segoe UI", 11, "bold")).grid(row=1, column=4, sticky="e", padx=10, pady=8)
+    entry_dni_profesional = Entry(frame_superior, font=("Segoe UI", 11), width=15)
+    entry_dni_profesional.grid(row=1, column=5, sticky="w", padx=5)
+
 
     # ---FILA 2: Datos adicionales---
-    Label(frame_superior, text="Matrícula:", bg=GRIS_AZULADO, fg=BLANCO, font=("Segoe UI", 11, "bold")).grid(row=2, column=0, sticky="e", padx=10, pady=8)
+    Label(frame_superior, text="Matricula:", bg=GRIS_AZULADO, fg=BLANCO, font=("Segoe UI", 11, "bold")).grid(row=2, column=0, sticky="e", padx=10, pady=8)
     entry_matricula = Entry(frame_superior, font=("Segoe UI", 11), width=15)
     entry_matricula.grid(row=2, column=1, sticky="w", padx=5)
 
@@ -845,6 +846,43 @@ def abrir_ventana_entrevistas(ventana_padre):
     Label(frame_superior, text="Proxima Sesión:", bg=GRIS_AZULADO, fg=BLANCO, font=("Segoe UI", 11, "bold")).grid(row=2, column=4, sticky="e", padx=10, pady=8)
     entry_proxima_sesion = Entry(frame_superior, font=("Segoe UI", 11), width=15)
     entry_proxima_sesion.grid(row=2, column=5, sticky="w", padx=5)
+
+    # ---FILA 3: Datos adicionales---
+    Label(frame_superior, text="Matricula:", bg=GRIS_AZULADO, fg=BLANCO, font=("Segoe UI", 11, "bold")).grid(row=2, column=0, sticky="e", padx=10, pady=8)
+    entry_matricula = Entry(frame_superior, font=("Segoe UI", 11), width=15)
+    entry_matricula.grid(row=2, column=1, sticky="w", padx=5)
+
+    Label(frame_superior, text="Especialidad:", bg=GRIS_AZULADO, fg=BLANCO, font=("Segoe UI", 11, "bold")).grid(row=2, column=2, sticky="e", padx=10, pady=8)
+    entry_especialidad = Entry(frame_superior, font=("Segoe UI", 11), width=15)
+    entry_especialidad.grid(row=2, column=3, sticky="w", padx=5)
+
+    Label(frame_superior, text="Proxima Sesión:", bg=GRIS_AZULADO, fg=BLANCO, font=("Segoe UI", 11, "bold")).grid(row=2, column=4, sticky="e", padx=10, pady=8)
+    entry_proxima_sesion = Entry(frame_superior, font=("Segoe UI", 11), width=15)
+    entry_proxima_sesion.grid(row=2, column=5, sticky="w", padx=5)
+
+    # ---FILA 4: Datos adicionales---
+    Label(frame_superior, text="Tipo de visita:", bg=GRIS_AZULADO, fg=BLANCO, font=("Segoe UI", 11, "bold")).grid(row=4, column=0, sticky="e", padx=10, pady=8)
+    var_tipo_entrevista = tk.StringVar(value="")
+    menu_tipo = tk.OptionMenu(frame_superior, var_tipo_entrevista, "individual", "grupal", "familiar")
+    menu_tipo.config(font=("Segoe UI", 10), width=12)
+    menu_tipo.grid(row=4, column=1, sticky="w", padx=5)
+
+    # Telefono del profesional
+    Label(frame_superior, text="Telefono del profesional:", bg=GRIS_AZULADO, fg=BLANCO, font=("Segoe UI", 11, "bold")).grid(row=0, column=6, sticky="e", padx=10, pady=8)
+    entry_proxima_sesion = Entry(frame_superior, font=("Segoe UI", 11), width=15)
+    entry_proxima_sesion.grid(row=0, column=7, sticky="w", padx=5)
+
+    # Mail del profesional
+    Label(frame_superior, text="Mail del profesional:", bg=GRIS_AZULADO, fg=BLANCO, font=("Segoe UI", 11, "bold")).grid(row=2, column=6, sticky="e", padx=10, pady=8)
+    entry_proxima_sesion = Entry(frame_superior, font=("Segoe UI", 11), width=15)
+    entry_proxima_sesion.grid(row=2, column=7, sticky="w", padx=5)
+
+    # Estado del profesional
+    Label(frame_superior, text="Estado:", bg=GRIS_AZULADO, fg=BLANCO, font=("Segoe UI", 11, "bold")).grid(row=1, column=6, sticky="e", padx=10, pady=8)
+    var_tipo_entrevista = tk.StringVar(value="")
+    menu_tipo = tk.OptionMenu(frame_superior, var_tipo_entrevista, "Activo","No activo")
+    menu_tipo.config(font=("Segoe UI", 10), width=12)
+    menu_tipo.grid(row=1, column=7, sticky="w", padx=5)
 
     # ---CUERPO MEDIO (Lista e Historial)---
     frame_medio_cuerpo = Frame(ventana_entrevistas, bg=GRIS_NIEBLA)
@@ -909,6 +947,7 @@ def abrir_ventana_perfil():
     # Foto pendiente (dict para poder mutarlo desde funciones anidadas)
     foto_pendiente = {"bytes": None}
 
+
     frame_izquierdo = Frame(ventana_perfil, bg=GRIS_NIEBLA)
     frame_izquierdo.pack(side="left", fill="y", padx=15, pady=15)
 
@@ -924,21 +963,62 @@ def abrir_ventana_perfil():
     entry_apellido_perfil.grid(row=1, column=1, padx=5, pady=3)
     entry_apellido_perfil.insert(0, entry_apellido.get())
 
-    # DNI
-    Label(frame_izquierdo, text=" DNI:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=2, column=0, sticky="e", padx=5)
+    #Edad
+    Label(frame_izquierdo, text="Edad:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=2, column=0, sticky="e", padx=5)
     entry_dni_perfil = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
     entry_dni_perfil.grid(row=2, column=1, padx=5, pady=3)
     entry_dni_perfil.insert(0, entry_dni.get())
 
+    # DNI
+    Label(frame_izquierdo, text=" DNI:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=3, column=0, sticky="e", padx=5)
+    entry_dni_perfil = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
+    entry_dni_perfil.grid(row=3, column=1, padx=5, pady=3)
+    entry_dni_perfil.insert(0, entry_dni.get())
+
     # Direccion
-    Label(frame_izquierdo, text=" Direccion:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=3, column=0, sticky="e", padx=5)
+    Label(frame_izquierdo, text=" Domicilio:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=4, column=0, sticky="e", padx=5)
     entry_direccion_perfil = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
-    entry_direccion_perfil.grid(row=3, column=1, padx=5, pady=3)
+    entry_direccion_perfil.grid(row=4, column=1, padx=5, pady=3)
 
     # F. Nacimiento
-    Label(frame_izquierdo, text=" Fecha de nacimiento:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=4, column=0, sticky="e", padx=5)
+    Label(frame_izquierdo, text=" Fecha de nacimiento:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=5, column=0, sticky="e", padx=5)
     entry_f_nacimiento_perfil = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
-    entry_f_nacimiento_perfil.grid(row=4, column=1, padx=5, pady=3)
+    entry_f_nacimiento_perfil.grid(row=5, column=1, padx=5, pady=3)
+
+    # F. Ingreso a institucion
+    Label(frame_izquierdo, text=" Fecha de ingreso al instituto:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=6, column=0, sticky="e", padx=5)
+    entry_f_nacimiento_perfil = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
+    entry_f_nacimiento_perfil.grid(row=6, column=1, padx=5, pady=3)
+
+    #Numero de telefono del paciente
+    Label(frame_izquierdo, text="Telefono:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=7, column=0, sticky="e", padx=5)
+    entry_f_nacimiento_perfil = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
+    entry_f_nacimiento_perfil.grid(row=7, column=1, padx=5, pady=3)
+
+    #Nombre del contacto de emergencia
+    Label(frame_izquierdo, text="Nombre del contacto de emergencia:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=8, column=0, sticky="e", padx=5)
+    entry_f_nacimiento_perfil = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
+    entry_f_nacimiento_perfil.grid(row=8, column=1, padx=5, pady=3)
+
+    #Telefono del contacto de emergencia
+    Label(frame_izquierdo, text="Telefono del contacto de emergencia:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=9, column=0, sticky="e", padx=5)
+    entry_f_nacimiento_perfil = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
+    entry_f_nacimiento_perfil.grid(row=9, column=1, padx=5, pady=3)
+
+    #Obra social
+    Label(frame_izquierdo, text="Obra social:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=10, column=0, sticky="e", padx=5)
+    entry_f_nacimiento_perfil = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
+    entry_f_nacimiento_perfil.grid(row=10, column=1, padx=5, pady=3)
+
+    #Estado del paciente, si es ACTIVO, ABANDONO o alguna cosa de ese mambo
+    Label(frame_izquierdo, text="Estado:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=11, column=0, sticky="e", padx=5)
+    entry_f_nacimiento_perfil = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
+    entry_f_nacimiento_perfil.grid(row=11, column=1, padx=5, pady=3)
+
+    # Consentimiento
+    Label(frame_izquierdo, text="Consentimiento:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=12, column=0, sticky="e", padx=5)
+    entry_f_nacimiento_perfil = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
+    entry_f_nacimiento_perfil.grid(row=12, column=1, padx=5, pady=3)
 
     def mostrar_foto_en_perfil():
         # Poblar galeria con fotos del editor
@@ -1355,6 +1435,7 @@ def abrir_perfil_doble_clic(event=None):
 lista_personas.bind("<Double-Button-1>", abrir_perfil_doble_clic)
 lista_personas.bind("<<ListboxSelect>>", al_seleccionar)
 
+
 # ============================================================================
 # BLOQUE 24: FUNCION GENERAR PDF
 # ============================================================================
@@ -1498,7 +1579,7 @@ def exportar_entrevistas_pdf(dni_paciente=None):
             messagebox.showinfo("Sin entrevistas", "No hay entrevistas para exportar.")
         return
 
-    nombre_archivo = f"entrevistas_{dni_paciente}.pdf" if dni_paciente else "entrevistas.pdf"
+    nombre_archivo = f"entrevistas_{dni_paciente}.pdf" if dni_paciente else "Archivo_perfil.pdf"
     ruta = filedialog.asksaveasfilename(
         title="Guardar entrevistas como PDF",defaultextension=".pdf",initialfile=nombre_archivo,filetypes=[("Documento PDF", "*.pdf")],)
     if not ruta:
