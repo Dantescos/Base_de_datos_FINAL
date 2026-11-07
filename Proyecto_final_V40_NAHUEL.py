@@ -709,8 +709,15 @@ def pantalla_edit_entrevista(ventana_padre):
 
     frame_editar_inferior = tk.Frame(ventana_editar, bg=GRIS_NIEBLA)
     frame_editar_inferior.pack(fill="x", expand=True)
-    boton_cargar = RoundedButton(frame_editar_superior, 150, 30, 20, VERDE_AZULADO, BLANCO, text="Guardar cambios", command=guardar_entrevista)
-    boton_cargar.grid(row=13, column=2, padx=5, sticky="ew")
+    boton_cargar = RoundedButton(frame_editar_superior, 150, 30, 20,VERDE_AZULADO, BLANCO,text="Guardar cambios",command=guardar_entrevista)
+    boton_cargar.grid(row=0, column=10, padx=5, sticky="ew")
+    seleccion = lista_entrevistas.curselection()
+    if seleccion:
+        dato = lista_entrevistas.get(seleccion[0])
+        id_entrevista = dato.split("//")[0].replace("ID: ", "").strip()
+        entry_id.delete(0, tk.END)
+        entry_id.insert(0, id_entrevista)
+        cargar_entrevista()
     agregar_boton_luna(ventana_editar)
 
 
