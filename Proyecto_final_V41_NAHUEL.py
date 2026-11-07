@@ -1799,7 +1799,7 @@ def exportar_entrevistas_pdf(dni_paciente=None):
         return
     messagebox.showinfo("PDF creado", f"Entrevistas guardadas en:\n{ruta}")
 # ============================================================================
-# BLOQUE 27: VENTANA PARA DOCUMENTOS
+# BLOQUE 27: VENTANA PARA DOCUMENTOS Y PDFS
 # ============================================================================
 def abrir_ventana_ver_documento(dni_paciente=None):
     ventana_doc = Toplevel(ventana)
@@ -1850,36 +1850,33 @@ def abrir_ventana_ver_documento(dni_paciente=None):
     def guardar_pdf():
         texto = text_doc.get("1.0", tk.END).strip()
         if not texto:
-            messagebox.showwarning("Atención", "El documento está vacío.")
+            messagebox.showwarning("Atencion", "El documento esta vacío.")
             return
-        ruta = filedialog.asksaveasfilename(title="Guardar como PDF", defaultextension=".pdf",
-                                            initialfile="documento.pdf", filetypes=[("PDF", "*.pdf")])
+        ruta = filedialog.asksaveasfilename(title="Guardar como PDF", defaultextension=".pdf",initialfile="documento.pdf", filetypes=[("PDF", "*.pdf")])
         if not ruta:
             return
         try:
             crear_pdf_de_texto(ruta, texto)
             messagebox.showinfo("OK", f"PDF guardado en:\n{ruta}")
-        except Exception as error:
-            messagebox.showerror("Error", f"No se pudo guardar: {error}")
+        except Exception:
+            messagebox.showerror("Error", 'No se pudo guardar')
 
     def guardar_word():
         texto = text_doc.get("1.0", tk.END).strip()
         if not texto:
-            messagebox.showwarning("Atención", "El documento está vacío.")
+            messagebox.showwarning("Atencion", "El documento esta vacío.")
             return
-        ruta = filedialog.asksaveasfilename(title="Guardar como Word", defaultextension=".doc",
-                                            initialfile="documento.doc", filetypes=[("Word", "*.doc")])
+        ruta = filedialog.asksaveasfilename(title="Guardar como Word", defaultextension=".doc",initialfile="documento.doc", filetypes=[("Word", "*.doc")])
         if not ruta:
             return
         try:
             crear_word_de_texto(ruta, texto)
             messagebox.showinfo("OK", f"Word guardado en:\n{ruta}")
-        except Exception as error:
-            messagebox.showerror("Error", f"No se pudo guardar: {error}")
+        except Exception:
+            messagebox.showerror("Error", 'No se pudo guardar')
 
     def eliminar_archivo():
-        ruta = filedialog.askopenfilename(title="Elegir archivo a eliminar",
-                                          filetypes=[("Documentos", "*.pdf *.doc *.docx"), ("Todos", "*.*")])
+        ruta = filedialog.askopenfilename(title="Elegir archivo a eliminar", filetypes=[("Documentos", "*.pdf *.doc *.docx"), ("Todos", "*.*")])
         if not ruta:
             return
         if not messagebox.askyesno("Confirmar", f"¿Eliminar este archivo?\n{ruta}"):
@@ -1887,8 +1884,9 @@ def abrir_ventana_ver_documento(dni_paciente=None):
         try:
             os.remove(ruta)
             messagebox.showinfo("OK", "Archivo eliminado.")
-        except Exception as error:
-            messagebox.showerror("Error", f"No se pudo eliminar: {error}")
+        except Exception:
+            messagebox.showerror("Error", 'No se pudo eliminar')
+            
     def importar_documento():
         ruta = filedialog.askopenfilename(
             title="Importar documento",
@@ -1917,8 +1915,8 @@ def abrir_ventana_ver_documento(dni_paciente=None):
             else:
                 messagebox.showwarning("Formato", "Formato no soportado. Usá PDF, DOC, DOCX o TXT.")
                 return
-        except Exception as error:
-            messagebox.showerror("Error al importar", f"No se pudo leer el archivo:\n{error}")
+        except Exception:
+            messagebox.showerror("Error al importar", 'No se pudo leer el archivo')
             return
 
         text_doc.delete("1.0", tk.END)
@@ -1930,7 +1928,6 @@ def abrir_ventana_ver_documento(dni_paciente=None):
     RoundedButton(frame_btn, 130, 40, 20, VERDE_AZULADO, BLANCO, text="⟳ Cargar", command=cargar_documento).pack(side="left", padx=5)
     RoundedButton(frame_btn, 150, 40, 20, VERDE_AZULADO, BLANCO, text="Guardar PDF", command=guardar_pdf).pack(side="left", padx=5)
     RoundedButton(frame_btn, 150, 40, 20, VERDE_AZULADO, BLANCO, text="Guardar Word", command=guardar_word).pack(side="left", padx=5)
-    RoundedButton(frame_btn, 180, 40, 20, VERDE_AZULADO, BLANCO, text="Eliminar archivo", command=eliminar_archivo).pack(side="left", padx=5)
     RoundedButton(frame_btn, 180, 40, 20, VERDE_AZULADO, BLANCO, text="Eliminar archivo", command=eliminar_archivo).pack(side="left", padx=5)
     RoundedButton(frame_btn, 150, 40, 20, VERDE_AZULADO, BLANCO, text="Importar PDF/Word", command=importar_documento).pack(side="left", padx=5)
     
