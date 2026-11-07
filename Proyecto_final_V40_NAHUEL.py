@@ -2,17 +2,17 @@
 # BLOQUE 1: IMPORTACIONES
 # Aca traemos todas las librerías que vamos a usar.
 # ============================================================================
-import sqlite3  # Para manejar la base de datos SQLite (crear tablas, insertar, borrar, etc.)
-import tkinter as tk  # La librería de interfaces gráficas (ventanas, botones, etc.)
-# De tkinter traemos cosas específicas que vamos a usar directo:
+import sqlite3
+import tkinter as tk
 from tkinter import filedialog, messagebox, ttk, Label, Button, Entry, Frame, Toplevel, Listbox, font
-from io import BytesIO  # BytesIO convierte bytes en un "archivo virtual" para que PIL lo pueda leer
-from PIL import Image, ImageTk  # PIL (Pillow) abre, redimensiona y muestra imágenes
-import string  # Lo usamos para sacar los signos de puntuación en comprobar_fecha()
-import os  # Para manejar rutas y archivos (os.path.basename, os.remove, etc.)
+from io import BytesIO
+from PIL import Image, ImageTk
+import string
+import os
 import textwrap
 import re
 import base64
+
 # ===========================================================================
 # BLOQUE 2: IMAGEN DE SANCA CONVERTIDA EN TEXTO
 # ===========================================================================
@@ -74,20 +74,19 @@ class RoundedButton(tk.Canvas):
         if fg is not None:
             self.fg_color = fg
         if parent_bg is not None:
-            self.config(bg=parent_bg) # <-- ESTO ARREGLA EL BORDE BLANCO
+            self.config(bg=parent_bg)
         self._dibujar()
 
-imagenes_cargadas = []  # Lista vacia donde guardamos las RUTAS de las imagenes que el usuario va agregando en el editor
+imagenes_cargadas = []
 
 # ============================================================================
 # BLOQUE 4: BASE DE DATOS
 # Aca conectamos a SQLite y creamos las tablas si no existen.
 # ============================================================================
-conexion = sqlite3.connect("PROYECTO_FINAL_37.db")  # Abre (o crea) el archivo de base de datos
-cursor = conexion.cursor()  # El cursor es el que ejecuta las consultas SQL
-cursor.execute("PRAGMA foreign_keys = ON;")  # Activa las claves foraneas
+conexion = sqlite3.connect("PROYECTO_FINAL_37.db")
+cursor = conexion.cursor()
+cursor.execute("PRAGMA foreign_keys = ON;")
 
-# Crea la tabla "personas"
 cursor.execute("""CREATE TABLE IF NOT EXISTS personas(
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     nombre TEXT NOT NULL,
@@ -105,7 +104,6 @@ cursor.execute("""CREATE TABLE IF NOT EXISTS personas(
     consentimiento TEXT,
     foto BLOB)""")
 
-# Crea la tabla "entrevistas"
 cursor.execute("""CREATE TABLE IF NOT EXISTS entrevistas(
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     nombre_profecional TEXT NOT NULL,
@@ -128,8 +126,8 @@ cursor.execute("""CREATE TABLE IF NOT EXISTS entrevistas(
 # Activo_profecional TEXT NOT NULL, si sigue atendiendo al paciente o no, tipo poner solo ACTIVO o NO ACTIVO
 # Tipo_entrevista TEXT NOT NULL, "individual" / "grupal" / "familiar"
 # Creo una tabla para que guarde la imagen de Sanca, mientras se tenga los archivos descargados la imagen vive aca, recomiendo tener todo descargado
-cursor.execute("""CREATE TABLE IF NOT EXISTS recursos(id INTEGER PRIMARY KEY AUTOINCREMENT,nombre TEXT UNIQUE NOT NULL,contenido BLOB)""")#con esto lo que hago es perdirle a la base de datos que es solo una sola imagen la que guarde y busque
-conexion.commit()  # Guarda los cambios
+cursor.execute("""CREATE TABLE IF NOT EXISTS recursos(id INTEGER PRIMARY KEY AUTOINCREMENT,nombre TEXT UNIQUE NOT NULL,contenido BLOB)""")
+conexion.commit()
 
 # ============================================================================
 # BLOQUE 5: PALETA DE COLORES
@@ -141,42 +139,41 @@ GRIS = "#222222"
 AZUL_PETROLEO = "#006080"
 BLANCO_HUESO = "#F5F5DC"
 VERDE_TERMINAL = "#00FF00"
-# Colores del modo claro
-GRIS_NIEBLA = "#F4F7F6"       
-BLANCO = "#FFFFFF"             
-GRIS_AZULADO = "#2C3E50"       
-GRIS_MEDIO = "#7F8C8D"         
-AZUL_SERENO = "#4A90E2"        
-VERDE_AZULADO = "#26A69A"      
+GRIS_NIEBLA = "#F4F7F6"
+BLANCO = "#FFFFFF"
+GRIS_AZULADO = "#2C3E50"
+GRIS_MEDIO = "#7F8C8D"
+AZUL_SERENO = "#4A90E2"
+VERDE_AZULADO = "#26A69A"
 
 # ============================================================================
 # BLOQUE 6: VENTANA PRINCIPAL
 # ============================================================================
-ventana = tk.Tk()                        # Crea la ventana principal
-ventana.title("✚ MEDTRACK")              # Titulo de la ventana
-ventana.geometry("1000x800")             # Tamaño inicial
-ventana.config(bg=GRIS_NIEBLA)           # Color de fondo
+ventana = tk.Tk()
+ventana.title("✚ MEDTRACK")
+ventana.geometry("1000x800")
+ventana.config(bg=GRIS_NIEBLA)
 #fede no estubo aqui :(
 
 # ============================================================================
 # BLOQUE 7: BANNER (franja del titulo arriba)
 # ============================================================================
-banner = tk.Frame(ventana, bg=AZUL_SERENO, height=80)  # Frame de 80px
-banner.pack(side="top", fill="x")                    # Pegado abajo
-banner.pack_propagate(False)                            # No se achica
+banner = tk.Frame(ventana, bg=AZUL_SERENO, height=80)
+banner.pack(side="top", fill="x")
+banner.pack_propagate(False)
 banner_label = tk.Label(banner,text="✚ MEDTRACK",bg=AZUL_SERENO, fg=BLANCO, font=("Segoe UI", 24, "bold"))
-banner_label.pack(pady=20) # Centrado
+banner_label.pack(pady=20)
 
 # ============================================================================
 # BLOQUE 8: FUNCIONES PRINCIPALES PARA VENTANA PRINCIPAL
 # ============================================================================
-def refrescar_lista(): # Borra el Listbox y lo vuelve a llenar con los datos de la BD
+def refrescar_lista():
     lista_personas.delete(0, tk.END)
     cursor.execute("SELECT nombre, apellido, dni FROM personas ORDER BY apellido, nombre")
     for nombre, apellido, dni in cursor.fetchall():
         lista_personas.insert(tk.END, f"{apellido}, {nombre} — DNI {dni}")
 
-def mostrar_foto(dni):# Busca la foto en la BD
+def mostrar_foto(dni):
     cursor.execute("SELECT foto FROM personas WHERE dni = ?", (dni,))
     fila = cursor.fetchone()
     if fila and fila[0]:
@@ -185,19 +182,17 @@ def mostrar_foto(dni):# Busca la foto en la BD
             img.thumbnail((300, 300))
             foto = ImageTk.PhotoImage(img)
             visor_foto.configure(image=foto, text="")
-            visor_foto.image = foto  # Mantiene referencia
+            visor_foto.image = foto
             return
         except Exception:
             pass
     visor_foto.configure(image="", text="👤\nSin foto")
 
 def al_seleccionar(event=None):
-    # Ocultar confirmaciones
     boton_busqueda_definitivo.grid_remove()
     boton_agregar_definitivo.grid_remove()
     grids_nom_ape()
     grids_dni()
-    # Se dispara al hacer click en la lista
     sel = lista_personas.curselection()
     if not sel: return
     texto = lista_personas.get(sel[0])
@@ -205,7 +200,6 @@ def al_seleccionar(event=None):
     cursor.execute("SELECT nombre, apellido, dni FROM personas WHERE dni = ?", (dni,))
     fila = cursor.fetchone()
     if not fila: return
-    # Rellena el formulario
     entry_nombre.delete(0, tk.END); entry_nombre.insert(0, fila[0])
     entry_apellido.delete(0, tk.END); entry_apellido.insert(0, fila[1])
     entry_dni.delete(0, tk.END); entry_dni.insert(0, fila[2])
@@ -234,7 +228,6 @@ def agregar_definitivo():
     if ruta:
         with open(ruta, "rb") as f:
             contenido = sqlite3.Binary(f.read())
-    # Inserta en BD
     try:
         cursor.execute("INSERT INTO personas (nombre, apellido, dni, foto) VALUES (?,?,?,?)",
                        (nombre, apellido, dni, contenido))
@@ -292,7 +285,6 @@ def buscar_definitivo():
         entry_nombre.delete(0, tk.END); entry_nombre.insert(0, fila[0])
         entry_apellido.delete(0, tk.END); entry_apellido.insert(0, fila[1])
         mostrar_foto(fila[2])
-        # Resalta en lista
         for i in range(lista_personas.size()):
             if f"DNI {fila[2]}" in lista_personas.get(i):
                 lista_personas.selection_clear(0, tk.END)
@@ -327,23 +319,11 @@ btn_buscar.pack(side="left", padx=5)
 btn_limpiar = RoundedButton(frame_btn, 350, 40, 20, VERDE_AZULADO, BLANCO,text="Limpiar", command=limpiar, hover_color=VERDE_TERMINAL)
 btn_limpiar.pack(side="left", padx=5)
 
-# Los dejo por las dudas
-#btn_agregar  = Button(frame_btn, text="Agregar", font=("Segoe UI", 12), command=agregar, bg=VERDE_AZULADO, fg=BLANCO, activebackground=VERDE_TERMINAL, activeforeground=NEGRO, relief="flat")
-#btn_agregar.pack(side="left", padx=5, expand=True, fill="both")
-#btn_eliminar = Button(frame_btn, text="Eliminar", font=("Segoe UI", 12), command=eliminar, bg=VERDE_AZULADO, fg=BLANCO, activebackground=VERDE_TERMINAL, activeforeground=NEGRO, relief="flat")
-#btn_eliminar.pack(side="left", padx=5, expand=True, fill="both")
-#btn_buscar   = Button(frame_btn, text="Buscar", font=("Segoe UI", 12), command=buscar, bg=VERDE_AZULADO, fg=BLANCO, activebackground=VERDE_TERMINAL, activeforeground=NEGRO, relief="flat")
-#btn_buscar.pack(side="left", padx=5, expand=True, fill="both")
-#btn_limpiar  = Button(frame_btn, text="Limpiar", font=("Segoe UI", 12), command=limpiar, bg=VERDE_AZULADO, fg=BLANCO, activebackground=VERDE_TERMINAL, activeforeground=NEGRO, relief="flat")
-#btn_limpiar.pack(side="left", padx=5, expand=True, fill="both")
-
 # ============================================================================
 # BLOQUE 10: FORMULARIO PRINCIPAL
 # ============================================================================
 frame_form = Frame(ventana, bg=GRIS_NIEBLA)
-frame_form.pack(side="top", fill="x", padx=15, pady=10)#rellena en "x", tipo se estira en x 
-
-# Todo esto esta en fila 0
+frame_form.pack(side="top", fill="x", padx=15, pady=10)
 
 label_nombre = Label(frame_form, text="Nombre:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12))
 label_nombre.grid(row=0, column=2, sticky="e", padx=5)
@@ -386,8 +366,8 @@ grids_remove_dni()
 cuerpo = Frame(ventana, bg=GRIS_NIEBLA)
 cuerpo.pack(fill="both", expand=True)
 frame_foto = Frame(cuerpo, bg=BLANCO, relief="solid", bd=1)
-frame_foto.pack(side="left",fill="x", padx=50, pady = 45) #aca hay que cambiar el tamaño del frame
-visor_foto = Label(frame_foto, text="👤\nSin foto", bg=BLANCO, fg=GRIS_MEDIO, font=("Segoe UI", 18)) #texto para la foto
+frame_foto.pack(side="left",fill="x", padx=50, pady = 45)
+visor_foto = Label(frame_foto, text="👤\nSin foto", bg=BLANCO, fg=GRIS_MEDIO, font=("Segoe UI", 18))
 visor_foto.pack(expand=True, fill="both",padx= 20,pady= 40)
 
 frame_lista = Frame(cuerpo, bg=GRIS_AZULADO, relief="solid", bd=1)
@@ -405,7 +385,6 @@ scroll.config(command=lista_personas.yview)
 # ============================================================================
 # BLOQUE 12: BOTONES PARA BUSCAR Y AGREGAR DEFINITIVAMENTE
 # ============================================================================
-# Viven dentro de frame_form (que usa grid), asi que van con grid tambien.
 boton_agregar_definitivo = RoundedButton(frame_form, 350, 40, 20, VERDE_AZULADO, BLANCO, text="Confirmar agregar", command=agregar_definitivo)
 boton_agregar_definitivo.grid(row=0, column=1, sticky="ew", padx=5)
 boton_agregar_definitivo.grid_remove()
@@ -413,14 +392,6 @@ boton_agregar_definitivo.grid_remove()
 boton_busqueda_definitivo = RoundedButton(frame_form, 350, 40, 20, VERDE_AZULADO, BLANCO, text="Confirmar busqueda", command=buscar_definitivo)
 boton_busqueda_definitivo.grid(row=0, column=1, sticky="ew", padx=5)
 boton_busqueda_definitivo.grid_remove()
-
-# Dejo los botones por ahi
-#boton_agregar_definitivo = Button(frame_form, text="Confirmar agregar", command=agregar_definitivo, bg=VERDE_AZULADO, fg=BLANCO,activebackground=VERDE_TERMINAL, activeforeground=NEGRO,relief="flat", font=("Segoe UI", 12))
-#boton_agregar_definitivo.grid(row=0, column=1, sticky="ew", padx=5)
-#boton_agregar_definitivo.grid_remove()
-#boton_busqueda_definitivo = Button(frame_form, text="Confirmar busqueda",command=buscar_definitivo, bg=VERDE_AZULADO, fg=BLANCO,activebackground=VERDE_TERMINAL, activeforeground=NEGRO,relief="flat", font=("Segoe UI", 12))
-#boton_busqueda_definitivo.grid(row=0, column=1, sticky="ew", padx=5)
-#boton_busqueda_definitivo.grid_remove()
 # Nahuel paso por aqui XD jajaja
 
 # ============================================================================
@@ -430,20 +401,15 @@ tema_oscuro = False
 ventanas_secundarias = []
 
 def actualizar_widget(widget, fondo, panel, texto, acento):
-    # 1. Detectamos si es un boton redondo (Canvas personalizado)
     if isinstance(widget, RoundedButton):
-        # Si es el boton de la luna, colores invertidos. Si no, el color de acción.
         if widget == btn_tema:
             widget.set_colors(panel, acento, texto, fondo)
         else:
             widget.set_colors(acento, VERDE_TERMINAL, BLANCO, fondo)
-        
-        # Seguimos con los hijos (por si el Canvas tuviera más cosas)
         for hijo in widget.winfo_children():
             actualizar_widget(hijo, fondo, panel, texto, acento)
-        return  # Salimos para que no intente aplicar el color de Canvas normal
+        return
 
-    # 2. Si no es RoundedButton, aplicamos colores por clase
     clase = widget.winfo_class()
     if clase in ("Frame", "Labelframe", "Canvas"):
         widget.config(bg=fondo)
@@ -456,7 +422,6 @@ def actualizar_widget(widget, fondo, panel, texto, acento):
     elif clase in ("Button", "Menubutton"):
         widget.config(bg=acento, fg=BLANCO, activebackground=VERDE_TERMINAL, activeforeground=BLANCO)
 
-    # 3. Recursión para los hijos
     for hijo in widget.winfo_children():
         actualizar_widget(hijo, fondo, panel, texto, acento)
 
@@ -476,7 +441,6 @@ def actualizar_ventanas_secundarias():
         boton_luna_bg = NEGRO
         boton_luna_fg = BLANCO
 
-    # Limpiar ventanas que ya se cerraron
     ventanas_secundarias[:] = [v for v in ventanas_secundarias if v.winfo_exists()]
 
     for ventana_hija in ventanas_secundarias:
@@ -491,7 +455,6 @@ def actualizar_ventanas_secundarias():
 def agregar_boton_luna(ventana_hija):
     if ventana_hija not in ventanas_secundarias:
         ventanas_secundarias.append(ventana_hija)
-
     actualizar_ventanas_secundarias()
 
 def aplicar_tema():
@@ -529,66 +492,55 @@ def aplicar_tema():
         btn_luna_hover = GRIS
         btn_luna_fg = BLANCO
 
-    # --- Actualizar ventana principal ---
     ventana.config(bg=fondo_general)
     banner.config(bg=fondo_banner)
     banner_label.config(bg=fondo_banner, fg=BLANCO)
-    
+
     frame_btn.config(bg=fondo_general)
     frame_btn_info.config(bg=fondo_general)
-    
+
     frame_form.config(bg=fondo_general)
     cuerpo.config(bg=fondo_general)
-    
+
     frame_foto.config(bg=panel)
     visor_foto.config(bg=panel, fg=texto_secundario)
-    
+
     frame_lista.config(bg=panel_2)
     titulo_lista.config(bg=panel_2, fg=texto)
     lista_personas.config(bg=lista_bg, fg=lista_fg, selectbackground=AZUL_SERENO, selectforeground=BLANCO)
 
-    # --- Actualizar Labels y Entries del formulario ---
     for widget in frame_form.winfo_children():
         if isinstance(widget, Label):
             widget.config(bg=fondo_general, fg=texto)
         elif isinstance(widget, Entry):
             widget.config(bg=lista_bg, fg=lista_fg, insertbackground=lista_fg)
 
-    # --- Actualizar Botones Redondos ---
-    # 1. Botones de frame_btn (Agregar, Eliminar, Buscar, Limpiar, Luna)
     for widget in frame_btn.winfo_children():
         if isinstance(widget, RoundedButton):
             if widget == btn_tema:
-                # Acá está la magia: le pasamos fondo_general al final
                 widget.set_colors(btn_luna_bg, btn_luna_hover, btn_luna_fg, fondo_general)
             else:
                 widget.set_colors(boton_accion, boton_hover, boton_texto, fondo_general)
 
-    # 2. Botones de frame_form (Confirmar agregar, Confirmar búsqueda)
     for widget in frame_form.winfo_children():
         if isinstance(widget, RoundedButton):
             widget.set_colors(boton_accion, boton_hover, boton_texto, fondo_general)
-            
-    # 3. Boton Info de frame_btn_info
+
     for widget in frame_btn_info.winfo_children():
         if isinstance(widget, RoundedButton):
             widget.set_colors(boton_accion, boton_hover, boton_texto, fondo_general)
         elif isinstance(widget, Button):
             widget.config(bg=boton_accion, fg=BLANCO, activebackground=boton_hover, activeforeground=BLANCO)
 
-    # --- Actualizar ventanas secundarias ---
     actualizar_ventanas_secundarias()
 
 btn_tema = RoundedButton(frame_btn, 50, 40, 20, NEGRO, BLANCO, text="☾", command=aplicar_tema)
 btn_tema.pack(side="right", padx=5)
-#btn_tema = Button(frame_btn, text="☾", command=aplicar_tema, bg="#111111", fg="#FFFFFF", font=("Segoe UI", 18, "bold"), width=3, height=1, relief="flat", bd=0, cursor="hand2")
-#btn_tema.pack(side="right", padx=5)
 
 # ============================================================================
 # BLOQUE 14: FUNCIONES AUXILIARES
 # ============================================================================
 def comprobar(i_del_for, entry_, orden):
-    # Si el Entry está vacío, devuelve el valor viejo de la BD
     variable = entry_.get()
     if variable == "":
         return i_del_for[orden]
@@ -596,14 +548,12 @@ def comprobar(i_del_for, entry_, orden):
         return variable
 
 def comprobar_fecha(entry_fecha):
-    # Reemplaza signos de puntuacion por "/"
     fecha = entry_fecha.get()
     for i in string.punctuation:
         fecha = fecha.replace(i, "/")
     return str(fecha)
 
 def ver_list_entrevist(lista_widget):
-    # Llena el Listbox de entrevistas
     lista_widget.delete(0, tk.END)
     cursor.execute("""SELECT id, fecha_entrevista, hora_entrevista, dni_paciente,nombre_profecional, apellido_profecional, tipo_entrevista FROM entrevistas ORDER BY id""")
     for i in cursor.fetchall():
@@ -644,7 +594,6 @@ def pantalla_edit_entrevista(ventana_padre):
     text_entrevista_edit = tk.Text(frame_editar_medio, bg=GRIS_NIEBLA, relief="solid", bd=1, font=("Segoe UI", 12))
     text_entrevista_edit.pack(fill="both", expand=True, padx=15, pady=15)
 
-    # Funcion para precargar los datos de la entrevista a partir del ID
     def cargar_entrevista():
         p_id = entry_id.get().strip()
         if not p_id:
@@ -654,9 +603,6 @@ def pantalla_edit_entrevista(ventana_padre):
         if not e:
             messagebox.showinfo("Error", "No existe esa entrevista.")
             return
-        # indice: 0=id, 1=nombre_prof, 2=apellido_prof, 3=dni_prof, 4=matricula,
-        # 5=especialidad, 6=tel_prof, 7=email_prof, 8=activo, 9=entrevista,
-        # 10=dni_paciente, 11=fecha, 12=hora, 13=tipo, 14=proxima_sesion
         text_entrevista_edit.delete("1.0", tk.END)
         text_entrevista_edit.insert("1.0", e[9] or "")
         entry_dni.delete(0, tk.END); entry_dni.insert(0, e[10] or "")
@@ -665,8 +611,6 @@ def pantalla_edit_entrevista(ventana_padre):
 
     boton_cargar = RoundedButton(frame_editar_superior, 150, 30, 20,VERDE_AZULADO, BLANCO,text="Cargar datos", command=cargar_entrevista)
     boton_cargar.grid(row=0, column=2, padx=10, sticky="ew")
-    # boton_cargar = Button(frame_editar_superior, text="Cargar datos", command=cargar_entrevista, bg=VERDE_AZULADO, fg=BLANCO, font=("Segoe UI", 10))
-    # boton_cargar.grid(row=0, column=2, padx=10, sticky="ew")
 
     def guardar_entrevista():
         p_id = entry_id.get()
@@ -696,8 +640,6 @@ def pantalla_edit_entrevista(ventana_padre):
     frame_editar_inferior.pack(fill="x", expand=True)
     boton_cargar = RoundedButton(frame_editar_superior, 150, 30, 20,VERDE_AZULADO, BLANCO,text="Guardar cambios",command=guardar_entrevista)
     boton_cargar.grid(row=0, column=10, padx=5, sticky="ew")
-    # boton_guardar_entrevista = Button(frame_editar_superior, text="Guardar cambios",font=("Segoe UI", 10), command=guardar_entrevista,bg=VERDE_AZULADO, fg=BLANCO)
-    # boton_guardar_entrevista.grid(row=0, column=3, padx=5, sticky="ew")
     agregar_boton_luna(ventana_editar)
 
 
@@ -705,10 +647,14 @@ def pantalla_edit_entrevista(ventana_padre):
 # BLOQUE 16: FUNCIONES DE LA VENTANA DE ENTREVISTAS
 # ============================================================================
 def new_entrevista():
-    entrevista = text_entrevista.get("1.0", tk.END).strip() # .strip() borra los enters de mas
+    entrevista = text_entrevista.get("1.0", tk.END).strip()
     dni = entry_dni_entrevista.get().strip()
     dni_profesional = entry_dni_profesional.get().strip()
     nom_profecional = entry_nombre_profecional.get().strip()
+    ape_profecional = entry_apellido_profecional.get().strip()
+    tel_profecional = entry_tel_profesional.get().strip()
+    mail_profecional = entry_mail_profesional.get().strip()
+    estado_profesional = var_tipo_estado.get()
     fecha = comprobar_fecha(entry_fecha)
     matricula = entry_matricula.get().strip()
     especialidad = entry_especialidad.get().strip()
@@ -721,15 +667,18 @@ def new_entrevista():
         return
 
     try:
-        # ACA ESTA LA CORRECCION: dice dni_profecional (con C)
         cursor.execute("""INSERT INTO entrevistas 
-            (nombre_profecional, dni_profecional, entrevista, dni_paciente, matricula, especialidad, fecha_entrevista, hora_entrevista, tipo_entrevista, proxima_sesion_entrevista) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-            (nom_profecional, dni_profesional, entrevista, dni, matricula, especialidad, fecha, hora, tipo, proxima_sesion))
-        conexion.commit() # <-- ACA FALTABA EL COMMIT
-
+            (nombre_profecional, apellido_profecional, dni_profecional,
+             telefono_profecional, email_profecional, activo_profecional,
+             entrevista, dni_paciente, matricula, especialidad,
+             fecha_entrevista, hora_entrevista, tipo_entrevista, proxima_sesion_entrevista) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+            (nom_profecional, ape_profecional, dni_profesional,
+             tel_profecional, mail_profecional, estado_profesional,
+             entrevista, dni, matricula, especialidad,
+             fecha, hora, tipo, proxima_sesion))
+        conexion.commit()
     except Exception as e:
-        # ACA ESTA LA CORRECCION: mostramos el error real
         messagebox.showerror("Error", f'No se pudo guardar la entrevista:\n{e}')
         return
 
@@ -745,14 +694,14 @@ def eliminar_entrevista():
         conexion.commit()
         ver_list_entrevist(lista_entrevistas)
 
-def detalles_entrevsit(event=None):
+def detalles_entrevista(event=None):
     seleccion = lista_entrevistas.curselection()
     if not seleccion:
         return
     dato = lista_entrevistas.get(seleccion[0])
     id_entrevista = dato.split("//")[0].replace("ID: ", "").strip()
 
-    cursor.execute("""SELECT nombre_profecional, apellido_profecional, dni_profecional,matricula, especialidad, entrevista, dni_paciente,fecha_entrevista, hora_entrevista, tipo_entrevista,proxima_sesion_entrevista FROM entrevistas WHERE id = ?""", (id_entrevista,))    
+    cursor.execute("""SELECT nombre_profecional, apellido_profecional, dni_profecional,matricula, especialidad, entrevista, dni_paciente,fecha_entrevista, hora_entrevista, tipo_entrevista,proxima_sesion_entrevista FROM entrevistas WHERE id = ?""", (id_entrevista,))
     e = cursor.fetchone()
     if not e:
         return
@@ -800,11 +749,11 @@ def abrir_ventana_entrevistas(ventana_padre):
 
     global lista_entrevistas, text_entrevista, entry_dni_entrevista
     global entry_nombre_profecional, entry_dni_profesional, entry_fecha
-    global entry_matricula, entry_especialidad, entry_hora_entrevista, var_tipo_entrevista, entry_proxima_sesion
+    global entry_apellido_profecional, entry_tel_profesional, entry_mail_profesional
+    global entry_matricula, entry_especialidad, entry_hora_entrevista
+    global var_tipo_entrevista, var_tipo_estado, entry_proxima_sesion
 
     frame_superior = Frame(ventana_entrevistas, bg=GRIS_AZULADO)
-    frame_superior.pack(side="top", fill="x", padx=20, pady=10)
- frame_superior = Frame(ventana_entrevistas, bg=GRIS_AZULADO)
     frame_superior.pack(side="top", fill="x", padx=20, pady=10)
 
     # ---FILA 0: Datos del Paciente, Fecha y Hora---
@@ -826,28 +775,14 @@ def abrir_ventana_entrevistas(ventana_padre):
     entry_nombre_profecional.grid(row=1, column=1, sticky="w", padx=5)
 
     Label(frame_superior, text="Apellido del profesional:", bg=GRIS_AZULADO, fg=BLANCO, font=("Segoe UI", 11, "bold")).grid(row=1, column=2, sticky="e", padx=10, pady=8)
-    entry_nombre_profecional = Entry(frame_superior, font=("Segoe UI", 11), width=15)
-    entry_nombre_profecional.grid(row=1, column=3, sticky="w", padx=5)
+    entry_apellido_profecional = Entry(frame_superior, font=("Segoe UI", 11), width=15)
+    entry_apellido_profecional.grid(row=1, column=3, sticky="w", padx=5)
 
     Label(frame_superior, text="DNI del profesional:", bg=GRIS_AZULADO, fg=BLANCO, font=("Segoe UI", 11, "bold")).grid(row=1, column=4, sticky="e", padx=10, pady=8)
     entry_dni_profesional = Entry(frame_superior, font=("Segoe UI", 11), width=15)
     entry_dni_profesional.grid(row=1, column=5, sticky="w", padx=5)
 
-
     # ---FILA 2: Datos adicionales---
-    Label(frame_superior, text="Matricula:", bg=GRIS_AZULADO, fg=BLANCO, font=("Segoe UI", 11, "bold")).grid(row=2, column=0, sticky="e", padx=10, pady=8)
-    entry_matricula = Entry(frame_superior, font=("Segoe UI", 11), width=15)
-    entry_matricula.grid(row=2, column=1, sticky="w", padx=5)
-
-    Label(frame_superior, text="Especialidad:", bg=GRIS_AZULADO, fg=BLANCO, font=("Segoe UI", 11, "bold")).grid(row=2, column=2, sticky="e", padx=10, pady=8)
-    entry_especialidad = Entry(frame_superior, font=("Segoe UI", 11), width=15)
-    entry_especialidad.grid(row=2, column=3, sticky="w", padx=5)
-
-    Label(frame_superior, text="Proxima Sesión:", bg=GRIS_AZULADO, fg=BLANCO, font=("Segoe UI", 11, "bold")).grid(row=2, column=4, sticky="e", padx=10, pady=8)
-    entry_proxima_sesion = Entry(frame_superior, font=("Segoe UI", 11), width=15)
-    entry_proxima_sesion.grid(row=2, column=5, sticky="w", padx=5)
-
-    # ---FILA 3: Datos adicionales---
     Label(frame_superior, text="Matricula:", bg=GRIS_AZULADO, fg=BLANCO, font=("Segoe UI", 11, "bold")).grid(row=2, column=0, sticky="e", padx=10, pady=8)
     entry_matricula = Entry(frame_superior, font=("Segoe UI", 11), width=15)
     entry_matricula.grid(row=2, column=1, sticky="w", padx=5)
@@ -869,20 +804,21 @@ def abrir_ventana_entrevistas(ventana_padre):
 
     # Telefono del profesional
     Label(frame_superior, text="Telefono del profesional:", bg=GRIS_AZULADO, fg=BLANCO, font=("Segoe UI", 11, "bold")).grid(row=0, column=6, sticky="e", padx=10, pady=8)
-    entry_proxima_sesion = Entry(frame_superior, font=("Segoe UI", 11), width=15)
-    entry_proxima_sesion.grid(row=0, column=7, sticky="w", padx=5)
+    entry_tel_profesional = Entry(frame_superior, font=("Segoe UI", 11), width=15)
+    entry_tel_profesional.grid(row=0, column=7, sticky="w", padx=5)
 
     # Mail del profesional
     Label(frame_superior, text="Mail del profesional:", bg=GRIS_AZULADO, fg=BLANCO, font=("Segoe UI", 11, "bold")).grid(row=2, column=6, sticky="e", padx=10, pady=8)
-    entry_proxima_sesion = Entry(frame_superior, font=("Segoe UI", 11), width=15)
-    entry_proxima_sesion.grid(row=2, column=7, sticky="w", padx=5)
+    entry_mail_profesional = Entry(frame_superior, font=("Segoe UI", 11), width=15)
+    entry_mail_profesional.grid(row=2, column=7, sticky="w", padx=5)
 
     # Estado del profesional
     Label(frame_superior, text="Estado:", bg=GRIS_AZULADO, fg=BLANCO, font=("Segoe UI", 11, "bold")).grid(row=1, column=6, sticky="e", padx=10, pady=8)
-    var_tipo_entrevista = tk.StringVar(value="")
-    menu_tipo = tk.OptionMenu(frame_superior, var_tipo_entrevista, "Activo","No activo")
-    menu_tipo.config(font=("Segoe UI", 10), width=12)
-    menu_tipo.grid(row=1, column=7, sticky="w", padx=5)
+    var_tipo_estado = tk.StringVar(value="")
+    menu_estado = tk.OptionMenu(frame_superior, var_tipo_estado, "Activo", "No activo")
+    menu_estado.config(font=("Segoe UI", 10), width=12)
+    menu_estado.grid(row=1, column=7, sticky="w", padx=5)
+
 
     # ---CUERPO MEDIO (Lista e Historial)---
     frame_medio_cuerpo = Frame(ventana_entrevistas, bg=GRIS_NIEBLA)
@@ -891,13 +827,13 @@ def abrir_ventana_entrevistas(ventana_padre):
     # LADO IZQUIERDO: lista
     frame_lista_medio = Frame(frame_medio_cuerpo, bg=BLANCO, relief="solid", bd=1)
     frame_lista_medio.pack(side="left", fill="both", expand=True, padx=(0, 10))
-    
+
     Label(frame_lista_medio, text="Historial de Entrevistas", bg=BLANCO, fg=GRIS_AZULADO, font=("Segoe UI", 13, "bold")).pack(pady=5)
-    
+
     lista_entrevistas = Listbox(frame_lista_medio, bg=BLANCO, fg=GRIS_AZULADO, selectbackground=AZUL_SERENO, selectforeground=BLANCO, bd=0, font=("Segoe UI", 10))
     lista_entrevistas.pack(fill="both", expand=True, padx=5, pady=5)
-    lista_entrevistas.bind("<Double-Button-1>", detalles_entrevsit)
-    
+    lista_entrevistas.bind("<Double-Button-1>", detalles_entrevista)
+
     ver_list_entrevist(lista_entrevistas)
 
     # LADO DERECHO: texto
@@ -921,18 +857,12 @@ def abrir_ventana_entrevistas(ventana_padre):
     RoundedButton(frame_inferior, 150, 40, 20,VERDE_AZULADO, BLANCO,  text="Nueva entrevista", command=new_entrevista).grid(row=0, column=1, padx=10, sticky="ew")
     RoundedButton(frame_inferior, 160, 40, 20, VERDE_AZULADO, BLANCO, text="Eliminar entrevista", command=eliminar_entrevista).grid(row=0, column=2, padx=10, sticky="ew")
 
-    # Button(frame_inferior, text="Nueva entrevista", command=new_entrevista, bg=VERDE_AZULADO, fg=BLANCO, font=("Segoe UI", 12, "bold"), relief="flat").grid(row=0, column=1, padx=10, sticky="ew")
-    # Button(frame_inferior, text="Eliminar entrevista", command=eliminar_entrevista, bg=ROJO, fg=BLANCO, font=("Segoe UI", 12, "bold"), relief="flat").grid(row=0, column=2, padx=10, sticky="ew")
-   
     def abrir_editar():
         pantalla_edit_entrevista(ventana_entrevistas)
     RoundedButton(frame_inferior,  180, 40, 20,VERDE_AZULADO, BLANCO, text="Editar entrevista", command=abrir_editar).grid(row=0, column=3, padx=10, sticky="ew")
     RoundedButton(frame_inferior,  150, 40, 20,VERDE_AZULADO, BLANCO, text="Generar PDF", command=exportar_entrevistas_pdf).grid(row=0, column=4, padx=10, sticky="ew")
 
     agregar_boton_luna(ventana_entrevistas)
-
-    # Button(frame_inferior, text="Editar entrevista", bg=AZUL_SERENO, fg=BLANCO, command=abrir_editar, font=("Segoe UI", 12, "bold"), relief="flat").grid(row=0, column=3, padx=10, sticky="ew")
-    # Button(frame_inferior, text="Imprimir PDF", command=exportar_entrevistas_pdf, bg=AZUL_PETROLEO, fg=BLANCO, font=("Segoe UI", 12, "bold"), relief="flat", width=15).grid(row=0, column=4, padx=10)
 
 # ============================================================================
 # BLOQUE 18: VENTANA DE PERFIL
@@ -946,7 +876,6 @@ def abrir_ventana_perfil():
 
     # Foto pendiente (dict para poder mutarlo desde funciones anidadas)
     foto_pendiente = {"bytes": None}
-
 
     frame_izquierdo = Frame(ventana_perfil, bg=GRIS_NIEBLA)
     frame_izquierdo.pack(side="left", fill="y", padx=15, pady=15)
@@ -965,9 +894,8 @@ def abrir_ventana_perfil():
 
     #Edad
     Label(frame_izquierdo, text="Edad:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=2, column=0, sticky="e", padx=5)
-    entry_dni_perfil = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
-    entry_dni_perfil.grid(row=2, column=1, padx=5, pady=3)
-    entry_dni_perfil.insert(0, entry_dni.get())
+    entry_edad_perfil = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
+    entry_edad_perfil.grid(row=2, column=1, padx=5, pady=3)
 
     # DNI
     Label(frame_izquierdo, text=" DNI:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=3, column=0, sticky="e", padx=5)
@@ -987,51 +915,48 @@ def abrir_ventana_perfil():
 
     # F. Ingreso a institucion
     Label(frame_izquierdo, text=" Fecha de ingreso al instituto:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=6, column=0, sticky="e", padx=5)
-    entry_f_nacimiento_perfil = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
-    entry_f_nacimiento_perfil.grid(row=6, column=1, padx=5, pady=3)
+    entry_f_ingreso_perfil = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
+    entry_f_ingreso_perfil.grid(row=6, column=1, padx=5, pady=3)
 
     #Numero de telefono del paciente
     Label(frame_izquierdo, text="Telefono:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=7, column=0, sticky="e", padx=5)
-    entry_f_nacimiento_perfil = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
-    entry_f_nacimiento_perfil.grid(row=7, column=1, padx=5, pady=3)
+    entry_telefono_perfil = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
+    entry_telefono_perfil.grid(row=7, column=1, padx=5, pady=3)
 
     #Nombre del contacto de emergencia
     Label(frame_izquierdo, text="Nombre del contacto de emergencia:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=8, column=0, sticky="e", padx=5)
-    entry_f_nacimiento_perfil = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
-    entry_f_nacimiento_perfil.grid(row=8, column=1, padx=5, pady=3)
+    entry_contacto_emergencia_perfil = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
+    entry_contacto_emergencia_perfil.grid(row=8, column=1, padx=5, pady=3)
 
     #Telefono del contacto de emergencia
     Label(frame_izquierdo, text="Telefono del contacto de emergencia:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=9, column=0, sticky="e", padx=5)
-    entry_f_nacimiento_perfil = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
-    entry_f_nacimiento_perfil.grid(row=9, column=1, padx=5, pady=3)
+    entry_tel_emergencia_perfil = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
+    entry_tel_emergencia_perfil.grid(row=9, column=1, padx=5, pady=3)
 
     #Obra social
     Label(frame_izquierdo, text="Obra social:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=10, column=0, sticky="e", padx=5)
-    entry_f_nacimiento_perfil = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
-    entry_f_nacimiento_perfil.grid(row=10, column=1, padx=5, pady=3)
+    entry_obra_social_perfil = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
+    entry_obra_social_perfil.grid(row=10, column=1, padx=5, pady=3)
 
     #Estado del paciente, si es ACTIVO, ABANDONO o alguna cosa de ese mambo
     Label(frame_izquierdo, text="Estado:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=11, column=0, sticky="e", padx=5)
-    entry_f_nacimiento_perfil = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
-    entry_f_nacimiento_perfil.grid(row=11, column=1, padx=5, pady=3)
+    entry_estado_perfil = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
+    entry_estado_perfil.grid(row=11, column=1, padx=5, pady=3)
 
     # Consentimiento
     Label(frame_izquierdo, text="Consentimiento:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=12, column=0, sticky="e", padx=5)
-    entry_f_nacimiento_perfil = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
-    entry_f_nacimiento_perfil.grid(row=12, column=1, padx=5, pady=3)
+    entry_consentimiento_perfil = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
+    entry_consentimiento_perfil.grid(row=12, column=1, padx=5, pady=3)
 
     def mostrar_foto_en_perfil():
-        # Poblar galeria con fotos del editor
         lista_fotos_galeria.delete(0, tk.END)
         for ruta in imagenes_cargadas:
             lista_fotos_galeria.insert(tk.END, os.path.basename(ruta))
-        # Si la foto pendiente es b"" significa "quitar foto", mostrar el placeholder
         if foto_pendiente["bytes"] == b"":
             visor_foto_perfil.configure(image="", text="👤\nClic para subir foto")
             visor_foto_perfil.image = None
             return
 
-        # Si hay foto pendiente nueva, mostrarla
         if foto_pendiente["bytes"] is not None:
             try:
                 img = Image.open(BytesIO(foto_pendiente["bytes"]))
@@ -1043,7 +968,6 @@ def abrir_ventana_perfil():
             except Exception:
                 pass
 
-        # Si no, mostrar la de la base
         dni_txt = entry_dni_perfil.get().strip()
         if not dni_txt:
             visor_foto_perfil.configure(image="", text="👤\nClic para subir foto")
@@ -1085,9 +1009,9 @@ def abrir_ventana_perfil():
             mostrar_foto_en_perfil()
         except Exception:
             messagebox.showerror("Error", 'No se pudo asignar la foto')
-    
+
     def quitar_foto_perfil():
-        foto_pendiente["bytes"] = b""  # b"" = "borrar foto al guardar"
+        foto_pendiente["bytes"] = b""
         mostrar_foto_en_perfil()
 
     def guardar_cambios_perfil():
@@ -1102,28 +1026,64 @@ def abrir_ventana_perfil():
         except ValueError:
             messagebox.showerror("Error", "El DNI debe ser numérico.")
             return
+
+        edad_txt = entry_edad_perfil.get().strip()
+        edad = int(edad_txt) if edad_txt.isdigit() else None
+        direccion = entry_direccion_perfil.get().strip()
+        f_nacimiento = entry_f_nacimiento_perfil.get().strip()
+        f_ingreso = entry_f_ingreso_perfil.get().strip()
+        telefono = entry_telefono_perfil.get().strip()
+        contacto_emergencia = entry_contacto_emergencia_perfil.get().strip()
+        tel_emergencia = entry_tel_emergencia_perfil.get().strip()
+        obra_social = entry_obra_social_perfil.get().strip()
+        estado = entry_estado_perfil.get().strip()
+        consentimiento = entry_consentimiento_perfil.get().strip()
+
+        if foto_pendiente["bytes"] == b"":
+            foto_contenido = None
+            borrar_foto = True
+        elif foto_pendiente["bytes"] is not None:
+            foto_contenido = sqlite3.Binary(foto_pendiente["bytes"])
+            borrar_foto = False
+        else:
+            foto_contenido = None
+            borrar_foto = False
+
         cursor.execute("SELECT id FROM personas WHERE dni = ?", (dni,))
         existe = cursor.fetchone()
+
         if existe:
-            # Tres casos: foto nueva, quitar foto, o no tocar
-            if foto_pendiente["bytes"] == b"":
-                cursor.execute("""UPDATE personas SET nombre = ?, apellido = ?, direccion = ?, fecha_nacimiento = ?, foto = NULL WHERE dni = ?""",(nombre, apellido,entry_direccion_perfil.get().strip(),entry_f_nacimiento_perfil.get().strip(),dni))
-            elif foto_pendiente["bytes"] is not None:
-                cursor.execute("""UPDATE personas SET nombre = ?, apellido = ?, direccion = ?, fecha_nacimiento = ?, foto = ?  WHERE dni = ?""",(nombre, apellido,entry_direccion_perfil.get().strip(),entry_f_nacimiento_perfil.get().strip(),sqlite3.Binary(foto_pendiente["bytes"]),dni))
-            else:
-                cursor.execute("""UPDATE personas SET nombre = ?, apellido = ?, direccion = ?, fecha_nacimiento = ? WHERE dni = ?""", (nombre, apellido,entry_direccion_perfil.get().strip(),entry_f_nacimiento_perfil.get().strip(), dni))
+            cursor.execute("""
+                UPDATE personas
+                SET nombre = ?, apellido = ?, edad = ?, direccion = ?,
+                    fecha_nacimiento = ?, fecha_ingreso = ?, telefono = ?,
+                    contacto_emergencia = ?, telefono_emergencia = ?,
+                    obra_social = ?, estado = ?, consentimiento = ?
+                WHERE dni = ?
+            """, (nombre, apellido, edad, direccion, f_nacimiento, f_ingreso,
+                  telefono, contacto_emergencia, tel_emergencia, obra_social,
+                  estado, consentimiento, dni))
+
+            if borrar_foto:
+                cursor.execute("UPDATE personas SET foto = NULL WHERE dni = ?", (dni,))
+            elif foto_contenido is not None:
+                cursor.execute("UPDATE personas SET foto = ? WHERE dni = ?",
+                               (foto_contenido, dni))
         else:
-            if foto_pendiente["bytes"] == b"":
-                contenido = None
-            elif foto_pendiente["bytes"] is not None:
-                contenido = sqlite3.Binary(foto_pendiente["bytes"])
-            else:
-                contenido = None
             try:
-                cursor.execute("""INSERT INTO personas (nombre, apellido, dni, direccion, fecha_nacimiento, foto) VALUES (?, ?, ?, ?, ?, ?)""", (nombre, apellido, dni,entry_direccion_perfil.get().strip(),entry_f_nacimiento_perfil.get().strip(),contenido))
+                cursor.execute("""
+                    INSERT INTO personas
+                    (nombre, apellido, dni, edad, direccion, fecha_nacimiento,
+                     fecha_ingreso, telefono, contacto_emergencia,
+                     telefono_emergencia, obra_social, estado, consentimiento, foto)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """, (nombre, apellido, dni, edad, direccion, f_nacimiento,
+                      f_ingreso, telefono, contacto_emergencia, tel_emergencia,
+                      obra_social, estado, consentimiento, foto_contenido))
             except sqlite3.IntegrityError:
                 messagebox.showerror("Error", "Ya existe una persona con ese DNI.")
                 return
+
         conexion.commit()
         refrescar_lista()
         foto_pendiente["bytes"] = None
@@ -1136,21 +1096,40 @@ def abrir_ventana_perfil():
             return
         lista_personas_perfil.delete(0, tk.END)
         foto_pendiente["bytes"] = None
-        cursor.execute("""SELECT nombre, apellido, direccion, fecha_nacimiento
-                          FROM personas WHERE dni = ?""", (dni_txt,))
+
+        cursor.execute("""
+            SELECT nombre, apellido, edad, direccion, fecha_nacimiento,
+                   fecha_ingreso, telefono, contacto_emergencia,
+                   telefono_emergencia, obra_social, estado, consentimiento
+            FROM personas WHERE dni = ?
+        """, (dni_txt,))
         fila = cursor.fetchone()
+
         if fila:
             entry_nombre_perfil.delete(0, tk.END); entry_nombre_perfil.insert(0, fila[0])
             entry_apellido_perfil.delete(0, tk.END); entry_apellido_perfil.insert(0, fila[1])
-            entry_direccion_perfil.delete(0, tk.END); entry_direccion_perfil.insert(0, fila[2] or "")
-            entry_f_nacimiento_perfil.delete(0, tk.END); entry_f_nacimiento_perfil.insert(0, fila[3] or "")
+            entry_edad_perfil.delete(0, tk.END); entry_edad_perfil.insert(0, fila[2] or "")
+            entry_direccion_perfil.delete(0, tk.END); entry_direccion_perfil.insert(0, fila[3] or "")
+            entry_f_nacimiento_perfil.delete(0, tk.END); entry_f_nacimiento_perfil.insert(0, fila[4] or "")
+            entry_f_ingreso_perfil.delete(0, tk.END); entry_f_ingreso_perfil.insert(0, fila[5] or "")
+            entry_telefono_perfil.delete(0, tk.END); entry_telefono_perfil.insert(0, fila[6] or "")
+            entry_contacto_emergencia_perfil.delete(0, tk.END); entry_contacto_emergencia_perfil.insert(0, fila[7] or "")
+            entry_tel_emergencia_perfil.delete(0, tk.END); entry_tel_emergencia_perfil.insert(0, fila[8] or "")
+            entry_obra_social_perfil.delete(0, tk.END); entry_obra_social_perfil.insert(0, fila[9] or "")
+            entry_estado_perfil.delete(0, tk.END); entry_estado_perfil.insert(0, fila[10] or "")
+            entry_consentimiento_perfil.delete(0, tk.END); entry_consentimiento_perfil.insert(0, fila[11] or "")
+
             mostrar_foto_en_perfil()
-            cursor.execute("""SELECT id, fecha_entrevista, nombre_profecional, apellido_profecional
-                              FROM entrevistas WHERE dni_paciente = ? ORDER BY fecha_entrevista""", (dni_txt,))
+
+            cursor.execute("""
+                SELECT id, fecha_entrevista, nombre_profecional, apellido_profecional
+                FROM entrevistas WHERE dni_paciente = ? ORDER BY fecha_entrevista
+            """, (dni_txt,))
             for e in cursor.fetchall():
                 lista_personas_perfil.insert(tk.END, f"ID {e[0]} — {e[1]} — {e[2]} {e[3] or ''}")
         else:
             messagebox.showinfo("Error", "No existe ese DNI.")
+
     def exportar_pdf_paciente():
         dni_txt = entry_dni_perfil.get().strip()
         if not dni_txt:
@@ -1166,21 +1145,9 @@ def abrir_ventana_perfil():
     boton_editor_fotos  = RoundedButton(frame_izquierdo, 100, 40, 20, VERDE_AZULADO,BLANCO,text="Editar fotos", command=abrir_ventana_editor_fotos)
     boton_editor_fotos.grid(row=13, column=1, padx=10, sticky="ew")
     boton_guardar_perfil= RoundedButton(frame_izquierdo, 140, 40, 20, VERDE_AZULADO,BLANCO,text="Guardar cambios", command=guardar_cambios_perfil)
-    boton_guardar_perfil.grid(row=13, column=0, columnspan=2, padx=10, pady=5, sticky="ew") # Ocupa 2 columnas
+    boton_guardar_perfil.grid(row=13, column=0, columnspan=2, padx=10, pady=5, sticky="ew")
     boton_pdf_paciente =  RoundedButton(frame_izquierdo, 180, 40, 20, VERDE_AZULADO,BLANCO,text="PDF de este paciente", command=exportar_pdf_paciente)
     boton_pdf_paciente.grid(row=15, column=1, padx=10, sticky="ew")
-    
-    # DEJO LOS BOTONES POR LAS DUDAS
-    #boton_cargar_perfil = tk.Button(frame_izquierdo, text="Cargar", command=cargar_perfil, bg=VERDE_AZULADO, fg=BLANCO, font=("Segoe UI", 10))
-    #boton_cargar_perfil.grid(row=2, column=2, sticky="w", padx=5, pady=3)
-    #boton_entrevistas = Button(frame_izquierdo, text="Entrevistas", command=abrir_desde_principal, bg=VERDE_AZULADO, fg=BLANCO, activebackground=VERDE_TERMINAL, activeforeground=NEGRO, font=("Segoe UI", 12))
-    #boton_entrevistas.grid(row=6, column=2, sticky="e", padx=5, pady=3)
-    #boton_editor_fotos = Button(frame_izquierdo, text="Editor de fotos", command=abrir_ventana_editor_fotos, bg=VERDE_AZULADO, fg=BLANCO, activebackground=VERDE_TERMINAL, activeforeground=NEGRO, font=("Segoe UI", 12))
-    #boton_editor_fotos.grid(row=6, column=1, sticky="e", padx=5, pady=3)
-    #boton_guardar_perfil = tk.Button(frame_izquierdo, text="Guardar cambios", command=guardar_cambios_perfil, bg=VERDE_AZULADO, fg=BLANCO, font=("Segoe UI", 10))
-    #boton_guardar_perfil.grid(row=6, column=0, sticky="ew", padx=5, pady=3)
-    #boton_pdf_paciente = tk.Button(frame_izquierdo, text="PDF de este paciente",command=exportar_pdf_paciente,bg=AZUL_PETROLEO, fg=BLANCO, font=("Segoe UI", 10))
-    #boton_pdf_paciente.grid(row=8, column=1, sticky="ew", padx=5, pady=3)
 
     # --- FRAME DERECHO ---
     frame_derecha = tk.Frame(ventana_perfil, bg=GRIS_NIEBLA)
@@ -1196,9 +1163,6 @@ def abrir_ventana_perfil():
 
     boton_quitar_foto =  RoundedButton(frame_derecha, 100, 40, 20, VERDE_AZULADO,BLANCO,text="Quitar foto", command=quitar_foto_perfil)
     boton_quitar_foto.pack(side="top",padx=10,pady=5)
-
-    #boton_quitar_foto = tk.Button(frame_derecha, text="Quitar foto", command=quitar_foto_perfil,bg=ROJO, fg=BLANCO, font=("Segoe UI", 10))
-    #boton_quitar_foto.pack(side="top", pady=(0, 10))
 
     # Galeria con fotos del editor
     frame_galeria = Frame(frame_derecha, bg=GRIS_NIEBLA)
@@ -1228,7 +1192,7 @@ def abrir_ventana_perfil():
 
     mostrar_foto_en_perfil()
     agregar_boton_luna(ventana_perfil)
-    
+
 # ============================================================================
 # BLOQUE 19: VENTANA DEL EDITOR DE FOTOS
 # ============================================================================
@@ -1328,12 +1292,8 @@ def abrir_ventana_editor_fotos():
     frame_editor_fotos_inferior.columnconfigure(0, weight=1)
     frame_editor_fotos_inferior.columnconfigure(3, weight=1)
 
-    #Button(frame_editor_fotos_inferior, text="Añadir fotos", command=agregar_imagen,bg=VERDE_AZULADO, fg=BLANCO, activebackground=VERDE_TERMINAL,activeforeground=NEGRO, font=("Segoe UI", 12)).grid(row=0, column=1, padx=10, sticky="ew")
-    #Button(frame_editor_fotos_inferior, text="Eliminar fotos", command=eliminar_imagen,bg=VERDE_AZULADO, fg=BLANCO, activebackground=VERDE_TERMINAL,activeforeground=NEGRO, font=("Segoe UI", 12)).grid(row=0, column=2, padx=10, sticky="ew")
-    #Button(frame_editor_fotos_inferior, text="Limpiar TODAS fotos", command=limpiar_todas,bg=VERDE_AZULADO, fg=BLANCO, activebackground=VERDE_TERMINAL,activeforeground=NEGRO, font=("Segoe UI", 12)).grid(row=0, column=3, padx=10, sticky="ew")
     agregar_boton_luna(ventana_editor_fotos)
 
-    # Esto deberia generar la lista para ver las fotos
     for ruta in imagenes_cargadas:
         lista_imagenes.insert(tk.END, os.path.basename(ruta))
     actualizar_contador()
@@ -1346,12 +1306,9 @@ def abrir_ventana_editor_fotos():
 # BLOQUE 20: CARGAR IMAGEN DE SANCA
 # ============================================================================
 def cargar_imagen():
-    # 1. Pregunto si ya esta en la base de datos
     cursor.execute("SELECT 1 FROM recursos WHERE nombre=?",("sanca",))
     if cursor.fetchall():
         return True
-        
-    # 2. Si no esta, la decodifico desde el texto invisible
     try:
         imagen_bytes = base64.b64decode(SANCA_BASE64)
         cursor.execute('INSERT INTO recursos (nombre,contenido) VALUES(?,?)',("sanca", sqlite3.Binary(imagen_bytes)))
@@ -1360,12 +1317,12 @@ def cargar_imagen():
     except Exception:
         print('Error al cargar la imagen invisible:')
         return False
-    
+
 # ============================================================================
 # BLOQUE 21: DERECHOS DE AUTOR
 # ============================================================================
 def abrir_ventana_autores():
-    hay_imagen = cargar_imagen()  
+    hay_imagen = cargar_imagen()
 
     ventana_autores = tk.Toplevel(ventana)
     ventana_autores.title("Licencia y autores de la aplicacion")
@@ -1373,7 +1330,6 @@ def abrir_ventana_autores():
     canvas = tk.Canvas(ventana_autores, width=1000, height=800, highlightthickness=0)
     canvas.pack(fill="both", expand=True)
 
-    # ---- Imagen de fondo (si existe) ----
     if hay_imagen:
         cursor.execute("SELECT contenido FROM recursos WHERE nombre = ?", ("sanca",))
         fila = cursor.fetchone()
@@ -1382,21 +1338,17 @@ def abrir_ventana_autores():
         canvas.create_image(0, 0, anchor="nw", image=foto)
         ventana_autores.fondo = foto
     else:
-        canvas.configure(bg=BLANCO)# sin imagen, fondo blanco
+        canvas.configure(bg=BLANCO)
 
-    # ---- Titulos (x=500 = mitad del ancho de 1000) ----
     canvas.create_text(500, 80, text="AUTORES",fill=NEGRO, font=("Segoe UI", 28, "bold"))
-
     canvas.create_text(500, 130, text="EQUIPO DE DESARROLLO",fill=NEGRO, font=("Segoe UI", 16, "bold"))
 
-    # ---- Nombres ----
     nombres = ["Antonio Garcia","Nahuel Villafañe","Mateo Dabruzzo Wilczek","Federico 'Fedelobo'","Ignacio","Thiago","Pablo Laporta","Fernando 'Master' Yapuray","Joaquin Arana", ]
     y = 180
     for nombre in nombres:
         canvas.create_text(500, y, text=nombre,fill=NEGRO, font=("Segoe UI", 14))
         y += 30
 
-    # ---- Licencia ----
     y += 30
     canvas.create_text(500, y, text="LICENCIA",fill="#DFDBDB", font=("Segoe UI", 100, "bold"))
     #fede estubo aqui :3
@@ -1408,8 +1360,6 @@ def abrir_ventana_autores():
                              "Ley 11.723 de Propiedad Intelectual (Argentina)."),
                        fill=NEGRO, font=("Segoe UI", 11),
                        justify="center", width=800)
-    # ---- Boton cerrar (encima del canvas) ----
-    #tk.Button(ventana_autores, text="X", command=ventana_autores.destroy,bg=BLANCO, fg=NEGRO,font=("Segoe UI", 12, "bold")).place(relx=0.95, rely=0.05, anchor="ne")
     RoundedButton(ventana_autores, 30, 20, 20,VERDE_AZULADO, BLANCO, text="X", command=ventana_autores.destroy).place(relx=0.95, rely=0.05, anchor="ne")
     agregar_boton_luna(ventana_autores)
 
@@ -1419,22 +1369,20 @@ def abrir_ventana_autores():
 def abrir_desde_principal():
     abrir_ventana_entrevistas(ventana)
 
-#Button(frame_btn_info, text="Info", command=abrir_ventana_autores, bg=VERDE_AZULADO, fg=BLANCO, relief="flat", highlightthickness=0, activebackground=VERDE_TERMINAL, activeforeground=NEGRO, width=6, font=("Segoe UI", 10, "bold")).pack(side="left", padx=5, pady=5)
-
 btn_info= RoundedButton(frame_btn_info, 50, 40, 20, VERDE_AZULADO, BLANCO, text="Info", command=abrir_ventana_autores)
 btn_info.pack(side="left", padx=5,pady = 5)
 refrescar_lista()
+
 # ============================================================================
 # BLOQUE 23: DOBLE CLICK PARA ABRIR EL PERFIL
 # ============================================================================
 def abrir_perfil_doble_clic(event=None):
-    if not lista_personas.curselection(): #curselection es para que seleccione con el mouse
+    if not lista_personas.curselection():
         return
     al_seleccionar()
     abrir_ventana_perfil()
 lista_personas.bind("<Double-Button-1>", abrir_perfil_doble_clic)
 lista_personas.bind("<<ListboxSelect>>", al_seleccionar)
-
 
 # ============================================================================
 # BLOQUE 24: FUNCION GENERAR PDF
@@ -1465,13 +1413,12 @@ def crear_pdf_entrevistas(ruta, entrevistas):
 
     nueva_pagina()
     for datos in entrevistas:
-        # Desempaqueto las 25 variables (saque el ", texto" del final)
-        (nombre_paciente, apellido_paciente, id_entrevista, fecha_nacimiento_paciente, 
-         fecha_ingreso, telefono_paciente, direccion_paciente, nombre_contacto_emergencia, 
-         telefono_emergencia, nombre_obra_social, estado_paciente, consentimiento, 
-         nombre_profecional, apellido_profecional, dni_profesional, matricula, 
-         especialidad, telefono_profecional, email_profecional, entrevista, 
-         Dni_paciente, fecha_entrevista, hora_entrevista, tipo_entrevista, 
+        (nombre_paciente, apellido_paciente, id_entrevista, fecha_nacimiento_paciente,
+         fecha_ingreso, telefono_paciente, direccion_paciente, nombre_contacto_emergencia,
+         telefono_emergencia, nombre_obra_social, estado_paciente, consentimiento,
+         nombre_profecional, apellido_profecional, dni_profesional, matricula,
+         especialidad, telefono_profecional, email_profecional, entrevista,
+         Dni_paciente, fecha_entrevista, hora_entrevista, tipo_entrevista,
          proxima_sesion) = datos
 
         agregar_linea(f"Entrevista {id_entrevista}", negrita=True, tamano=12)
@@ -1497,8 +1444,7 @@ def crear_pdf_entrevistas(ruta, entrevistas):
         agregar_linea(f"Tipo de entrevista realizada al paciente: {tipo_entrevista}")
         agregar_linea(f"Texto: {entrevista}")
         agregar_linea(f"Proxima sesion del paciente:{proxima_sesion}")
-        
-        # ACA ESTABA EL PROBLEMA: usaba 'texto', ahora usa 'entrevista', ahora se puede ver las anotaciones
+
         parrafos = (entrevista or "").splitlines() or ["Sin anotaciones"]
         for parrafo in parrafos:
             lineas = textwrap.wrap(parrafo, width=88, break_long_words=True, break_on_hyphens=False) or [""]
@@ -1555,23 +1501,22 @@ def crear_pdf_entrevistas(ruta, entrevistas):
 
 def exportar_entrevistas_pdf(dni_paciente=None):
     try:
-        # Selecciono las 25 columnas exactas cuando hago la consulta a la base de datos
         query = """
             SELECT p.nombre, p.apellido, e.id, p.fecha_nacimiento, p.fecha_ingreso,p.telefono, p.direccion, p.contacto_emergencia, p.telefono_emergencia, p.obra_social, p.estado, p.consentimiento, e.nombre_profecional, e.apellido_profecional, e.dni_profecional,e.matricula, e.especialidad, e.telefono_profecional, e.email_profecional, e.entrevista, e.dni_paciente, e.fecha_entrevista, e.hora_entrevista, e.tipo_entrevista, e.proxima_sesion_entrevista
             FROM entrevistas AS e 
             LEFT JOIN personas AS p ON p.dni = e.dni_paciente
         """
-        
+
         if dni_paciente:
             cursor.execute(query + " WHERE e.dni_paciente = ? ORDER BY e.id", (dni_paciente,))
         else:
             cursor.execute(query + " ORDER BY e.id")
-            
+
         entrevistas = cursor.fetchall()
     except sqlite3.Error:
         messagebox.showerror("Error al consultar", 'No se pudieron leer las entrevistas')
         return
-        
+
     if not entrevistas:
         if dni_paciente:
             messagebox.showinfo("Sin entrevistas", "Ese paciente no tiene entrevistas registradas.")
