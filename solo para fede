@@ -21,7 +21,7 @@ import textwrap
 # BLOQUE 3: BASE DE DATOS
 # Aca conectamos a SQLite y creamos las tablas si no existen.
 # ============================================================================
-conexion = sqlite3.connect("PROYECTO_FINL.db")  # Abre (o crea) el archivo de base de datos
+conexion = sqlite3.connect("PROYECTO_FINL cagadas juaquin.db")  # Abre (o crea) el archivo de base de datos
 cursor = conexion.cursor()  # El cursor es el que ejecuta las consultas SQL
 cursor.execute("PRAGMA foreign_keys = ON;")  # Activa las claves foraneas
 
@@ -72,12 +72,16 @@ cursor.execute("""CREATE TABLE IF NOT EXISTS recursos(
 
 conexion.commit()  
 
-cursor.execute("""CREATE TABLE IF NOT EXISTS pdf(
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    id_dueño INTEGER,
-    FOREIGN KEY (id_dueño) REFERENCES personas(id)
+conexion.execute("""
+CREATE TABLE IF NOT EXISTS pdf (
+id INTEGER PRIMARY KEY AUTOINCREMENT,
+nombre TEXT NOT NULL,
+formato TEXT NOT NULL,
+contenido BLOB NOT NULL,
+dni_personas INTEGER
 
-    )""")
+    )
+""")
 
 conexion.commit() 
 
@@ -785,7 +789,7 @@ def abrir_ventana_perfil():
     frame_izquierdo.pack(side="left", fill="y", padx=15, pady=15)
 
     # Nombre
-    Label(frame_izquierdo, text=" Nombre:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=0, column=0, sticky="e", padx=5)
+    Label(frame_izquierdo, text=" Nombrmmme:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=0, column=0, sticky="e", padx=5)
     entry_nombre_perfil = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
     entry_nombre_perfil.grid(row=0, column=1, padx=5, pady=3)
     entry_nombre_perfil.insert(0, entry_nombre.get())
@@ -797,7 +801,7 @@ def abrir_ventana_perfil():
     entry_apellido_perfil.insert(0, entry_apellido.get())
 
     # DNI
-    Label(frame_izquierdo, text=" DNI:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=2, column=0, sticky="e", padx=5)
+    Label(frame_izquierdo, text=" DNIiiiiii:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=2, column=0, sticky="e", padx=5)
     entry_dni_perfil = tk.Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
     entry_dni_perfil.grid(row=2, column=1, padx=5, pady=3)
     entry_dni_perfil.insert(0, entry_dni.get())
@@ -813,10 +817,22 @@ def abrir_ventana_perfil():
     entry_f_nacimiento_perfil.grid(row=4, column=1, padx=5, pady=3)
 
     def mostrar_foto_en_perfil():
-        # Poblar galeria con fotos del editor
-        lista_fotos_galeria.delete(0, tk.END)
-        for ruta in imagenes_cargadas:
-            lista_fotos_galeria.insert(tk.END, os.path.basename(ruta))
+        
+        fila = cursor.fetchone()
+        if fila and fila[0]:
+            try:
+                cursor.execute("SELECT foto FROM personas WHERE dni = ?", (entry_dni,))
+                img = Image.open(BytesIO(fila[0]))
+                img.thumbnail((300, 300))
+                foto = ImageTk.PhotoImage(img)
+                visor_foto.configure(image=foto, text="")
+                visor_foto.image = foto  # Mantiene referencia
+                return
+            except Exception:
+                pass
+                visor_foto.configure(image="", text="Sin foto")
+        
+
         # Si la foto pendiente es b"" significa "quitar foto", mostrar el placeholder
         if foto_pendiente["bytes"] == b"":
             visor_foto_perfil.configure(image="", text="👤\nClic para subir foto")
@@ -867,17 +883,21 @@ def abrir_ventana_perfil():
             messagebox.showerror("Error", f"No se pudo cargar la foto: {e}")
 
     def asignar_foto_galeria(event=None):
-        sel = lista_fotos_galeria.curselection()
-        if not sel:
-            return
-        ruta = imagenes_cargadas[sel[0]]
-        try:
-            with open(ruta, "rb") as f:
-                foto_pendiente["bytes"] = f.read()
-            mostrar_foto_en_perfil()
-        except Exception as e:
-            messagebox.showerror("Error", f"No se pudo asignar la foto: {e}")
-    
+        et=int(entry_dni.get())
+        lista_fotos_galeria.delete(0, tk.END)
+
+        filas = conexion.execute(
+            "SELECT dni_personas, nombre FROM pdf ORDER BY id DESC"
+        ).fetchall()
+        
+        for id_imagen, nombre in filas:
+            if id_imagen==et:
+                lista_fotos_galeria.insert(tk.END, f"{id_imagen} - {nombre}")
+            else:
+                print("nop")
+
+
+
     def quitar_foto_perfil():
         foto_pendiente["bytes"] = b""  # b"" = "borrar foto al guardar"
         mostrar_foto_en_perfil()
@@ -1017,7 +1037,7 @@ bg=ROJO, fg=BLANCO, font=("Segoe UI", 10))
     lista_fotos_galeria = tk.Listbox(frame_galeria_inner, font=("Segoe UI", 10), yscrollcommand=scroll_galeria.set,selectbackground=AZUL_SERENO, selectforeground=BLANCO)
     lista_fotos_galeria.pack(side="left", fill="both", expand=True)
     scroll_galeria.config(command=lista_fotos_galeria.yview)
-    lista_fotos_galeria.bind("<<ListboxSelect>>", asignar_foto_galeria)
+    
 
     # Entrevistas del paciente
     frame_lista_perfil = Frame(frame_derecha, bg=GRIS_AZULADO, relief="solid", bd=1)
@@ -1030,7 +1050,7 @@ bg=ROJO, fg=BLANCO, font=("Segoe UI", 10))
     scroll_perfil.config(command=lista_personas_perfil.yview)
 
     mostrar_foto_en_perfil()
-
+    asignar_foto_galeria()
 # ============================================================================
 # BLOQUE 17: VENTANA DEL EDITOR DE FOTOS
 # ============================================================================
@@ -1070,30 +1090,24 @@ def abrir_ventana_editor_fotos():
     frame_editor_fotos_inferior.columnconfigure(2, weight=1)
 
     def actualizar_contador():
+        et=int(entry_dni.get())
         lista_imagenes.delete(0, tk.END)
     
         filas = conexion.execute(
-            "SELECT id, nombre FROM pdf ORDER BY id DESC"
+            "SELECT dni_personas, nombre FROM pdf ORDER BY id DESC"
         ).fetchall()
     
         for id_imagen, nombre in filas:
-            lista_imagenes.insert(tk.END, f"{id_imagen} - {nombre}")
-
-    def mostrar_previa(ruta):
-        try:
-            imagen = Image.open(ruta)
-            imagen.thumbnail((400, 400))
-            imagen_tk = ImageTk.PhotoImage(imagen)
-            visor_foto_editor.config(image=imagen_tk, text="")
-            visor_foto_editor.image = imagen_tk
-        except Exception:
-            print("Error al mostrar la imagen:")
+            if id_imagen==et:
+                lista_imagenes.insert(tk.END, f"{id_imagen} - {nombre}")
+            else:
+                pass
 
 
 
 
     def agregar_imagen():
-        
+        et=int(entry_dni.get())
         ruta = filedialog.askopenfilename(
             title="Seleccionar imagen",
             filetypes=[("Imágenes", "*.png *.jpg *.jpeg *.bmp *.webp *.pdf")])
@@ -1107,12 +1121,10 @@ def abrir_ventana_editor_fotos():
             nombre = ruta.replace("\\", "/").split("/")[-1]
             formato = nombre.rsplit(".", 1)[-1].lower()
             
-            
-            cursor.execute("SELECT * FROM empleados WHERE id = ?", (et,))
             conexion.execute(
-                "INSERT INTO imagenes (nombre, formato, contenido,id_empleado) "
-                "VALUES (?, ?, ?, ?)",
-                (nombre, formato, sqlite3.Binary(contenido), et)
+            "INSERT INTO pdf (nombre, formato, contenido,dni_personas) "
+            "VALUES (?, ?, ?, ?)",
+            (nombre, formato, sqlite3.Binary(contenido), et)
             )
             conexion.commit()
 
@@ -1123,22 +1135,16 @@ def abrir_ventana_editor_fotos():
         print("ufgtfkgfgh")
 
     def eliminar_imagen():
-
+        t1=int(entry_dni.get())
         if lista_imagenes.size()==0:
-            t1=entrada.get()
-            cursor.execute("DELETE FROM empleados WHERE dni=?",(t1,))
+            t1=entry_dni.get()
+            cursor.execute("DELETE FROM pdf WHERE dni_dueño=?",(t1,))
             conexion.commit()
         else:
             pass
         actualizar_contador()
     def limpiar_todas():
-        if not messagebox.askyesno("Confirmar", "¿Borrar todas las fotos cargadas?"):
-            return
-        imagenes_cargadas.clear()
-        lista_imagenes.delete(0, tk.END)
-        visor_foto_editor.config(image="", text="👤\nSin foto")
-        visor_foto_editor.image = None
-        actualizar_contador()
+        pass
 
     Button(frame_editor_fotos_inferior, text="Añadir fotos", command=agregar_imagen,bg=VERDE_AZULADO, fg=BLANCO, activebackground=VERDE_TERMINAL,activeforeground=NEGRO, font=("Segoe UI", 12)).grid(row=0, column=1, padx=10, sticky="ew")
     Button(frame_editor_fotos_inferior, text="Eliminar fotos", command=eliminar_imagen,bg=VERDE_AZULADO, fg=BLANCO, activebackground=VERDE_TERMINAL,activeforeground=NEGRO, font=("Segoe UI", 12)).grid(row=0, column=2, padx=10, sticky="ew")
@@ -1147,14 +1153,7 @@ def abrir_ventana_editor_fotos():
     frame_editor_fotos_inferior.columnconfigure(1, weight=1)
     frame_editor_fotos_inferior.columnconfigure(3, weight=1)
 
-    # Esto deberia generar la lista para ver las fotos
-    for ruta in lista_imagenes:
-        lista_imagenes.insert(tk.END, os.path.basename(ruta))
     actualizar_contador()
-    if imagenes_cargadas:
-        lista_imagenes.selection_set(tk.END)
-        lista_imagenes.see(tk.END)
-        mostrar_previa(imagenes_cargadas)
 # ============================================================================
 # BLOQUE 18: CARGAR IMAGEN DE SANCA
 # ============================================================================
