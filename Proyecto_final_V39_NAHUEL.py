@@ -1079,7 +1079,7 @@ def abrir_ventana_perfil():
         exportar_entrevistas_pdf(dni_paciente=dni_txt)
 
     # Botones
-    boton_cargar_perfil = RoundedButton(frame_izquierdo, 80, 40, 20, VERDE_AZULADO,BLANCO,text="Cargar", command=cargar_perfil)
+    boton_cargar_perfil = RoundedButton(frame_izquierdo, 80, 40, 20, VERDE_AZULADO,BLANCO,text="⟳", command=cargar_perfil)
     boton_cargar_perfil.grid(row=2, column=2, padx=10, sticky="ew")
     boton_entrevistas   = RoundedButton(frame_izquierdo, 100, 40, 20, VERDE_AZULADO,BLANCO,text="Entrevista", command=abrir_desde_principal)
     boton_entrevistas.grid(row=6, column=2, padx=10, sticky="ew")
