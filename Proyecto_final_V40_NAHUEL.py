@@ -1162,13 +1162,13 @@ def abrir_ventana_perfil():
     boton_cargar_perfil = RoundedButton(frame_izquierdo, 80, 40, 20, VERDE_AZULADO,BLANCO,text="⟳", command=cargar_perfil)
     boton_cargar_perfil.grid(row=2, column=2, padx=10, sticky="ew")
     boton_entrevistas   = RoundedButton(frame_izquierdo, 100, 40, 20, VERDE_AZULADO,BLANCO,text="Entrevista", command=abrir_desde_principal)
-    boton_entrevistas.grid(row=6, column=2, padx=10, sticky="ew")
+    boton_entrevistas.grid(row=13, column=2, padx=10, sticky="ew")
     boton_editor_fotos  = RoundedButton(frame_izquierdo, 100, 40, 20, VERDE_AZULADO,BLANCO,text="Editar fotos", command=abrir_ventana_editor_fotos)
-    boton_editor_fotos.grid(row=6, column=1, padx=10, sticky="ew")
+    boton_editor_fotos.grid(row=13, column=1, padx=10, sticky="ew")
     boton_guardar_perfil= RoundedButton(frame_izquierdo, 140, 40, 20, VERDE_AZULADO,BLANCO,text="Guardar cambios", command=guardar_cambios_perfil)
-    boton_guardar_perfil.grid(row=6, column=0, padx=10, sticky="ew")
+    boton_guardar_perfil.grid(row=13, column=0, columnspan=2, padx=10, pady=5, sticky="ew") # Ocupa 2 columnas
     boton_pdf_paciente =  RoundedButton(frame_izquierdo, 180, 40, 20, VERDE_AZULADO,BLANCO,text="PDF de este paciente", command=exportar_pdf_paciente)
-    boton_pdf_paciente.grid(row=8, column=1, padx=10, sticky="ew")
+    boton_pdf_paciente.grid(row=15, column=1, padx=10, sticky="ew")
     
     # DEJO LOS BOTONES POR LAS DUDAS
     #boton_cargar_perfil = tk.Button(frame_izquierdo, text="Cargar", command=cargar_perfil, bg=VERDE_AZULADO, fg=BLANCO, font=("Segoe UI", 10))
