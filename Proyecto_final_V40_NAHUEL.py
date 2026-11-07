@@ -555,9 +555,20 @@ def comprobar_fecha(entry_fecha):
 
 def ver_list_entrevist(lista_widget):
     lista_widget.delete(0, tk.END)
-    cursor.execute("""SELECT id, fecha_entrevista, hora_entrevista, dni_paciente,nombre_profecional, apellido_profecional, tipo_entrevista FROM entrevistas ORDER BY id""")
+    cursor.execute("""SELECT e.id, e.fecha_entrevista, e.hora_entrevista, e.dni_paciente,
+                      e.nombre_profecional, e.apellido_profecional, e.tipo_entrevista,
+                      e.especialidad, e.activo_profecional, e.proxima_sesion_entrevista,
+                      p.nombre, p.apellido
+                      FROM entrevistas AS e
+                      LEFT JOIN personas AS p ON p.dni = e.dni_paciente
+                      ORDER BY e.id""")
     for i in cursor.fetchall():
-        dato = f"ID: {i[0]} // Fecha: {i[1]} {i[2] or ''} // DNI pac: {i[3]} // Prof: {i[4]} {i[5] or ''} // Tipo: {i[6] or '-'}"
+        paciente = ""
+        if i[10] or i[11]:
+            paciente = f" ({i[11] or ''} {i[10] or ''})".strip()
+        dato = f"ID: {i[0]} // Fecha: {i[1]} {i[2] or ''} // DNI pac: {i[3]}{paciente} // Prof: {i[4]} {i[5] or ''} // Esp: {i[7] or '-'} // Tipo: {i[6] or '-'} // Estado: {i[8] or '-'}"
+        if i[9]:
+            dato += f" // Prox: {i[9]}"
         lista_widget.insert(tk.END, dato)
 
 # ============================================================================
@@ -566,7 +577,7 @@ def ver_list_entrevist(lista_widget):
 def pantalla_edit_entrevista(ventana_padre):
     ventana_editar = tk.Toplevel(ventana_padre)
     ventana_editar.title("Editar datos de entrevista")
-    ventana_editar.geometry("800x900")
+    ventana_editar.geometry("800x950")
     ventana_editar.config(bg=GRIS_NIEBLA)
 
     frame_editar_superior = tk.Frame(ventana_editar, bg=AZUL_PETROLEO, relief="solid", bd=1)
@@ -584,9 +595,49 @@ def pantalla_edit_entrevista(ventana_padre):
     entry_nombre_profecional = tk.Entry(frame_editar_superior, width=30, relief="solid", bd=1, font=("Segoe UI", 12))
     entry_nombre_profecional.grid(row=2, column=1)
 
-    Label(frame_editar_superior, text="Fecha:", bg=AZUL_PETROLEO, fg=BLANCO_HUESO, font=("Segoe UI", 12)).grid(row=3, column=0)
+    Label(frame_editar_superior, text="Apellido del Profesional:", bg=AZUL_PETROLEO, fg=BLANCO_HUESO, font=("Segoe UI", 12)).grid(row=3, column=0)
+    entry_apellido_profecional = tk.Entry(frame_editar_superior, width=30, relief="solid", bd=1, font=("Segoe UI", 12))
+    entry_apellido_profecional.grid(row=3, column=1)
+
+    Label(frame_editar_superior, text="DNI del Profesional:", bg=AZUL_PETROLEO, fg=BLANCO_HUESO, font=("Segoe UI", 12)).grid(row=4, column=0)
+    entry_dni_profesional = tk.Entry(frame_editar_superior, width=30, relief="solid", bd=1, font=("Segoe UI", 12))
+    entry_dni_profesional.grid(row=4, column=1)
+
+    Label(frame_editar_superior, text="Matricula:", bg=AZUL_PETROLEO, fg=BLANCO_HUESO, font=("Segoe UI", 12)).grid(row=5, column=0)
+    entry_matricula = tk.Entry(frame_editar_superior, width=30, relief="solid", bd=1, font=("Segoe UI", 12))
+    entry_matricula.grid(row=5, column=1)
+
+    Label(frame_editar_superior, text="Especialidad:", bg=AZUL_PETROLEO, fg=BLANCO_HUESO, font=("Segoe UI", 12)).grid(row=6, column=0)
+    entry_especialidad = tk.Entry(frame_editar_superior, width=30, relief="solid", bd=1, font=("Segoe UI", 12))
+    entry_especialidad.grid(row=6, column=1)
+
+    Label(frame_editar_superior, text="Telefono del Profesional:", bg=AZUL_PETROLEO, fg=BLANCO_HUESO, font=("Segoe UI", 12)).grid(row=7, column=0)
+    entry_tel_profesional = tk.Entry(frame_editar_superior, width=30, relief="solid", bd=1, font=("Segoe UI", 12))
+    entry_tel_profesional.grid(row=7, column=1)
+
+    Label(frame_editar_superior, text="Email del Profesional:", bg=AZUL_PETROLEO, fg=BLANCO_HUESO, font=("Segoe UI", 12)).grid(row=8, column=0)
+    entry_email_profesional = tk.Entry(frame_editar_superior, width=30, relief="solid", bd=1, font=("Segoe UI", 12))
+    entry_email_profesional.grid(row=8, column=1)
+
+    Label(frame_editar_superior, text="Estado (Activo / No activo):", bg=AZUL_PETROLEO, fg=BLANCO_HUESO, font=("Segoe UI", 12)).grid(row=9, column=0)
+    entry_estado_profesional = tk.Entry(frame_editar_superior, width=30, relief="solid", bd=1, font=("Segoe UI", 12))
+    entry_estado_profesional.grid(row=9, column=1)
+
+    Label(frame_editar_superior, text="Fecha:", bg=AZUL_PETROLEO, fg=BLANCO_HUESO, font=("Segoe UI", 12)).grid(row=10, column=0)
     entry_fecha = tk.Entry(frame_editar_superior, width=30, relief="solid", bd=1, font=("Segoe UI", 12))
-    entry_fecha.grid(row=3, column=1)
+    entry_fecha.grid(row=10, column=1)
+
+    Label(frame_editar_superior, text="Hora:", bg=AZUL_PETROLEO, fg=BLANCO_HUESO, font=("Segoe UI", 12)).grid(row=11, column=0)
+    entry_hora = tk.Entry(frame_editar_superior, width=30, relief="solid", bd=1, font=("Segoe UI", 12))
+    entry_hora.grid(row=11, column=1)
+
+    Label(frame_editar_superior, text="Tipo (individual/grupal/familiar):", bg=AZUL_PETROLEO, fg=BLANCO_HUESO, font=("Segoe UI", 12)).grid(row=12, column=0)
+    entry_tipo = tk.Entry(frame_editar_superior, width=30, relief="solid", bd=1, font=("Segoe UI", 12))
+    entry_tipo.grid(row=12, column=1)
+
+    Label(frame_editar_superior, text="Proxima Sesion:", bg=AZUL_PETROLEO, fg=BLANCO_HUESO, font=("Segoe UI", 12)).grid(row=13, column=0)
+    entry_proxima = tk.Entry(frame_editar_superior, width=30, relief="solid", bd=1, font=("Segoe UI", 12))
+    entry_proxima.grid(row=13, column=1)
 
     frame_editar_medio = tk.Frame(ventana_editar, bg=GRIS_NIEBLA, relief="solid", bd=1)
     frame_editar_medio.pack(fill="both", expand=True, padx=20, pady=10)
@@ -607,14 +658,24 @@ def pantalla_edit_entrevista(ventana_padre):
         text_entrevista_edit.insert("1.0", e[9] or "")
         entry_dni.delete(0, tk.END); entry_dni.insert(0, e[10] or "")
         entry_nombre_profecional.delete(0, tk.END); entry_nombre_profecional.insert(0, e[1] or "")
+        entry_apellido_profecional.delete(0, tk.END); entry_apellido_profecional.insert(0, e[2] or "")
+        entry_dni_profesional.delete(0, tk.END); entry_dni_profesional.insert(0, e[3] or "")
+        entry_matricula.delete(0, tk.END); entry_matricula.insert(0, e[4] or "")
+        entry_especialidad.delete(0, tk.END); entry_especialidad.insert(0, e[5] or "")
+        entry_tel_profesional.delete(0, tk.END); entry_tel_profesional.insert(0, e[6] or "")
+        entry_email_profesional.delete(0, tk.END); entry_email_profesional.insert(0, e[7] or "")
+        entry_estado_profesional.delete(0, tk.END); entry_estado_profesional.insert(0, e[8] or "")
         entry_fecha.delete(0, tk.END); entry_fecha.insert(0, e[11] or "")
+        entry_hora.delete(0, tk.END); entry_hora.insert(0, e[12] or "")
+        entry_tipo.delete(0, tk.END); entry_tipo.insert(0, e[13] or "")
+        entry_proxima.delete(0, tk.END); entry_proxima.insert(0, e[14] or "")
 
-    boton_cargar = RoundedButton(frame_editar_superior, 150, 30, 20,VERDE_AZULADO, BLANCO,text="Cargar datos", command=cargar_entrevista)
+    boton_cargar = RoundedButton(frame_editar_superior, 150, 30, 20, VERDE_AZULADO, BLANCO, text="⟳", command=cargar_entrevista)
     boton_cargar.grid(row=0, column=2, padx=10, sticky="ew")
 
     def guardar_entrevista():
-        p_id = entry_id.get()
-        if p_id == "":
+        p_id = entry_id.get().strip()
+        if not p_id:
             return
         cursor.execute("SELECT * FROM entrevistas WHERE id = ?", (p_id,))
         entrevista = cursor.fetchone()
@@ -625,21 +686,31 @@ def pantalla_edit_entrevista(ventana_padre):
         if texto_nuevo == "":
             texto_nuevo = entrevista[9]
         dni_nuevo = entry_dni.get().strip() or entrevista[10]
-        prof_nuevo = entry_nombre_profecional.get().strip() or entrevista[1]
+        nom_prof_nuevo = entry_nombre_profecional.get().strip() or entrevista[1]
+        ape_prof_nuevo = entry_apellido_profecional.get().strip() or entrevista[2]
+        dni_prof_nuevo = entry_dni_profesional.get().strip() or entrevista[3]
+        matricula_nueva = entry_matricula.get().strip() or entrevista[4]
+        especialidad_nueva = entry_especialidad.get().strip() or entrevista[5]
+        tel_prof_nuevo = entry_tel_profesional.get().strip() or entrevista[6]
+        email_prof_nuevo = entry_email_profesional.get().strip() or entrevista[7]
+        estado_nuevo = entry_estado_profesional.get().strip() or entrevista[8]
         fecha_nueva = entry_fecha.get().strip()
         if fecha_nueva == "":
             fecha_nueva = entrevista[11]
         else:
             fecha_nueva = comprobar_fecha(entry_fecha)
-        conexion.execute("""UPDATE entrevistas SET entrevista = ?, dni_paciente = ?, nombre_profecional = ?, fecha_entrevista = ?  WHERE id = ?""",(texto_nuevo, dni_nuevo, prof_nuevo, fecha_nueva, p_id))
+        hora_nueva = entry_hora.get().strip() or entrevista[12]
+        tipo_nuevo = entry_tipo.get().strip() or entrevista[13]
+        proxima_nueva = entry_proxima.get().strip()
+        conexion.execute("""UPDATE entrevistas SET entrevista = ?, dni_paciente = ?, nombre_profecional = ?, apellido_profecional = ?, dni_profecional = ?, matricula = ?, especialidad = ?, telefono_profecional = ?, email_profecional = ?, activo_profecional = ?, fecha_entrevista = ?, hora_entrevista = ?, tipo_entrevista = ?, proxima_sesion_entrevista = ? WHERE id = ?""",(texto_nuevo, dni_nuevo, nom_prof_nuevo, ape_prof_nuevo, dni_prof_nuevo, matricula_nueva, especialidad_nueva, tel_prof_nuevo, email_prof_nuevo, estado_nuevo, fecha_nueva, hora_nueva, tipo_nuevo, proxima_nueva, p_id))
         conexion.commit()
         ver_list_entrevist(lista_entrevistas)
         ventana_editar.destroy()
 
     frame_editar_inferior = tk.Frame(ventana_editar, bg=GRIS_NIEBLA)
     frame_editar_inferior.pack(fill="x", expand=True)
-    boton_cargar = RoundedButton(frame_editar_superior, 150, 30, 20,VERDE_AZULADO, BLANCO,text="Guardar cambios",command=guardar_entrevista)
-    boton_cargar.grid(row=0, column=10, padx=5, sticky="ew")
+    boton_cargar = RoundedButton(frame_editar_superior, 150, 30, 20, VERDE_AZULADO, BLANCO, text="Guardar cambios", command=guardar_entrevista)
+    boton_cargar.grid(row=13, column=2, padx=5, sticky="ew")
     agregar_boton_luna(ventana_editar)
 
 
@@ -739,7 +810,7 @@ def detalles_entrevista(event=None):
     Label(frame_detalle, text="Anotaciones:", bg=BLANCO, fg=GRIS_AZULADO,font=("Segoe UI", 11, "bold"), anchor="w").pack(fill="x", padx=10, pady=(10, 2))
     text_dato = tk.Text(frame_detalle, height=8, font=("Segoe UI", 11), relief="solid", bd=1)
     text_dato.pack(fill="both", expand=True, padx=10, pady=(0, 10))
-    text_dato.insert("1.0", e[5] or "")
+    text_dato.insert("1.0", e[8] or "")
     text_dato.config(state=tk.DISABLED)
     agregar_boton_luna(ventana_detalle)
 
