@@ -4,7 +4,7 @@
 # ============================================================================
 import sqlite3
 import tkinter as tk
-from tkinter import filedialog, messagebox, ttk, Label, Button, Entry, Frame, Toplevel, Listbox, font
+from tkinter import filedialog, messagebox, Label, Button, Entry, Frame, Toplevel, Listbox, font, ttk
 from io import BytesIO
 from PIL import Image, ImageTk
 import string
@@ -12,7 +12,7 @@ import os
 import textwrap
 import re
 import base64
-
+import PyPDF2
 # ===========================================================================
 # BLOQUE 2: IMAGEN DE SANCA CONVERTIDA EN TEXTO
 # ===========================================================================
@@ -1210,14 +1210,20 @@ def abrir_ventana_perfil():
         else:
             messagebox.showinfo("Error", "No existe ese DNI.")
 
+    def exportar_word_paciente():
+        dni_txt = entry_dni_perfil.get().strip()
+        if not dni_txt:
+            messagebox.showwarning("Atencion", "Escribi un DNI primero.")
+            return
+        exportar_entrevistas_word(dni_paciente=dni_txt)
     def exportar_pdf_paciente():
         dni_txt = entry_dni_perfil.get().strip()
         if not dni_txt:
-            messagebox.showwarning("Atención", "Escribí un DNI primero.")
+            messagebox.showwarning("Atencion", "Escribi un DNI primero.")
             return
         exportar_entrevistas_pdf(dni_paciente=dni_txt)
-
-    # Botones
+    boton_pdf_paciente = RoundedButton(frame_izquierdo, 180, 40, 20, VERDE_AZULADO, BLANCO,text="PDF de este paciente",command=exportar_pdf_paciente)
+    boton_pdf_paciente.grid(row=15, column=1, padx=10, sticky="ew")
     boton_cargar_perfil = RoundedButton(frame_izquierdo, 80, 40, 20, VERDE_AZULADO,BLANCO,text="⟳", command=cargar_perfil)
     boton_cargar_perfil.grid(row=2, column=2, padx=10, sticky="ew")
     boton_entrevistas   = RoundedButton(frame_izquierdo, 100, 40, 20, VERDE_AZULADO,BLANCO,text="Entrevista", command=abrir_desde_principal)
@@ -1226,9 +1232,12 @@ def abrir_ventana_perfil():
     boton_editor_fotos.grid(row=13, column=1, padx=10, sticky="ew")
     boton_guardar_perfil= RoundedButton(frame_izquierdo, 140, 40, 20, VERDE_AZULADO,BLANCO,text="Guardar cambios", command=guardar_cambios_perfil)
     boton_guardar_perfil.grid(row=13, column=0, columnspan=2, padx=10, pady=5, sticky="ew")
-    boton_pdf_paciente =  RoundedButton(frame_izquierdo, 180, 40, 20, VERDE_AZULADO,BLANCO,text="PDF de este paciente", command=exportar_pdf_paciente)
-    boton_pdf_paciente.grid(row=15, column=1, padx=10, sticky="ew")
 
+    boton_word_paciente = RoundedButton(frame_izquierdo, 180, 40, 20, VERDE_AZULADO, BLANCO, text="Word de este paciente", command=exportar_word_paciente)
+    boton_word_paciente.grid(row=15, column=0, padx=10, sticky="ew")
+
+    boton_ver_doc = RoundedButton(frame_izquierdo, 200, 40, 20, VERDE_AZULADO, BLANCO,text="Ver/Editar documento",command=lambda: abrir_ventana_ver_documento(entry_dni_perfil.get().strip()))
+    boton_ver_doc.grid(row=16, column=0, columnspan=2, padx=10, pady=5, sticky="ew")
     # --- FRAME DERECHO ---
     frame_derecha = tk.Frame(ventana_perfil, bg=GRIS_NIEBLA)
     frame_derecha.pack(side="right", fill="both", expand=True, padx=(0, 15), pady=15)
@@ -1605,7 +1614,152 @@ def crear_pdf_entrevistas(ruta, entrevistas):
 
     with open(ruta, "wb") as archivo:
         archivo.write(salida)
+# ==================================================================================
+# BLOQUE 25: FUNCION WORD
+# ==================================================================================
+def crear_word_de_texto(ruta, texto):
+    # Guarda un .doc (HTML) que Word abre perfecto, sin librerias extra
+    lineas = []
+    for linea in texto.splitlines() or [""]:
+        linea_segura = linea.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+        if linea_segura == "":
+            lineas.append("<p>&nbsp;</p>")
+        else:
+            lineas.append(f"<p>{linea_segura}</p>")
+    html = "<html><head><meta charset='utf-8'></head><body>" + "\n".join(lineas) + "</body></html>"
+    with open(ruta, "w", encoding="utf-8") as archivo:
+        archivo.write(html)
 
+def crear_pdf_de_texto(ruta, texto):    # PDF simple de texto plano (una fuente, una por linea)
+    paginas = []
+    lineas_pagina = []
+    y = 790
+
+    def cerrar_pagina():
+        nonlocal lineas_pagina, y
+        if lineas_pagina:
+            paginas.append(lineas_pagina)
+        lineas_pagina = []
+        y = 790
+
+    for linea in texto.splitlines() or [""]:
+        if y < 55:
+            cerrar_pagina()
+        lineas_pagina.append((linea, y))
+        y -= 15
+    cerrar_pagina()
+    if not paginas:
+        paginas = [[]]
+
+    objetos = [None, None]
+    referencias = []
+    id_fuente = 3 + 2 * len(paginas)
+
+    for lineas in paginas:
+        contenido = "".join(
+            f"BT /F1 10 Tf 1 0 0 1 50 {pos_y} Tm <{linea.encode('cp1252', errors='replace').hex().upper()}> Tj ET\n"
+            for linea, pos_y in lineas
+        ).encode("ascii")
+        id_pagina = len(objetos) + 1
+        id_contenido = id_pagina + 1
+        referencias.append(f"{id_pagina} 0 R")
+        objetos.append(
+            f"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] "
+            f"/Resources << /Font << /F1 {id_fuente} 0 R >> >> /Contents {id_contenido} 0 R >>".encode("ascii"))
+        objetos.append(f"<< /Length {len(contenido)} >>\nstream\n".encode("ascii") + contenido + b"\nendstream")
+
+    objetos[0] = b"<< /Type /Catalog /Pages 2 0 R >>"
+    objetos[1] = f"<< /Type /Pages /Kids [{' '.join(referencias)}] /Count {len(referencias)} >>".encode("ascii")
+    objetos.append(b"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>")
+
+    salida = bytearray(b"%PDF-1.4\n")
+    offsets = [0]
+    for numero, objeto in enumerate(objetos, start=1):
+        offsets.append(len(salida))
+        salida.extend(f"{numero} 0 obj\n".encode("ascii"))
+        salida.extend(objeto)
+        salida.extend(b"\nendobj\n")
+
+    pos = len(salida)
+    salida.extend(f"xref\n0 {len(objetos)+1}\n".encode("ascii"))
+    salida.extend(b"0000000000 65535 f \n")
+    for offset in offsets[1:]:
+        salida.extend(f"{offset:010d} 00000 n \n".encode("ascii"))
+    salida.extend(f"trailer\n<< /Size {len(objetos)+1} /Root 1 0 R >>\nstartxref\n{pos}\n%%EOF\n".encode("ascii"))
+
+    with open(ruta, "wb") as archivo:
+        archivo.write(salida)
+# =====================================================================================================================
+# BLOQUE 26: FUNCIONES EXPORTAR
+# ====================================================================================================================
+def exportar_entrevistas_word(dni_paciente=None):
+    try:
+        query = """SELECT p.nombre, p.apellido, e.id, p.fecha_nacimiento, p.fecha_ingreso, p.telefono, p.direccion, p.contacto_emergencia, p.telefono_emergencia, p.obra_social, p.estado, p.consentimiento, e.nombre_profecional, e.apellido_profecional, e.dni_profecional, e.matricula, e.especialidad, e.telefono_profecional, e.email_profecional, e.activo_profecional, e.entrevista, e.dni_paciente, e.fecha_entrevista, e.hora_entrevista, e.tipo_entrevista, e.proxima_sesion_entrevista
+    FROM entrevistas AS e 
+    LEFT JOIN personas AS p ON p.dni = e.dni_paciente"""
+        if dni_paciente:
+            cursor.execute(query + " WHERE e.dni_paciente = ? ORDER BY e.id", (dni_paciente,))
+        else:
+            cursor.execute(query + " ORDER BY e.id")
+        entrevistas = cursor.fetchall()
+    except sqlite3.Error:
+        messagebox.showerror("Error al consultar", 'No se pudieron leer las entrevistas')
+        return
+
+    if not entrevistas:
+        messagebox.showinfo("Sin entrevistas", "No hay entrevistas para exportar.")
+        return
+
+    # Armamos el texto (mismo contenido que el PDF)
+    lineas = ["MEDTRACK | Archivos de perfil", "Historial completo de entrevistas", ""]
+    for datos in entrevistas:
+        (nombre_paciente, apellido_paciente, id_entrevista, fecha_nacimiento_paciente,
+        fecha_ingreso, telefono_paciente, direccion_paciente, nombre_contacto_emergencia,
+        telefono_emergencia, nombre_obra_social, estado_paciente, consentimiento,
+        nombre_profecional, apellido_profecional, dni_profesional, matricula,
+        especialidad, telefono_profecional, email_profecional, activo_profecional,
+        entrevista, Dni_paciente, fecha_entrevista, hora_entrevista, tipo_entrevista,
+        proxima_sesion) = datos
+
+        paciente = " ".join(p for p in (nombre_paciente, apellido_paciente) if p) or "No registrado"
+        lineas.append(f"=== Entrevista {id_entrevista} ===")
+        lineas.append(f"Fecha: {fecha_entrevista}  Hora: {hora_entrevista or '-'}  DNI paciente: {Dni_paciente}")
+        lineas.append(f"Paciente: {paciente}")
+        lineas.append("")
+        lineas.append("--- Datos del profesional ---")
+        lineas.append(f"Nombre: {nombre_profecional or '-'}  Apellido: {apellido_profecional or '-'}")
+        lineas.append(f"DNI: {dni_profesional or '-'}  Matricula: {matricula or '-'}")
+        lineas.append(f"Especialidad: {especialidad or '-'}  Estado: {activo_profecional or '-'}")
+        lineas.append(f"Telefono: {telefono_profecional or '-'}  Email: {email_profecional or '-'}")
+        lineas.append(f"Tipo: {tipo_entrevista or '-'}  Proxima sesion: {proxima_sesion or '-'}")
+        lineas.append("")
+        lineas.append("--- Datos del paciente ---")
+        lineas.append(f"Fecha nacimiento: {fecha_nacimiento_paciente or '-'}  Fecha ingreso: {fecha_ingreso or '-'}")
+        lineas.append(f"Telefono: {telefono_paciente or '-'}  Domicilio: {direccion_paciente or '-'}")
+        lineas.append(f"Contacto emergencia: {nombre_contacto_emergencia or '-'}  Tel: {telefono_emergencia or '-'}")
+        lineas.append(f"Obra social: {nombre_obra_social or '-'}  Estado: {estado_paciente or '-'}  Consentimiento: {consentimiento or '-'}")
+        lineas.append("")
+        lineas.append("--- Anotaciones ---")
+        for parrafo in (entrevista or "").splitlines() or ["Sin anotaciones"]:
+            lineas.append(parrafo)
+        lineas.append("")
+
+    texto = "\n".join(lineas)
+
+    nombre_archivo = f"entrevistas_{dni_paciente}.doc" if dni_paciente else "Archivo_perfil.doc"
+    ruta = filedialog.asksaveasfilename(
+        title="Guardar entrevistas como Word",
+        defaultextension=".doc",
+        initialfile=nombre_archivo,
+        filetypes=[("Documento Word", "*.doc")])
+    if not ruta:
+        return
+    try:
+        crear_word_de_texto(ruta, texto)
+    except OSError:
+        messagebox.showerror("Error al exportar", 'No se pudo crear el Word')
+        return
+    messagebox.showinfo("Word creado", f"Entrevistas guardadas en:\n{ruta}")
 
 def exportar_entrevistas_pdf(dni_paciente=None):
     try:
@@ -1644,8 +1798,148 @@ def exportar_entrevistas_pdf(dni_paciente=None):
         messagebox.showerror("Error al exportar","El texto contiene caracteres no compatibles con la fuente PDF.")
         return
     messagebox.showinfo("PDF creado", f"Entrevistas guardadas en:\n{ruta}")
+# ============================================================================
+# BLOQUE 27: VENTANA PARA DOCUMENTOS
+# ============================================================================
+def abrir_ventana_ver_documento(dni_paciente=None):
+    ventana_doc = Toplevel(ventana)
+    ventana_doc.title("Ver / Editar documento")
+    ventana_doc.geometry("900x750")
+    ventana_doc.config(bg=GRIS_NIEBLA)
+
+    frame_sup = Frame(ventana_doc, bg=GRIS_NIEBLA)
+    frame_sup.pack(side="top", fill="x", padx=10, pady=10)
+
+    Label(frame_sup, text="DNI del paciente:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO,
+          font=("Segoe UI", 12)).pack(side="left", padx=5)
+    entry_dni_doc = Entry(frame_sup, width=20, font=("Segoe UI", 12))
+    entry_dni_doc.pack(side="left", padx=5)
+    if dni_paciente:
+        entry_dni_doc.insert(0, dni_paciente)
+
+    frame_texto = Frame(ventana_doc, bg=BLANCO, relief="solid", bd=1)
+    frame_texto.pack(fill="both", expand=True, padx=10, pady=5)
+
+    scroll_doc = tk.Scrollbar(frame_texto, orient="vertical")
+    scroll_doc.pack(side="right", fill="y")
+
+    text_doc = tk.Text(frame_texto, font=("Segoe UI", 11), wrap="word",
+                       yscrollcommand=scroll_doc.set, bg=BLANCO, fg=GRIS_AZULADO)
+    text_doc.pack(side="left", fill="both", expand=True)
+    scroll_doc.config(command=text_doc.yview)
+
+    def cargar_documento():
+        dni = entry_dni_doc.get().strip()
+        text_doc.delete("1.0", tk.END)
+        if not dni:
+            messagebox.showwarning("Atención", "Escribí un DNI primero.")
+            return
+        cursor.execute("""SELECT id, fecha_entrevista, hora_entrevista,
+                                 nombre_profecional, apellido_profecional, entrevista
+                          FROM entrevistas WHERE dni_paciente = ? ORDER BY id""", (dni,))
+        filas = cursor.fetchall()
+        if not filas:
+            text_doc.insert("1.0", "No hay entrevistas para ese DNI.")
+            return
+        for f in filas:
+            text_doc.insert(tk.END, f"=== Entrevista {f[0]} ===\n")
+            text_doc.insert(tk.END, f"Fecha: {f[1]} {f[2] or ''}\n")
+            text_doc.insert(tk.END, f"Profesional: {f[3]} {f[4] or ''}\n\n")
+            text_doc.insert(tk.END, f"{f[5] or ''}\n\n")
+
+    def guardar_pdf():
+        texto = text_doc.get("1.0", tk.END).strip()
+        if not texto:
+            messagebox.showwarning("Atención", "El documento está vacío.")
+            return
+        ruta = filedialog.asksaveasfilename(title="Guardar como PDF", defaultextension=".pdf",
+                                            initialfile="documento.pdf", filetypes=[("PDF", "*.pdf")])
+        if not ruta:
+            return
+        try:
+            crear_pdf_de_texto(ruta, texto)
+            messagebox.showinfo("OK", f"PDF guardado en:\n{ruta}")
+        except Exception as error:
+            messagebox.showerror("Error", f"No se pudo guardar: {error}")
+
+    def guardar_word():
+        texto = text_doc.get("1.0", tk.END).strip()
+        if not texto:
+            messagebox.showwarning("Atención", "El documento está vacío.")
+            return
+        ruta = filedialog.asksaveasfilename(title="Guardar como Word", defaultextension=".doc",
+                                            initialfile="documento.doc", filetypes=[("Word", "*.doc")])
+        if not ruta:
+            return
+        try:
+            crear_word_de_texto(ruta, texto)
+            messagebox.showinfo("OK", f"Word guardado en:\n{ruta}")
+        except Exception as error:
+            messagebox.showerror("Error", f"No se pudo guardar: {error}")
+
+    def eliminar_archivo():
+        ruta = filedialog.askopenfilename(title="Elegir archivo a eliminar",
+                                          filetypes=[("Documentos", "*.pdf *.doc *.docx"), ("Todos", "*.*")])
+        if not ruta:
+            return
+        if not messagebox.askyesno("Confirmar", f"¿Eliminar este archivo?\n{ruta}"):
+            return
+        try:
+            os.remove(ruta)
+            messagebox.showinfo("OK", "Archivo eliminado.")
+        except Exception as error:
+            messagebox.showerror("Error", f"No se pudo eliminar: {error}")
+    def importar_documento():
+        ruta = filedialog.askopenfilename(
+            title="Importar documento",
+            filetypes=[("Documentos", "*.pdf *.doc *.docx *.txt"), ("Todos", "*.*")])
+        if not ruta:
+            return
+        extension = os.path.splitext(ruta)[1].lower()
+        texto = ""
+        try:
+            if extension == ".pdf":
+                with open(ruta, "rb") as archivo:
+                    lector = PyPDF2.PdfReader(archivo)
+                    for pagina in lector.pages:
+                        texto += pagina.extract_text() + "\n"
+            elif extension in (".doc", ".docx", ".txt"):
+                try:
+                    with open(ruta, "r", encoding="utf-8") as archivo:
+                        contenido = archivo.read()
+                    if "<p>" in contenido:
+                        import re as _re
+                        contenido = _re.sub(r"<[^>]+>", "", contenido)
+                    texto = contenido
+                except UnicodeDecodeError:
+                    messagebox.showerror("Error", "No se pudo leer el archivo (codificación no soportada).")
+                    return
+            else:
+                messagebox.showwarning("Formato", "Formato no soportado. Usá PDF, DOC, DOCX o TXT.")
+                return
+        except Exception as error:
+            messagebox.showerror("Error al importar", f"No se pudo leer el archivo:\n{error}")
+            return
+
+        text_doc.delete("1.0", tk.END)
+        text_doc.insert("1.0", texto.strip() or "(El documento no tiene texto extraíble.)")
+        messagebox.showinfo("Importado", f"Documento cargado:\n{ruta}")
+
+    frame_btn = Frame(ventana_doc, bg=GRIS_NIEBLA)
+    frame_btn.pack(side="bottom", fill="x", padx=10, pady=10)
+    RoundedButton(frame_btn, 130, 40, 20, VERDE_AZULADO, BLANCO, text="⟳ Cargar", command=cargar_documento).pack(side="left", padx=5)
+    RoundedButton(frame_btn, 150, 40, 20, VERDE_AZULADO, BLANCO, text="Guardar PDF", command=guardar_pdf).pack(side="left", padx=5)
+    RoundedButton(frame_btn, 150, 40, 20, VERDE_AZULADO, BLANCO, text="Guardar Word", command=guardar_word).pack(side="left", padx=5)
+    RoundedButton(frame_btn, 180, 40, 20, VERDE_AZULADO, BLANCO, text="Eliminar archivo", command=eliminar_archivo).pack(side="left", padx=5)
+    RoundedButton(frame_btn, 180, 40, 20, VERDE_AZULADO, BLANCO, text="Eliminar archivo", command=eliminar_archivo).pack(side="left", padx=5)
+    RoundedButton(frame_btn, 150, 40, 20, VERDE_AZULADO, BLANCO, text="Importar PDF/Word", command=importar_documento).pack(side="left", padx=5)
+    
+    if dni_paciente:
+        cargar_documento()
+
+    agregar_boton_luna(ventana_doc)
 
 # ============================================================================
-# BLOQUE 25: INICIO DEL PROGRAMA
+# BLOQUE 28: INICIO DEL PROGRAMA
 # ============================================================================
 ventana.mainloop()
