@@ -1642,10 +1642,13 @@ def abrir_ventana_editor_fotos():
         visor_foto_editor.image = None
         refrescar_lista_imagenes()
 
-    RoundedButton(frame_editor_fotos_inferior, 250, 40, 20, VERDE_AZULADO, BLANCO,text="Agregar imagen", command=agregar_imagen).grid(row=0, column=0, padx=10, sticky="ew")
-    RoundedButton(frame_editor_fotos_inferior, 250, 40, 20, VERDE_AZULADO, BLANCO,text="Eliminar imagen", command=eliminar_imagen).grid(row=0, column=1, padx=10, sticky="ew")
-    RoundedButton(frame_editor_fotos_inferior, 250, 40, 20, VERDE_AZULADO, BLANCO,text="Limpiar TODAS", command=limpiar_todas).grid(row=0, column=2, padx=10, sticky="ew")
-    #Me falta centrarlos
+    # Columnas fantasma a los costados que "empujan" los botones al centro
+    frame_editor_fotos_inferior.columnconfigure(0, weight=1)   # margen izquierdo
+    frame_editor_fotos_inferior.columnconfigure(4, weight=1)   # margen derecho
+    # Las columnas 1, 2, 3 quedan con weight=0 (tamaño natural de los botones)
+    RoundedButton(frame_editor_fotos_inferior, 250, 40, 20, VERDE_AZULADO, BLANCO,text="Agregar imagen",command=agregar_imagen).grid(row=0, column=2, padx=10, sticky="ew")
+    RoundedButton(frame_editor_fotos_inferior, 250, 40, 20, VERDE_AZULADO, BLANCO,text="Eliminar imagen", command=eliminar_imagen).grid(row=0, column=3, padx=10, sticky="ew")
+    RoundedButton(frame_editor_fotos_inferior, 250, 40, 20, VERDE_AZULADO, BLANCO,text="Limpiar TODAS", command=limpiar_todas).grid(row=0, column=4, padx=10, sticky="ew")
 
     agregar_boton_luna(ventana_editor_fotos)
 
@@ -2222,12 +2225,12 @@ def abrir_ventana_ver_documento(dni_paciente=None):
         messagebox.showinfo("Importado", f"Documento cargado:\n{ruta}")
 
     frame_btn = Frame(ventana_doc, bg=GRIS_NIEBLA)
-    frame_btn.pack(side="bottom", fill="x", padx=10, pady=10)
+    frame_btn.pack(anchor="center")
     RoundedButton(frame_btn, 130, 40, 20, VERDE_AZULADO, BLANCO, text="⟳", command=cargar_documento).pack(side="left", padx=5)
     RoundedButton(frame_btn, 150, 40, 20, VERDE_AZULADO, BLANCO, text="Guardar PDF", command=guardar_pdf).pack(side="left", padx=5)
     RoundedButton(frame_btn, 150, 40, 20, VERDE_AZULADO, BLANCO, text="Guardar Word", command=guardar_word).pack(side="left", padx=5)
     RoundedButton(frame_btn, 180, 40, 20, VERDE_AZULADO, BLANCO, text="Eliminar archivo", command=eliminar_archivo).pack(side="left", padx=5)
-    RoundedButton(frame_btn, 150, 40, 20, VERDE_AZULADO, BLANCO, text="Importar PDF/Word", command=importar_documento).pack(side="left", padx=5)
+    RoundedButton(frame_btn, 170, 40, 20, VERDE_AZULADO, BLANCO, text="Importar PDF/Word", command=importar_documento).pack(side="left", padx=5)
 
     if dni_paciente:
         cargar_documento()
