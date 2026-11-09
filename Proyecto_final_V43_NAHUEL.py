@@ -1086,8 +1086,9 @@ def abrir_ventana_entrevistas(ventana_padre):
     # Panel inferior con los botones de acción.
     frame_inferior = Frame(ventana_entrevistas, bg=GRIS_NIEBLA, height=80)
     frame_inferior.pack(side="bottom", fill="x", padx=20, pady=20)
-    frame_inferior.pack_propagate(False)
-
+    frame_inferior.pack(anchor="center")
+    
+    frame_inferior.columnconfigure(0, weight=1)
     frame_inferior.columnconfigure(1, weight=1)
     frame_inferior.columnconfigure(2, weight=1)
     frame_inferior.columnconfigure(3, weight=1)
@@ -1513,7 +1514,6 @@ def abrir_ventana_editor_fotos():
     ventana_editor_fotos.geometry("600x750")
     ventana_editor_fotos.config(bg=GRIS_NIEBLA)
 
-    # Saco el DNI del entry del perfil (que guardé globalmente).
     try:
         dni_actual = entry_dni_perfil_ref.get().strip() if entry_dni_perfil_ref is not None else ""
     except tk.TclError:
