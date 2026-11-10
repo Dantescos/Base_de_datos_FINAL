@@ -1443,19 +1443,20 @@ def abrir_ventana_perfil():
         exportar_entrevistas_pdf(dni_paciente=dni_txt)
 
     # Botones del panel izquierdo.
+    #fede estubo aqui :3
     boton_cargar_perfil = RoundedButton(frame_izquierdo, 80, 40, 20, VERDE_AZULADO, BLANCO, text="⟳", command=cargar_perfil)
     boton_cargar_perfil.grid(row=2, column=2, padx=10, sticky="ew")
-    boton_guardar_perfil = RoundedButton(frame_izquierdo, 140, 40, 20, VERDE_AZULADO, BLANCO, text="Guardar cambios", command=guardar_cambios_perfil)
+    boton_guardar_perfil = RoundedButton(frame_izquierdo, 160, 40, 20, VERDE_AZULADO, BLANCO, text="Guardar cambios", command=guardar_cambios_perfil)
     boton_guardar_perfil.grid(row=14, column=0, padx=10, pady=5, sticky="ew")
-    boton_editor_fotos = RoundedButton(frame_izquierdo, 100, 40, 20, VERDE_AZULADO, BLANCO, text="Editar fotos", command=abrir_ventana_editor_fotos)
+    boton_editor_fotos = RoundedButton(frame_izquierdo, 120, 40, 20, VERDE_AZULADO, BLANCO, text="Editar fotos", command=abrir_ventana_editor_fotos)
     boton_editor_fotos.grid(row=14, column=1, padx=10, sticky="ew")
     boton_entrevistas = RoundedButton(frame_izquierdo, 100, 40, 20, VERDE_AZULADO, BLANCO, text="Entrevista", command=abrir_desde_principal)
     boton_entrevistas.grid(row=14, column=3, padx=10, sticky="ew")
-    boton_pdf_paciente = RoundedButton(frame_izquierdo, 180, 40, 20, VERDE_AZULADO, BLANCO, text="PDF de este paciente", command=exportar_pdf_paciente)
+    boton_pdf_paciente = RoundedButton(frame_izquierdo, 200, 40, 20, VERDE_AZULADO, BLANCO, text="PDF de este paciente", command=exportar_pdf_paciente)
     boton_pdf_paciente.grid(row=15, column=0, padx=10, sticky="ew")
-    boton_word_paciente = RoundedButton(frame_izquierdo, 180, 40, 20, VERDE_AZULADO, BLANCO, text="Word de este paciente", command=exportar_word_paciente)
+    boton_word_paciente = RoundedButton(frame_izquierdo, 210, 40, 20, VERDE_AZULADO, BLANCO, text="Word de este paciente", command=exportar_word_paciente)
     boton_word_paciente.grid(row=15, column=1, padx=10, sticky="ew")
-    boton_ver_doc = RoundedButton(frame_izquierdo, 200, 40, 20, VERDE_AZULADO, BLANCO, text="Ver/Editar documento", command=lambda: abrir_ventana_ver_documento(entry_dni_perfil.get().strip()))
+    boton_ver_doc = RoundedButton(frame_izquierdo, 210, 40, 20, VERDE_AZULADO, BLANCO, text="Ver/Editar documento", command=lambda: abrir_ventana_ver_documento(entry_dni_perfil.get().strip()))
     boton_ver_doc.grid(row=15, column=2, columnspan=2, padx=10, pady=5, sticky="ew")
 
     # --- Panel derecho ---
