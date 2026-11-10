@@ -1140,8 +1140,7 @@ def abrir_ventana_perfil():
     ventana_perfil.title("PERFIL")
     ventana_perfil.geometry("1000x800")
     ventana_perfil.config(bg=GRIS_NIEBLA)
-    ventana_perfil.resizable(False, False)
-
+    #fede estubo aqui :3
     def al_cerrar_perfil():
         # Al cerrar el perfil suelto la referencia global para que el editor
         # de fotos no intente leer un Entry destruido.
