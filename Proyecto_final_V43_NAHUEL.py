@@ -836,7 +836,7 @@ def pantalla_edit_entrevista(ventana_padre):
             fecha_nueva = comprobar_fecha(entry_fecha)
         hora_nueva = entry_hora.get().strip() or entrevista[12]
         tipo_nuevo = entry_tipo.get().strip() or entrevista[13]
-        proxima_nueva = entry_proxima.get().strip()
+        proxima_nueva = comprobar_fecha(entry_proxima)
         conexion.execute("""UPDATE entrevistas SET entrevista = ?, dni_paciente = ?,
                             nombre_profecional = ?, apellido_profecional = ?, dni_profecional = ?,
                             matricula = ?, especialidad = ?, telefono_profecional = ?,
