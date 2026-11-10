@@ -886,8 +886,8 @@ def new_entrevista():
     especialidad = entry_especialidad.get().strip()
     hora = entry_hora_entrevista.get().strip()
     tipo = var_tipo_entrevista.get()
-    proxima_sesion = entry_proxima_sesion.get().strip()
-
+    proxima_sesion = comprobar_fecha(entry_proxima_sesion)
+  
     if entrevista == "" or dni == "" or nom_profecional == "":
         messagebox.showwarning("Faltan datos", "Complete la entrevista, DNI del paciente y Profesional.")
         return
