@@ -1208,12 +1208,16 @@ def abrir_ventana_perfil():
     entry_obra_social_perfil.grid(row=10, column=1, padx=5, pady=3)
 
     Label(frame_izquierdo, text="Estado:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=11, column=0, sticky="e", padx=5)
-    entry_estado_perfil = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
-    entry_estado_perfil.grid(row=11, column=1, padx=5, pady=3)
+    var_tipo_estado_perfil = tk.StringVar(value="")
+    menu_estado_perfil = tk.OptionMenu(frame_izquierdo, var_tipo_estado_perfil, "Activo", "No activo")
+    menu_estado_perfil.config(font=("Segoe UI", 12), width=22)
+    menu_estado_perfil.grid(row=11, column=1, padx=5, pady=3)
 
     Label(frame_izquierdo, text="Consentimiento:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=12, column=0, sticky="e", padx=5)
-    entry_consentimiento_perfil = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
-    entry_consentimiento_perfil.grid(row=12, column=1, padx=5, pady=3)
+    var_tipo_consentimiento_perfil = tk.StringVar(value="")
+    menu_consentimiento_perfil = tk.OptionMenu(frame_izquierdo, var_tipo_consentimiento_perfil, "Si", "No")
+    menu_consentimiento_perfil.config(font=("Segoe UI", 12), width=22)
+    menu_consentimiento_perfil.grid(row=12, column=1, padx=5, pady=3)
 
     def mostrar_foto_en_perfil():
         # Refresco la galería de fotos del editor y muestro la foto (pendiente o guardada).
@@ -1326,8 +1330,8 @@ def abrir_ventana_perfil():
         contacto_emergencia = entry_contacto_emergencia_perfil.get().strip()
         tel_emergencia = entry_tel_emergencia_perfil.get().strip()
         obra_social = entry_obra_social_perfil.get().strip()
-        estado = entry_estado_perfil.get().strip()
-        consentimiento = entry_consentimiento_perfil.get().strip()
+        estado = var_tipo_estado_perfil.get()
+        consentimiento = var_tipo_consentimiento_perfil.get()
 
         # Determino qué hacer con la foto según el estado de "foto_pendiente".
         if foto_pendiente["bytes"] == b"":
@@ -1412,8 +1416,8 @@ def abrir_ventana_perfil():
             entry_contacto_emergencia_perfil.delete(0, tk.END); entry_contacto_emergencia_perfil.insert(0, fila[7] or "")
             entry_tel_emergencia_perfil.delete(0, tk.END); entry_tel_emergencia_perfil.insert(0, fila[8] or "")
             entry_obra_social_perfil.delete(0, tk.END); entry_obra_social_perfil.insert(0, fila[9] or "")
-            entry_estado_perfil.delete(0, tk.END); entry_estado_perfil.insert(0, fila[10] or "")
-            entry_consentimiento_perfil.delete(0, tk.END); entry_consentimiento_perfil.insert(0, fila[11] or "")
+            var_tipo_estado_perfil.set(fila[10] or "")
+            var_tipo_consentimiento_perfil.set(fila[11] or "")
             # Al cargar un DNI distinto con el botón ⟳, actualizo el DNI
             # "recordado" para que la edición compare contra el correcto.
             dni_original["valor"] = dni_txt
