@@ -728,9 +728,11 @@ def pantalla_edit_entrevista(ventana_padre):
     entry_email_profesional = tk.Entry(frame_editar_superior, width=30, relief="solid", bd=1, font=("Segoe UI", 12))
     entry_email_profesional.grid(row=8, column=1)
 
-    Label(frame_editar_superior, text="Estado (Activo / No activo):", bg=AZUL_PETROLEO, fg=BLANCO_HUESO, font=("Segoe UI", 12)).grid(row=9, column=0)
-    entry_estado_profesional = tk.Entry(frame_editar_superior, width=30, relief="solid", bd=1, font=("Segoe UI", 12))
-    entry_estado_profesional.grid(row=9, column=1)
+    Label(frame_editar_superior, text="Estado:", bg=AZUL_PETROLEO, fg=BLANCO_HUESO, font=("Segoe UI", 12)).grid(row=9, column=0)
+    var_estado_profesional = tk.StringVar(value="")
+    menu_estado_profesional = tk.OptionMenu(frame_editar_superior, var_estado_profesional, "Activo", "No activo")
+    menu_estado_profesional.config(font=("Segoe UI", 12), width=30)
+    menu_estado_profesional.grid(row=9, column=1)
 
     Label(frame_editar_superior, text="Fecha:", bg=AZUL_PETROLEO, fg=BLANCO_HUESO, font=("Segoe UI", 12)).grid(row=10, column=0)
     entry_fecha = tk.Entry(frame_editar_superior, width=30, relief="solid", bd=1, font=("Segoe UI", 12))
@@ -740,9 +742,11 @@ def pantalla_edit_entrevista(ventana_padre):
     entry_hora = tk.Entry(frame_editar_superior, width=30, relief="solid", bd=1, font=("Segoe UI", 12))
     entry_hora.grid(row=11, column=1)
 
-    Label(frame_editar_superior, text="Tipo (individual/grupal/familiar):", bg=AZUL_PETROLEO, fg=BLANCO_HUESO, font=("Segoe UI", 12)).grid(row=12, column=0)
-    entry_tipo = tk.Entry(frame_editar_superior, width=30, relief="solid", bd=1, font=("Segoe UI", 12))
-    entry_tipo.grid(row=12, column=1)
+    Label(frame_editar_superior, text="Tipo:", bg=AZUL_PETROLEO, fg=BLANCO_HUESO, font=("Segoe UI", 12)).grid(row=12, column=0)
+    var_tipo = tk.StringVar(value="")
+    menu_tipo = tk.OptionMenu(frame_editar_superior, var_tipo, "individual", "grupal", "familiar")
+    menu_tipo.config(font=("Segoe UI", 12), width=30)
+    menu_tipo.grid(row=12, column=1)
 
     Label(frame_editar_superior, text="Proxima Sesion:", bg=AZUL_PETROLEO, fg=BLANCO_HUESO, font=("Segoe UI", 12)).grid(row=13, column=0)
     entry_proxima = tk.Entry(frame_editar_superior, width=30, relief="solid", bd=1, font=("Segoe UI", 12))
@@ -782,10 +786,10 @@ def pantalla_edit_entrevista(ventana_padre):
         entry_especialidad.delete(0, tk.END); entry_especialidad.insert(0, e[5] or "")
         entry_tel_profesional.delete(0, tk.END); entry_tel_profesional.insert(0, e[6] or "")
         entry_email_profesional.delete(0, tk.END); entry_email_profesional.insert(0, e[7] or "")
-        entry_estado_profesional.delete(0, tk.END); entry_estado_profesional.insert(0, e[8] or "")
+        var_estado_profesional.set(e[8] or "")
         entry_fecha.delete(0, tk.END); entry_fecha.insert(0, e[11] or "")
         entry_hora.delete(0, tk.END); entry_hora.insert(0, e[12] or "")
-        entry_tipo.delete(0, tk.END); entry_tipo.insert(0, e[13] or "")
+        var_tipo.set(e[13] or "")
         entry_proxima.delete(0, tk.END); entry_proxima.insert(0, e[14] or "")
 
     boton_recargar = RoundedButton(frame_editar_superior, 150, 30, 15, VERDE_AZULADO, BLANCO, text="⟳", command=cargar_entrevista)
@@ -828,14 +832,14 @@ def pantalla_edit_entrevista(ventana_padre):
         especialidad_nueva = entry_especialidad.get().strip() or entrevista[5]
         tel_prof_nuevo = entry_tel_profesional.get().strip() or entrevista[6]
         email_prof_nuevo = entry_email_profesional.get().strip() or entrevista[7]
-        estado_nuevo = entry_estado_profesional.get().strip() or entrevista[8]
+        estado_nuevo = var_estado_profesional.get() or entrevista[8]
         fecha_nueva = entry_fecha.get().strip()
         if fecha_nueva == "":
             fecha_nueva = entrevista[11]
         else:
             fecha_nueva = comprobar_fecha(entry_fecha)
         hora_nueva = normalizar_fecha(entry_hora.get()) or entrevista[12]
-        tipo_nuevo = entry_tipo.get().strip() or entrevista[13]
+        tipo_nuevo = var_tipo.get() or entrevista[13]
         proxima_nueva = comprobar_fecha(entry_proxima)
         conexion.execute("""UPDATE entrevistas SET entrevista = ?, dni_paciente = ?,
                             nombre_profecional = ?, apellido_profecional = ?, dni_profecional = ?,
