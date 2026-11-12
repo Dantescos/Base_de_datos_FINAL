@@ -1507,8 +1507,6 @@ def abrir_ventana_perfil():
 
     # Botones del panel izquierdo.
     #fede estubo aqui :3
-    boton_cargar_perfil = RoundedButton(frame_izquierdo, 80, 40, 20, VERDE_AZULADO, BLANCO, text="⟳", command=cargar_perfil)
-    boton_cargar_perfil.grid(row=2, column=2, padx=10, sticky="ew")
     boton_guardar_perfil = RoundedButton(frame_izquierdo, 160, 40, 20, VERDE_AZULADO, BLANCO, text="Guardar cambios", command=guardar_cambios_perfil)
     boton_guardar_perfil.grid(row=16, column=0, padx=10, pady=5, sticky="ew")
     boton_editor_fotos = RoundedButton(frame_izquierdo, 120, 40, 20, VERDE_AZULADO, BLANCO, text="Editar fotos", command=abrir_ventana_editor_fotos)
