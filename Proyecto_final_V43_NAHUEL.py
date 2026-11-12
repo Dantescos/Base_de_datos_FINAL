@@ -121,7 +121,7 @@ cursor.execute("""CREATE TABLE IF NOT EXISTS personas(
     contacto_emergencia TEXT,
     telefono_emergencia TEXT,
     obra_social TEXT,
-    estado TEXT DEFAULT 'activo',
+    estado TEXT,
     consentimiento TEXT,
     foto BLOB)""")
 
