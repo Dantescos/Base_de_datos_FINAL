@@ -1044,7 +1044,7 @@ def abrir_ventana_entrevistas(ventana_padre):
     ventana_entrevistas = tk.Toplevel(ventana_padre)
     _ventana_entrevistas_abierta = ventana_entrevistas
     ventana_entrevistas.title("ENTREVISTAS")
-    ventana_entrevistas.geometry("1150x800")
+    ventana_entrevistas.geometry("1600x800")
     ventana_entrevistas.config(bg=GRIS_NIEBLA)
 
     # Declaro globales los widgets para poder usarlos desde otras funciones.
@@ -1176,7 +1176,7 @@ def abrir_ventana_perfil():
 
     ventana_perfil = Toplevel(ventana)
     ventana_perfil.title("PERFIL")
-    ventana_perfil.geometry("1000x800")
+    ventana_perfil.geometry("1500x800")
     ventana_perfil.config(bg=GRIS_NIEBLA)
     #fede estubo aqui :3
     def al_cerrar_perfil():
