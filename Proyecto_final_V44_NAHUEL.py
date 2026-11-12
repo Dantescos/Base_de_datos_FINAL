@@ -17,7 +17,8 @@ import textwrap         # Para cortar líneas largas en pedazos cuando armo el P
 import re               # Expresiones regulares, las uso para detectar fechas y horas.
 import base64           # Para decodificar la imagen de SANCA que viene en texto plano.
 import PyPDF2           # Para leer y extraer el texto de archivos PDF que el usuario importe.
-
+import shutil
+#fede estubo aqui :3
 # ===========================================================================
 # BLOQUE 2: IMAGEN DE SANCA CONVERTIDA EN TEXTO
 # ===========================================================================
@@ -1326,6 +1327,8 @@ def abrir_ventana_perfil():
         visor_foto_perfil.image = None
 
     def subir_foto_perfil(event=None):
+        et=entry_dni_perfil_ref.get()
+
         # Abro el diálogo de archivos y guardo los bytes en "foto_pendiente".
         ruta = filedialog.askopenfilename(
             title="Seleccionar foto",
@@ -1338,7 +1341,13 @@ def abrir_ventana_perfil():
             mostrar_foto_en_perfil()
         except Exception:
             messagebox.showerror("Error", 'No se pudo cargar la foto')
+        ete=str(et)
+        #fede estubo aqui :3
 
+        os.makedirs(ete, exist_ok=True)
+        origen=ruta
+        destino=ete
+        shutil.move(origen,destino)
     def asignar_foto_galeria(event=None):
         # Cuando el usuario clickea una foto de la galería del editor,
         # la pongo como foto pendiente del perfil.
@@ -1663,6 +1672,8 @@ def abrir_ventana_editor_fotos():
     lista_imagenes.bind("<<ListboxSelect>>", mostrar_previa_seleccionada)
 
     def agregar_imagen():
+        et=entry_dni_perfil_ref.get()
+
         # Pido una imagen al usuario y la guardo en la base con el DNI actual.
         if not dni_actual:
             messagebox.showwarning("Atencion",
@@ -1687,7 +1698,12 @@ def abrir_ventana_editor_fotos():
             mostrar_previa_desde_db(len(ids_imagenes) - 1)
         except Exception as error:
             messagebox.showerror("Error", f"No se pudo guardar la imagen:\n{error}")
-
+        ete=str(et)
+        #fede estubo aqui :3
+        os.makedirs(ete, exist_ok=True)
+        origen=ruta
+        destino=ete
+        shutil.move(origen,destino)
     def eliminar_imagen():
         # Borro la imagen seleccionada de la base.
         sel = lista_imagenes.curselection()
