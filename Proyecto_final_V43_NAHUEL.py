@@ -1787,7 +1787,7 @@ def abrir_ventana_autores():
 
     y += 30
     canvas.create_text(500, y, text="LICENCIA", fill="#DFDBDB", font=("Segoe UI", 100, "bold"))
-    #fede estubo aqui :3
+    #fede estubo aqui :3 y es joto
     y += 130  # Dejo espacio suficiente para que no se pise con "LICENCIA".
     canvas.create_text(500, y,
                        text=("© 2026 Equipo de programación Sanca. Todos los derechos reservados.\n\n"
