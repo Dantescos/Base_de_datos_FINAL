@@ -1452,10 +1452,7 @@ def abrir_ventana_perfil():
 
     def cargar_perfil():
         # Cargo todos los datos de una persona desde la base al formulario.
-        dni_txt = entry_dni_perfil.get().strip()
-        if not dni_txt:
-            messagebox.showwarning("Atencion", "Escriba un DNI")
-            return
+        dni_txt = entry_dni.get().strip()
         lista_personas_perfil.delete(0, tk.END)
         foto_pendiente["bytes"] = None
 
@@ -1568,6 +1565,8 @@ def abrir_ventana_perfil():
 
     mostrar_foto_en_perfil()
     agregar_boton_luna(ventana_perfil)
+
+    cargar_perfil()
 
 # ============================================================================
 # BLOQUE 19: VENTANA DEL EDITOR DE FOTOS
