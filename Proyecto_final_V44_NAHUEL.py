@@ -2130,13 +2130,6 @@ def exportar_entrevistas_pdf(dni_paciente=None):
         messagebox.showerror("Error al consultar", 'No se pudieron leer las entrevistas')
         return
 
-    if not entrevistas:
-        if dni_paciente:
-            messagebox.showinfo("Sin entrevistas", "Ese paciente no tiene entrevistas registradas.")
-        else:
-            messagebox.showinfo("Sin entrevistas", "No hay entrevistas para exportar.")
-        return
-
     nombre_archivo = f"entrevistas_{dni_paciente}.pdf" if dni_paciente else "Archivo_perfil.pdf"
     ruta = filedialog.asksaveasfilename(
         title="Guardar entrevistas como PDF",
