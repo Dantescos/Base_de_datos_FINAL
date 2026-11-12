@@ -1263,7 +1263,7 @@ def abrir_ventana_perfil():
 
     Label(frame_izquierdo, text="Tipo de egreso:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=14, column=0, sticky="e", padx=5)
     var_tipo_egreso_perfil = tk.StringVar(value="")
-    menu_tipo_egreso_perfil = tk.OptionMenu(frame_izquierdo, var_tipo_egreso_perfil, "Alta", "Derivación", "Voluntario", "Fallecimiento", "Otro")
+    menu_tipo_egreso_perfil = tk.OptionMenu(frame_izquierdo, var_tipo_egreso_perfil, "Alta", "Derivación", "Voluntario", "Fallecimiento", "Otro", "-")
     menu_tipo_egreso_perfil.config(font=("Segoe UI", 12), width=22)
     menu_tipo_egreso_perfil.grid(row=14, column=1, padx=5, pady=3)
 
@@ -1390,6 +1390,10 @@ def abrir_ventana_perfil():
         if fecha_egreso and estado != "No activo":
             estado = "No activo"
             var_tipo_estado_perfil.set("No activo")
+        if tipo_egreso == "-" and estado != "Activo":
+            estado = "Activo"
+            var_tipo_estado_perfil.set("Activo")
+
 
         # Determino qué hacer con la foto según el estado de "foto_pendiente".
         if foto_pendiente["bytes"] == b"":
@@ -1519,6 +1523,10 @@ def abrir_ventana_perfil():
     boton_word_paciente.grid(row=17, column=1, padx=10, sticky="ew")
     boton_ver_doc = RoundedButton(frame_izquierdo, 210, 40, 20, VERDE_AZULADO, BLANCO, text="Ver/Editar documento", command=lambda: abrir_ventana_ver_documento(entry_dni_perfil.get().strip()))
     boton_ver_doc.grid(row=17, column=2, columnspan=2, padx=10, pady=5, sticky="ew")
+    boton_pdf_legajo = RoundedButton(frame_izquierdo, 230, 40, 20, VERDE_AZULADO, BLANCO, text="Legajo en formato PDF")
+    boton_pdf_legajo.grid(row=18, column=0, padx=10, pady=5, sticky="ew")
+    boton_word_legajo = RoundedButton(frame_izquierdo, 230, 40, 20, VERDE_AZULADO, BLANCO, text="Legajo en formato Word")
+    boton_word_legajo.grid(row=18, column=1, padx=10, pady=5, sticky="ew")
 
     # --- Panel derecho ---
     frame_derecha = tk.Frame(ventana_perfil, bg=GRIS_NIEBLA)
