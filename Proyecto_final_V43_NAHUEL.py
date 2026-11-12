@@ -473,6 +473,9 @@ visor_foto.pack(expand=True, fill="both", padx=20, pady=40)
 # Panel derecho: lista de personas.
 frame_lista = Frame(cuerpo, bg=GRIS_AZULADO, relief="solid", bd=1)
 frame_lista.pack(side="right", fill="both", expand=True, padx=60, pady=55)
+
+frame_lista.pack_propagate(False)
+
 titulo_lista = tk.Label(frame_lista, text="Personas registradas", bg=GRIS_AZULADO, fg=BLANCO, font=("Segoe UI", 15, "bold"))
 titulo_lista.pack(anchor="w", padx=5, pady=5)
 
