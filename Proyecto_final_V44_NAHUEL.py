@@ -241,7 +241,11 @@ def mostrar_foto(dni):
         try:
             img = Image.open(BytesIO(fila[0]))
             img.thumbnail((300, 300))  # La achico para que entre en el visor.
-            foto = ImageTk.PhotoImage(img)
+            fondo = Image.new("RGB",(300,300),BLANCO)
+            x = (300 - img.width) //2
+            y = (300 - img.height) //2
+            fondo.paste(img,(x,y))
+            foto = ImageTk.PhotoImage(fondo)
             visor_foto.configure(image=foto, text="")
             visor_foto.image = foto  # Mantengo referencia para que no la borre el GC.
             return
