@@ -2841,83 +2841,119 @@ def abrir_ventana_perfil():
         else:
             messagebox.showinfo("Error", "No existe ese DNI.")
 
-    def exportar_word_paciente():
-        # Exporto solo las entrevistas del paciente actual a Word.
+    def _texto_ficha_paciente():
+        # Armo el texto de la ficha del paciente (no entrevistas).
         dni_txt = entry_dni_perfil.get().strip()
         if not dni_txt:
             messagebox.showwarning("Atencion", "Escribi un DNI primero.")
-            return
-        exportar_entrevistas_word(dni_paciente=dni_txt)
+            return None
+
+        cursor.execute("""SELECT nombre, apellido, dni, edad, fecha_nacimiento,
+                        fecha_ingreso, telefono, direccion, contacto_emergencia,
+                        telefono_emergencia, obra_social, estado, consentimiento,
+                        fecha_egreso, tipo_egreso, motivo_egreso
+                        FROM personas WHERE dni = ?""", (dni_txt,))
+        p = cursor.fetchone()
+        if not p:
+            messagebox.showinfo("Sin resultados", "No existe ese DNI.")
+            return None
+
+        lineas = [
+            "Casa de Jovenes Levantate y Camina. Parroquia San Juan Bautista. Obispado de San Isidro",
+            "Ficha de perfil del paciente",
+            "",
+            f"Nombre: {p[0] or '-'}",
+            f"Apellido: {p[1] or '-'}",
+            f"DNI: {p[2] or '-'}",
+            f"Edad: {p[3] or '-'}",
+            f"Fecha de nacimiento: {p[4] or '-'}",
+            f"Fecha de ingreso: {p[5] or '-'}",
+            f"Telefono: {p[6] or '-'}",
+            f"Domicilio: {p[7] or '-'}",
+            f"Contacto de emergencia: {p[8] or '-'}",
+            f"Telefono de emergencia: {p[9] or '-'}",
+            f"Obra social: {p[10] or '-'}",
+            f"Estado: {p[11] or '-'}",
+            f"Consentimiento: {p[12] or '-'}",
+            f"Fecha de egreso: {p[13] or '-'}",
+            f"Tipo de egreso: {p[14] or '-'}",
+            f"Motivo de egreso: {p[15] or '-'}",
+        ]
+        return "\n".join(lineas)
 
     def exportar_pdf_paciente():
-        # Ídem para PDF.
-        dni_txt = entry_dni_perfil.get().strip()
-        if not dni_txt:
-            messagebox.showwarning("Atencion", "Escribi un DNI primero.")
+        texto = _texto_ficha_paciente()
+        if texto is None:
             return
-        exportar_entrevistas_pdf(dni_paciente=dni_txt)
+        ruta = filedialog.asksaveasfilename(
+            title="Guardar perfil como PDF",
+            defaultextension=".pdf",
+            initialfile=f"perfil_{entry_dni_perfil.get().strip()}.pdf",
+            filetypes=[("PDF", "*.pdf")])
+        if not ruta:
+            return
+        try:
+            crear_pdf_de_texto(ruta, texto)
+            messagebox.showinfo("OK", f"Perfil guardado en:\n{ruta}")
+        except Exception:
+            messagebox.showerror("Error", "No se pudo crear el PDF.")
 
-    boton_guardar_perfil = RoundedButton(frame_izquierdo, 160, 40, 20,
-                                          VERDE_AZULADO, BLANCO,
-                                          text="Guardar cambios",
-                                          command=guardar_cambios_perfil)
+    def exportar_word_paciente():
+        texto = _texto_ficha_paciente()
+        if texto is None:
+            return
+        ruta = filedialog.asksaveasfilename(
+            title="Guardar perfil como Word",
+            defaultextension=".doc",
+            initialfile=f"perfil_{entry_dni_perfil.get().strip()}.doc",
+            filetypes=[("Word", "*.doc")])
+        if not ruta:
+            return
+        try:
+            crear_word_de_texto(ruta, texto)
+            messagebox.showinfo("OK", f"Perfil guardado en:\n{ruta}")
+        except Exception:
+            messagebox.showerror("Error", "No se pudo crear el Word.")
+
+    boton_guardar_perfil = RoundedButton(frame_izquierdo, 160, 40, 20,VERDE_AZULADO, BLANCO,text="Guardar cambios",command=guardar_cambios_perfil)
     # Botón Guardar.
 
     boton_guardar_perfil.grid(row=16, column=0, padx=10, pady=5, sticky="ew")
 
-    boton_editor_fotos = RoundedButton(frame_izquierdo, 120, 40, 20,
-                                        VERDE_AZULADO, BLANCO,
-                                        text="Editar fotos",
-                                        command=abrir_ventana_editor_fotos)
+    boton_editor_fotos = RoundedButton(frame_izquierdo, 120, 40, 20,VERDE_AZULADO, BLANCO,text="Editar fotos",command=abrir_ventana_editor_fotos)
+
     # Botón Editor de fotos.
 
     boton_editor_fotos.grid(row=16, column=1, padx=10, sticky="ew")
 
-    boton_entrevistas = RoundedButton(frame_izquierdo, 100, 40, 20,
-                                       VERDE_AZULADO, BLANCO,
-                                       text="Entrevista",
-                                       command=abrir_desde_principal)
+    boton_entrevistas = RoundedButton(frame_izquierdo, 100, 40, 20,VERDE_AZULADO, BLANCO, text="Entrevista",command=abrir_desde_principal)
     # Botón Entrevista.
 
     boton_entrevistas.grid(row=16, column=3, padx=10, sticky="ew")
 
-    boton_pdf_paciente = RoundedButton(frame_izquierdo, 200, 40, 20,
-                                        VERDE_AZULADO, BLANCO,
-                                        text="PDF de este paciente",
-                                        command=exportar_pdf_paciente)
+    boton_pdf_paciente = RoundedButton(frame_izquierdo, 200, 40, 20,VERDE_AZULADO, BLANCO,text="PDF de este paciente",command=exportar_pdf_paciente)
     # Botón PDF paciente.
 
     boton_pdf_paciente.grid(row=17, column=0, padx=10, sticky="ew")
 
-    boton_word_paciente = RoundedButton(frame_izquierdo, 210, 40, 20,
-                                         VERDE_AZULADO, BLANCO,
-                                         text="Word de este paciente",
-                                         command=exportar_word_paciente)
+    boton_word_paciente = RoundedButton(frame_izquierdo, 210, 40, 20,VERDE_AZULADO, BLANCO,text="Word de este paciente",command=exportar_word_paciente)
     # Botón Word paciente.
 
     boton_word_paciente.grid(row=17, column=1, padx=10, sticky="ew")
 
-    boton_ver_doc = RoundedButton(frame_izquierdo, 210, 40, 20,
-                                   VERDE_AZULADO, BLANCO,
-                                   text="Ver/Editar documento",
-                                   command=lambda: abrir_ventana_ver_documento(
-                                       entry_dni_perfil.get().strip()))
+    boton_ver_doc = RoundedButton(frame_izquierdo, 210, 40, 20,VERDE_AZULADO, BLANCO,text="Ver/Editar documento",command=lambda: abrir_ventana_ver_documento(entry_dni_perfil.get().strip()))
     # Botón Ver/Editar documento. Uso lambda para pasar el DNI actual
     # al hacer clic (no al crear).
 
     boton_ver_doc.grid(row=17, column=2, columnspan=2, padx=10, pady=5,
                         sticky="ew")
 
-    boton_pdf_legajo = RoundedButton(frame_izquierdo, 230, 40, 20,
-                                      VERDE_AZULADO, BLANCO,
-                                      text="Legajo en formato PDF")
+    boton_pdf_legajo = RoundedButton(frame_izquierdo, 230, 40, 20,VERDE_AZULADO, BLANCO,text="Legajo en formato PDF")
     # Botón legajo PDF (sin funcionalidad asignada actualmente).
 
     boton_pdf_legajo.grid(row=18, column=0, padx=10, pady=5, sticky="ew")
 
-    boton_word_legajo = RoundedButton(frame_izquierdo, 230, 40, 20,
-                                       VERDE_AZULADO, BLANCO,
-                                       text="Legajo en formato Word")
+    boton_word_legajo = RoundedButton(frame_izquierdo, 230, 40, 20,VERDE_AZULADO, BLANCO,text="Legajo en formato Word")
     # Botón legajo Word (sin funcionalidad).
 
     boton_word_legajo.grid(row=18, column=1, padx=10, pady=5, sticky="ew")
@@ -2925,12 +2961,10 @@ def abrir_ventana_perfil():
     frame_derecha = tk.Frame(ventana_perfil, bg=GRIS_NIEBLA)
     # Frame derecho.
 
-    frame_derecha.pack(side="right", fill="both", expand=True,
-                        padx=(0, 15), pady=15)
+    frame_derecha.pack(side="right", fill="both", expand=True, padx=(0, 15), pady=15)
     # A la derecha.
 
-    frame_foto_perfil = Frame(frame_derecha, bg=BLANCO, relief="solid",
-                                bd=1, height=280)
+    frame_foto_perfil = Frame(frame_derecha, bg=BLANCO, relief="solid",bd=1, height=280)
     # Frame de la foto grande.
 
     frame_foto_perfil.pack(side="top", fill="x", pady=(0, 10))
@@ -2938,10 +2972,7 @@ def abrir_ventana_perfil():
     frame_foto_perfil.pack_propagate(False)
     # Respeto el alto.
 
-    visor_foto_perfil = tk.Label(frame_foto_perfil,
-                                  text="👤\nClic para subir foto",
-                                  bg=BLANCO, fg=GRIS_MEDIO,
-                                  font=("Segoe UI", 20), cursor="hand2")
+    visor_foto_perfil = tk.Label(frame_foto_perfil,text="👤\nClic para subir foto",bg=BLANCO, fg=GRIS_MEDIO,font=("Segoe UI", 20), cursor="hand2")
     # Label con manito.
 
     visor_foto_perfil.pack(fill="both", expand=True, padx=10, pady=10)
@@ -2949,10 +2980,7 @@ def abrir_ventana_perfil():
     visor_foto_perfil.bind("<Button-1>", subir_foto_perfil)
     # Al hacer clic, abro el diálogo.
 
-    boton_quitar_foto = RoundedButton(frame_derecha, 100, 40, 20,
-                                        VERDE_AZULADO, BLANCO,
-                                        text="Quitar foto",
-                                        command=quitar_foto_perfil)
+    boton_quitar_foto = RoundedButton(frame_derecha, 100, 40, 20,VERDE_AZULADO, BLANCO,text="Quitar foto",command=quitar_foto_perfil)
     # Botón Quitar foto.
 
     boton_quitar_foto.pack(side="top", padx=10, pady=5)
@@ -3486,7 +3514,7 @@ def crear_pdf_entrevistas(ruta, entrevistas):
         y = 790
         # Empiezo arriba.
 
-        lineas_pagina.append(("MEDTRACK | Archivos de perfil", "F2", 16, 50, y))
+        lineas_pagina.append(("Casa de Jovenes Levantate y Camina. Parroquia San Juan Bautista. Obispado de San Isidro | Archivos de perfil", "F2", 16, 50, y))
         # Header (negrita, tamaño 16).
 
         y -= 25
@@ -3813,7 +3841,7 @@ def exportar_entrevistas_word(dni_paciente=None):
                               "No hay entrevistas para exportar.")
         return
 
-    lineas = ["MEDTRACK | Archivos de perfil",
+    lineas = ["Casa de Jovenes Levantate y Camina. Parroquia San Juan Bautista. Obispado de San Isidro | Archivos de perfil",
               "Historial completo de entrevistas", ""]
     # Header.
 
@@ -3906,6 +3934,10 @@ def exportar_entrevistas_pdf(dni_paciente=None):
     except sqlite3.Error:
         messagebox.showerror("Error al consultar",
                               'No se pudieron leer las entrevistas')
+        return
+   
+    if not entrevistas:
+        messagebox.showinfo("Sin entrevistas","No hay entrevistas para exportar.")
         return
 
     nombre_archivo = f"entrevistas_{dni_paciente}.pdf" if dni_paciente else "Archivo_perfil.pdf"
