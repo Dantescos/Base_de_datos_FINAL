@@ -1776,54 +1776,80 @@ def obtener_bytes_sanca():
 
 # ============================================================================
 # BLOQUE 21: DERECHOS DE AUTOR
-# La ventanita con los nombres del equipo y la licencia.
+# Ventana simple dividida en dos: a la izquierda los textos, a la derecha la foto.
 # ============================================================================
 def abrir_ventana_autores():
-    hay_imagen = cargar_imagen()
+    cargar_imagen() # Me aseguro de que la imagen esté en la base de datos
 
     ventana_autores = tk.Toplevel(ventana)
-    ventana_autores.title("Licencia y autores de la aplicacion")
-    ventana_autores.geometry("1000x800")
-    canvas = tk.Canvas(ventana_autores, width=1000, height=800, highlightthickness=0)
-    canvas.pack(fill="both", expand=True)
+    ventana_autores.title("Licencia y autores")
+    ventana_autores.geometry("900x600") # Tamaño fijo, ni muy grande ni muy chico
+    ventana_autores.config(bg=AZUL_PETROLEO)
 
-    # Pongo la imagen de fondo si está disponible.
-    bytes_sanca = obtener_bytes_sanca() if hay_imagen else None
-    fondo_ok = False
-    if bytes_sanca:
-        try:
-            img = Image.open(BytesIO(bytes_sanca)).resize((1000, 800))
-            foto = ImageTk.PhotoImage(img)
-            canvas.create_image(0, 0, anchor="nw", image=foto)
-            ventana_autores.fondo = foto  # Mantengo referencia para que no la borre el GC.
-            fondo_ok = True
-        except Exception:
-            pass
-    if not fondo_ok:
-        canvas.configure(bg=BLANCO)
+    # ---------------------------------------------------------
+    # LADO IZQUIERDO: Textos
+    # ---------------------------------------------------------
+    # Creo un frame (un cuadro) que ocupe toda la altura y el lado izquierdo
+    frame_textos = Frame(ventana_autores, bg=AZUL_PETROLEO, width=450)
+    frame_textos.pack(side="left", fill="y")
+    frame_textos.pack_propagate(False) # Evito que el frame se achique por culpa del texto
 
-    canvas.create_text(500, 80, text="AUTORES", fill=NEGRO, font=("Segoe UI", 28, "bold"))
-    canvas.create_text(500, 130, text="EQUIPO DE DESARROLLO", fill=NEGRO, font=("Segoe UI", 16, "bold"))
+    # Título principal
+    Label(frame_textos, text="AUTORES", bg=AZUL_PETROLEO, fg=BLANCO, font=("Segoe UI", 24, "bold")).pack(pady=(40, 5))
+    Label(frame_textos, text="EQUIPO DE DESARROLLO", bg=AZUL_PETROLEO, fg=AMARILLO, font=("Segoe UI", 12, "bold")).pack(pady=(0, 20))
 
-    nombres = ["Antonio Garcia", "Nahuel Villafañe", "Mateo Dabruzzo Wilczek", "Federico 'Fedelobo'", "Ignacio", "Thiago", "Pablo Laporta", "Fernando 'Master' Yapuray", "Joaquin Arana"]
-    y = 180
+    # Nombres (los pongo uno abajo del otro con un bucle)
+    nombres = ["Antonio Garcia", "Nahuel Villafañe", "Mateo Dabruzzo Wilczek", 
+               "Federico 'Fedelobo'", "Ignacio", "Thiago", 
+               "Pablo Laporta", "Fernando 'Master' Yapuray", "Joaquin Arana"]
+               
     for nombre in nombres:
-        canvas.create_text(500, y, text=nombre, fill=NEGRO, font=("Segoe UI", 14))
-        y += 30
+        Label(frame_textos, text=nombre, bg=AZUL_PETROLEO, fg=BLANCO, font=("Segoe UI", 10)).pack(pady=2)
 
-    y += 30
-    canvas.create_text(500, y, text="LICENCIA", fill="#DFDBDB", font=("Segoe UI", 100, "bold"))
-    #fede estubo aqui :3 y es joto
-    y += 130  # Dejo espacio suficiente para que no se pise con "LICENCIA".
-    canvas.create_text(500, y,
-                       text=("© 2026 Equipo de programación Sanca. Todos los derechos reservados.\n\n"
-                             "Prohibida la copia, modificación, distribución y uso comercial\n"
-                             "del software sin autorización escrita del titular.\n"
-                             "Ley 11.723 de Propiedad Intelectual (Argentina)."),
-                       fill=NEGRO, font=("Segoe UI", 11),
-                       justify="center", width=800)
+    # Una línea blanca para separar los nombres de la licencia
+    Label(frame_textos, text="___________________________________________", bg=AZUL_PETROLEO, fg=GRIS_MEDIO).pack(pady=15)
 
-    RoundedButton(ventana_autores, 30, 20, 10, VERDE_AZULADO, BLANCO, text="X", command=ventana_autores.destroy).place(relx=0.95, rely=0.05, anchor="ne")
+    # Texto de la licencia
+    Label(frame_textos, text="LICENCIA", bg=AZUL_PETROLEO, fg=BLANCO, font=("Segoe UI", 14, "bold")).pack(pady=5)
+    
+    texto_legal = "© 2026 Equipo de programación Sanca.\nTodos los derechos reservados.\n\nProhibida la copia, modificación, distribución\ny uso comercial del software sin\nautorización escrita del titular.\n\nLey 11.723 de Propiedad Intelectual."
+    
+    Label(frame_textos, text=texto_legal, bg=AZUL_PETROLEO, fg=GRIS_NIEBLA, font=("Segoe UI", 9), justify="center").pack()
+
+    # ---------------------------------------------------------
+    # LADO DERECHO: La foto de SANCA
+    # ---------------------------------------------------------
+    # Un frame blanco a la derecha que ocupe el resto del espacio
+    frame_foto = Frame(ventana_autores, bg=BLANCO)
+    frame_foto.pack(side="right", fill="both", expand=True)
+
+    # Busco la imagen en la base de datos y la muestro
+    bytes_sanca = obtener_bytes_sanca()
+    
+    if bytes_sanca:
+        # Abro la imagen y la achico a un tamaño fijo (400x400) para que entre bien
+        img = Image.open(BytesIO(bytes_sanca))
+        img.thumbnail((400, 400))
+        foto_tk = ImageTk.PhotoImage(img)
+        
+        # Creo un Label con la foto adentro y lo centro en el frame
+        label_foto = Label(frame_foto, image=foto_tk, bg=BLANCO)
+        label_foto.image = foto_tk # <-- IMPORTANTE: Guardo la foto en el label para que no desaparezca
+        label_foto.pack(expand=True) # 'expand=True' hace que se centre solo
+        
+    else:
+        # Si no hay foto, muestro un texto de error
+        Label(frame_foto, text="No se encontró la imagen", bg=BLANCO, fg=NEGRO).pack(expand=True)
+
+    # ---------------------------------------------------------
+    # BOTÓN DE CERRAR
+    # ---------------------------------------------------------
+    boton_cerrar = RoundedButton(ventana_autores, 40, 30, 15, ROJO, BLANCO, text="X", command=ventana_autores.destroy)
+    # relx=1.0 significa "pegado al borde derecho", rely=0.0 "pegado arriba".
+    # anchor="ne" significa que la esquina Nor-Este (arriba-derecha) del botón toca ese punto.
+    # El padx y pady le dan un margencito para que no toque el borde exacto.
+    boton_cerrar.place(relx=1.0, rely=0.0, anchor="ne", x=-15, y=15) 
+
     agregar_boton_luna(ventana_autores)
 
 # ============================================================================
