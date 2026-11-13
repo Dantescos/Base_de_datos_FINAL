@@ -480,34 +480,95 @@ grids_remove_dni()
 
 # ============================================================================
 # BLOQUE 11: CUERPO (VISOR Y LISTA PRINCIPAL)
-# El panel izquierdo con la foto y el derecho con la lista de personas.
 # ============================================================================
+# 1. CREO EL CONTENEDOR GENERAL (El "cuerpo")
+# Este Frame es el que va a contener tanto a la foto como a la lista.
 cuerpo = Frame(ventana, bg=GRIS_NIEBLA)
-cuerpo.pack(fill="both", expand=True)
+# - fill="both": le dice que se estire a lo ancho y a lo alto de la ventana.
+# - expand=True: le dice que se quede con todo el espacio que sobra entre los botones de arriba y el borde de abajo.
+# - padx=40, pady=10: le da un respiro (margen) con los bordes de la ventana para que no quede pegado.
+cuerpo.pack(fill="both", expand=True, padx=40, pady=10)
 
-# Panel izquierdo: visor de foto.
-frame_foto = Frame(cuerpo, bg=BLANCO, relief="solid", bd=1)
-frame_foto.pack(side="left", fill="x", padx=50, pady=45)
+# -------------------------------------------------------------------------
+# 2. CONFIGURACION DE LA GRILLA 
+# Usamos "grid" para dividir el cuerpo en una grilla invisible de 2 columnas y 1 fila.
+# El "weight" (peso) le dice a Tkinter: "¿quién se lleva el espacio que sobra?".
+cuerpo.columnconfigure(0, weight=0) 
+# Columna 0 (Izquierda): weight=0 significa que NO se estira. Se queda justo del ancho de lo que tenga adentro (la foto).
+cuerpo.columnconfigure(1, weight=1) 
+# Columna 1 (Derecha): weight=1 significa que se come todo el espacio sobrante. Por eso la lista ocupa de punta a punta.
+cuerpo.rowconfigure(0, weight=1) 
+# Fila 0 (La única que hay): weight=1 significa que se estira hacia abajo. Esto es lo que hace que la lista llegue hasta el fondo.
+
+# -------------------------------------------------------------------------
+# 3. PANEL IZQUIERDO: VISOR DE FOTO
+# -------------------------------------------------------------------------
+# Creamos un frame para agrupar la foto, pero lo ubicamos en la Columna 0.
+frame_izquierda = Frame(cuerpo, bg=GRIS_NIEBLA)
+# - row=0, column=0: lo ponemos en la primer fila y primer columna.
+# - sticky="n": "n" viene de North (Norte/Arriba). Le dice que se quede pegado arriba del todo.
+# - padx=(20, 40): 20px de margen a la izquierda, 40px de margen a la derecha (para separarlo de la lista).
+# - pady=(45, 0): 45px de margen arriba (para que alinee con el titulo de la lista), y 0 abajo.
+frame_izquierda.grid(row=0, column=0, sticky="n", padx=(20, 40), pady=(45, 0))
+
+# Acá va la cajita blanca de la foto.
+# Le ponemos width=250 y height=250 para que sea un cuadrado perfecto (tamaño carnet).
+frame_foto = Frame(frame_izquierda, bg=BLANCO, relief="solid", bd=1, width=250, height=250)
+# Usamos pack() porque adentro de este frame solo hay una cosa (la foto).
+frame_foto.pack()
+# ¡CRUCIAL! pack_propagate(False) evita que Tkinter achique la cajita al tamaño del texto "Sin foto".
+# Sin esta línea, Tkinter diría "no necesito 250x250, con el texto me alcanza" y rompería el diseño.
+frame_foto.pack_propagate(False)
+
+# La etiqueta que muestra el monito o la foto.
 visor_foto = Label(frame_foto, text="👤\nSin foto", bg=BLANCO, fg=GRIS_MEDIO, font=("Segoe UI", 18))
-visor_foto.pack(expand=True, fill="both", padx=20, pady=40)
+# - expand=True: centra la foto exactamente en el medio de la cajita de 250x250.
+# - fill="both": si después le cargás una foto, se estira para llenar la cajita.
+visor_foto.pack(expand=True, fill="both")
 
-# Panel derecho: lista de personas.
+# -------------------------------------------------------------------------
+# 4. PANEL DERECHO: LISTA DE PERSONAS
+# -------------------------------------------------------------------------
+# Creamos el frame azul de la lista y lo ubicamos en la Columna 1.
 frame_lista = Frame(cuerpo, bg=GRIS_AZULADO, relief="solid", bd=1)
-frame_lista.pack(side="right", fill="both", expand=True, padx=60, pady=55)
+# - row=0, column=1: primer fila, segunda columna.
+# - sticky="nsew": "nsew" viene de North, South, East, West (Norte, Sur, Este, Oeste).
+#   Le dice a la caja azul que se pegue a los 4 bordes de su celda, o sea, que se estire al máximo.
+# - pady=10: un margen de 10px arriba y abajo para que no toque los bordes de la ventana.
+frame_lista.grid(row=0, column=1, sticky="nsew", pady=10)
 
-frame_lista.pack_propagate(False)
-
+# Título de la lista
 titulo_lista = tk.Label(frame_lista, text="Personas registradas", bg=GRIS_AZULADO, fg=BLANCO, font=("Segoe UI", 15, "bold"))
-titulo_lista.pack(anchor="w", padx=5, pady=5)
+# - anchor="w": "w" viene de West (Oeste/Izquierda). Alinea el texto a la izquierda.
+# - padx=10, pady=(10, 5): Margen interno. 10 a los costados, 10 arriba, 5 abajo.
+titulo_lista.pack(anchor="w", padx=10, pady=(10, 5))
 
-contador_legajos = tk.Label(frame_lista, text="Legajos activos: 0", bg=GRIS_AZULADO, fg=AMARILLO,font=("Segoe UI", 11, "bold"))
-contador_legajos.pack(anchor="w", padx=5, pady=(0, 5))
+# Contador de legajos
+contador_legajos = tk.Label(frame_lista, text="Legajos activos: 0", bg=GRIS_AZULADO, fg=AMARILLO, font=("Segoe UI", 11, "bold"))
+# Mismo estilo que el título.
+contador_legajos.pack(anchor="w", padx=10, pady=(0, 10))
 
-scroll = tk.Scrollbar(frame_lista, orient="vertical")
+# 5. CAJA INTERNA PARA LA LISTA Y EL SCROLL
+# ¿Por qué hacemos una caja interna? Para que la lista y la barra de scroll queden prolijas adentro de la caja azul,
+# sin que el margen azul se las coma.
+caja_lista = Frame(frame_lista, bg=BLANCO)
+# - fill="both", expand=True: esta caja se estira para ocupar todo el espacio que dejaron el título y el contador.
+# - padx=10, pady=(0, 10): Le da un margen blanco por dentro de la caja azul.
+caja_lista.pack(fill="both", expand=True, padx=10, pady=(0, 10))
+
+# Barra de desplazamiento (Scrollbar)
+scroll = tk.Scrollbar(caja_lista, orient="vertical")
+# - side="right": La pega a la derecha de la caja interna.
+# - fill="y": Hace que la barra se estire de arriba a abajo.
 scroll.pack(side="right", fill="y")
 
-lista_personas = Listbox(frame_lista, yscrollcommand=scroll.set, font=("Segoe UI", 12), bg=BLANCO, fg=GRIS_AZULADO, selectbackground=AZUL_SERENO, selectforeground=BLANCO)
+# La lista en sí (Listbox)
+lista_personas = Listbox(caja_lista, yscrollcommand=scroll.set, font=("Segoe UI", 12), bg=BLANCO, fg=GRIS_AZULADO, selectbackground=AZUL_SERENO, selectforeground=BLANCO)
+# - yscrollcommand=scroll.set: Le dice a la lista que use el scroll que creamos arriba.
+# - side="left": La pega a la izquierda de la caja interna (al lado del scroll).
+# - fill="both", expand=True: Se estira para ocupar todo el resto del espacio.
 lista_personas.pack(side="left", fill="both", expand=True)
+# Le decimos al scroll que maneje la vista de la lista.
 scroll.config(command=lista_personas.yview)
 
 # ============================================================================
