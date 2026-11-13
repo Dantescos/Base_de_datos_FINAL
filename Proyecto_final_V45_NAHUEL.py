@@ -69,6 +69,7 @@ import PyPDF2
 # la ventana de documentos cuando el usuario importa un PDF.
 
 import shutil
+#fede estuvo aqui :3
 # Módulo de operaciones de archivos de alto nivel. Lo uso para mover
 # archivos (shutil.move) a una carpeta por DNI.
 
@@ -321,6 +322,7 @@ conexion.execute("""CREATE TABLE IF NOT EXISTS pdf (
     dni_personas INTEGER)""")
 # Tabla "pdf" para documentos y fotos del editor:
 # - nombre: nombre del archivo.
+#fede estuvo aqui :3
 # - formato: extensión (jpg, png, pdf...).
 # - contenido: bytes del archivo.
 # - dni_personas: paciente al que pertenece.
@@ -681,6 +683,7 @@ def eliminar():
         messagebox.showwarning("Atencion",
                                 "Selecciona una persona de la lista para eliminar.")
         return
+    #fede estuvo aqui :3
 
     texto = lista_personas.get(seleccion[0])
     dni = int(texto.split("DNI ")[1])
@@ -722,9 +725,11 @@ def buscar():
     # Preparo el formulario para buscar por DNI.
     boton_agregar_definitivo.grid_remove()
     # Oculto botón de agregar.
+    #fede estuvo aqui :3
 
     grids_remove_nom_ape()
     # Oculto nombre y apellido.
+    #fede estuvo aqui :3
 
     grids_dni()
     # Muestro DNI.
@@ -3181,6 +3186,7 @@ def abrir_ventana_editor_fotos():
         # Agrego una imagen a la base.
         et = entry_dni_perfil_ref.get()
         # DNI actual.
+        #fede estuvo aqui :3
 
         if not dni_actual:
             messagebox.showwarning("Atencion",
@@ -3191,6 +3197,7 @@ def abrir_ventana_editor_fotos():
             title="Seleccionar imagen",
             filetypes=[("Imagenes", "*.png *.jpg *.jpeg *.bmp *.webp")])
         # Diálogo.
+        #fede estuvo aqui :3
 
         if not ruta:
             return
@@ -3379,8 +3386,9 @@ def abrir_ventana_autores():
 
     nombres = ["Antonio Garcia", "Nahuel Villafañe", "Mateo Dabruzzo Wilczek",
                "Federico 'Fedelobo'", "Ignacio", "Thiago",
-               "Pablo Laporta", "Fernando 'Master' Yapuray", "Joaquin Arana"]
+               "Pablo Laporta", "Fernando 'Master' Yapuray", "Gemini", "fede estuvo aqui :3"]
     # Lista de nombres.
+    #fede estuvo aqui :3
 
     for nombre in nombres:
         # Recorro y creo un Label por nombre.
@@ -3442,7 +3450,7 @@ def abrir_ventana_autores():
     # Lo ubico en la esquina superior derecha con margen.
 
     agregar_boton_luna(ventana_autores)
-
+    #fede estuvo aqui :3
 # ============================================================================
 # BLOQUE 22: BOTONES DE APERTURA
 # ============================================================================
@@ -4206,3 +4214,214 @@ ventana.protocol("WM_DELETE_WINDOW", al_cerrar_app)
 
 ventana.mainloop()
 # Arranco el bucle de eventos (sin esto la ventana se cierra al instante).
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
+    #fede estuvo aqui :3
