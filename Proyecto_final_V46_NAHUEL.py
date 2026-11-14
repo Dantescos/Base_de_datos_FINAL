@@ -20,14 +20,10 @@ from tkinter import filedialog, messagebox, Label, Button, Entry, Frame, Topleve
 # - filedialog: diálogos "abrir archivo" / "guardar archivo".
 # - messagebox: cartelitos de aviso, error, confirmación.
 # - Label: etiqueta de texto (no editable).
-# - Button: botón estándar.
 # - Entry: caja de texto de una línea.
 # - Frame: contenedor rectangular.
 # - Toplevel: ventana secundaria.
 # - Listbox: lista con elementos seleccionables.
-# - OptionMenu: menú desplegable.
-# - font: utilidades de fuentes.
-# - ttk: widgets temáticos.
 
 from io import BytesIO
 # Importo BytesIO del módulo io. BytesIO permite tratar bytes en memoria
@@ -307,7 +303,7 @@ cursor.execute("""CREATE TABLE IF NOT EXISTS entrevistas(
 # sesión. "profecional" está mal escrito pero lo dejo así para no
 # romper el resto del código.
 
-conexion.execute("""CREATE TABLE IF NOT EXISTS pdf (
+cursor.execute("""CREATE TABLE IF NOT EXISTS pdf (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     nombre TEXT NOT NULL,
     formato TEXT NOT NULL,
@@ -471,7 +467,7 @@ try:
     banner_label.imagen_casa_jovenes = foto_banner
     # Guardo referencia para que el GC no la borre.
 
-except:
+except Exception:
     # Si falla algo (base64 mal, imagen corrupta), no rompo la app.
     print('Error')
 
@@ -547,6 +543,8 @@ def mostrar_foto(dni):
             pass
 
     visor_foto.configure(image="", text="👤\nSin foto")
+    visor_foto.image = None
+
     # Muestro placeholder.
 
 def al_seleccionar(event=None):
@@ -808,7 +806,7 @@ sub_btn.columnconfigure(5, weight=1)
 # Columnas fantasma para centrar.
 
 btn_agregar = RoundedButton(sub_btn, 200, 40, 20, VERDE_AZULADO, BLANCO,
-                             text="Agregar", command=agregar)
+                             text="Agregar", command=agregar, hover_color=VERDE_TERMINAL)
 # Botón Agregar.
 
 btn_agregar.grid(row=0, column=1, padx=5, pady=7)
@@ -1235,7 +1233,7 @@ def aplicar_tema():
     for widget in (btn_agregar, btn_eliminar, btn_buscar, btn_limpiar):
         # Recorro los 4 botones.
         widget.set_colors(boton_accion, boton_hover, boton_texto, fondo_general)
-        btn_tema.set_colors(btn_luna_bg, btn_luna_hover, btn_luna_fg, fondo_general)
+    btn_tema.set_colors(btn_luna_bg, btn_luna_hover, btn_luna_fg, fondo_general)
 
     for widget in frame_form.winfo_children():
         # Recorro los hijos del formulario.
@@ -1247,10 +1245,6 @@ def aplicar_tema():
         # Recorro el frame del botón Info.
         if isinstance(widget, RoundedButton):
             widget.set_colors(boton_accion, boton_hover, boton_texto, fondo_general)
-        elif isinstance(widget, Button):
-            widget.config(bg=boton_accion, fg=BLANCO,
-                           activebackground=boton_hover,
-                           activeforeground=BLANCO)
 
     actualizar_ventanas_secundarias()
     # Pinto también las ventanas hijas abiertas.
@@ -1338,11 +1332,11 @@ def pantalla_edit_entrevista(ventana_padre):
           fg=BLANCO_HUESO, font=("Segoe UI", 12)).grid(row=1, column=0)
     # Label DNI paciente.
 
-    entry_dni = tk.Entry(frame_editar_superior, width=30, relief="solid",
+    entry_dni_edit = tk.Entry(frame_editar_superior, width=30, relief="solid",
                           bd=1, font=("Segoe UI", 12))
     # Entry DNI paciente.
 
-    entry_dni.grid(row=1, column=1)
+    entry_dni_edit.grid(row=1, column=1)
     # En columna 1.
 
     Label(frame_editar_superior, text="Nombre del Profesional:",
@@ -1529,8 +1523,8 @@ def pantalla_edit_entrevista(ventana_padre):
         text_entrevista_edit.insert("1.0", e[9] or "")
         # Inserto el texto de la entrevista (columna 9).
 
-        entry_dni.delete(0, tk.END)
-        entry_dni.insert(0, e[10] or "")
+        entry_dni_edit.delete(0, tk.END)
+        entry_dni_edit.insert(0, e[10] or "")
         # Cargo DNI paciente.
 
         entry_nombre_profecional.delete(0, tk.END)
@@ -1598,7 +1592,7 @@ def pantalla_edit_entrevista(ventana_padre):
             texto_nuevo = entrevista[9]
             # Si quedó vacío, mantengo el viejo.
 
-        dni_entry_txt = entry_dni.get().strip()
+        dni_entry_txt = entry_dni_edit.get().strip()
         if dni_entry_txt:
             # Si escribieron DNI...
             try:
@@ -1641,7 +1635,7 @@ def pantalla_edit_entrevista(ventana_padre):
         tipo_nuevo = var_tipo.get() or entrevista[13]
         proxima_nueva = comprobar_fecha(entry_proxima)
 
-        conexion.execute("""UPDATE entrevistas SET entrevista = ?, dni_paciente = ?,
+        cursor.execute("""UPDATE entrevistas SET entrevista = ?, dni_paciente = ?,
                             nombre_profecional = ?, apellido_profecional = ?, dni_profecional = ?,
                             matricula = ?, especialidad = ?, telefono_profecional = ?,
                             email_profecional = ?, activo_profecional = ?, fecha_entrevista = ?,
@@ -2065,7 +2059,6 @@ def abrir_ventana_entrevistas(ventana_padre):
     frame_inferior.pack(side="bottom", fill="x", padx=20, pady=20)
     # Abajo.
 
-    frame_inferior.pack(anchor="center")
     # Centrado.
 
     frame_inferior.columnconfigure(0, weight=1)
@@ -3123,6 +3116,7 @@ def abrir_ventana_editor_fotos():
                 visor_foto_editor.config(image=imagen_tk, text="")
                 visor_foto_editor.image = imagen_tk
             except Exception:
+                visor_foto_editor.image = None
                 print("Error al mostrar la imagen:")
 
     def mostrar_previa_seleccionada(event=None):
@@ -3138,10 +3132,8 @@ def abrir_ventana_editor_fotos():
         # Agrego una imagen a la base.
         et = entry_dni_perfil_ref.get()
         # DNI actual.
-
         if not dni_actual:
-            messagebox.showwarning("Atencion",
-                                    "Primero carga un DNI en el perfil para asociar las fotos.")
+            messagebox.showwarning("Atencion","Primero carga un DNI en el perfil para asociar las fotos.")
             return
 
         ruta = filedialog.askopenfilename(
@@ -3180,11 +3172,10 @@ def abrir_ventana_editor_fotos():
             mostrar_previa_desde_db(len(ids_imagenes) - 1)
             # La muestro.
 
-        except Exception as error:
-            messagebox.showerror("Error",
-                                  f"No se pudo guardar la imagen:\n{error}")
+        except Exception:
+            messagebox.showerror('Error')
 
-        ete = str(et)
+        ete = str(dni_actual)
         # DNI como carpeta.
 
         os.makedirs(ete, exist_ok=True)
@@ -3235,7 +3226,7 @@ def abrir_ventana_editor_fotos():
         refrescar_lista_imagenes()
 
     frame_editor_fotos_inferior.columnconfigure(0, weight=1)
-    frame_editor_fotos_inferior.columnconfigure(4, weight=1)
+    frame_editor_fotos_inferior.columnconfigure(5, weight=1)
     # Columnas fantasma para centrar.
 
     RoundedButton(frame_editor_fotos_inferior, 250, 40, 20, VERDE_AZULADO,
@@ -3459,7 +3450,7 @@ def crear_pdf_entrevistas(ruta, entrevistas):
         nonlocal lineas_pagina, rectangulos_pagina, y
         # Para modificar las del scope superior.
 
-        if lineas_pagina or rectangulos_pagina:
+        if lineas_pagina:
             paginas.append((lineas_pagina, rectangulos_pagina))
             # Guardo la página anterior si tiene contenido.
 
@@ -3563,7 +3554,7 @@ def crear_pdf_entrevistas(ruta, entrevistas):
         agregar_linea("")
         # Línea vacía entre entrevistas.
 
-    if lineas_pagina or rectangulos_pagina:
+    if lineas_pagina:
         paginas.append((lineas_pagina, rectangulos_pagina))
         # Guardo la última página.
 
