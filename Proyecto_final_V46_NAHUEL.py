@@ -66,7 +66,6 @@ import PyPDF2
 
 import shutil
 # Módulo de operaciones de archivos de alto nivel. Lo uso para mover
-#fede estuvo aqui :3
 # archivos (shutil.move) a una carpeta por DNI.
 
 # ============================================================================
@@ -352,9 +351,9 @@ ROJO = "#E3000F"
 AMARILLO = "#FCAF17"
 # Amarillo (contador de legajos).
 
-NEGRO = "#5C5B5B"
+NEGRO = "#0a0a0a"
 # Casi negro (tema oscuro).
-#fede estuvo aqui :3
+
 GRIS = "#222222"
 # Gris oscuro (paneles en oscuro).
 
@@ -428,7 +427,7 @@ ventana.minsize(900, 550)
 
 banner = tk.Frame(ventana, bg=GRIS_NIEBLA, height=150)
 # Frame de 150 píxeles de alto para el banner.
-#fede no estuvo aqui :(
+
 banner.pack(side="top", fill="x")
 # Arriba, estirado horizontalmente.
 
@@ -632,7 +631,6 @@ def agregar_definitivo():
 
     contenido = None
     # Al principio sin foto.
-#fede no estuvo aqui :(
 
     if ruta:
         # Si eligió archivo...
@@ -1074,7 +1072,7 @@ def actualizar_widget(widget, fondo, panel, texto, acento):
                 # `elif clase == "Canvas"` y se le pisaría el bg.
 
     if isinstance(widget, tk.OptionMenu):# Si es un OptionMenu...
-        widget.config(bg=panel,fg=texto,activebackground=panel,activeforeground=BLANCO,highlightthickness=0,bd=0,)
+        widget.config(bg=panel,fg=texto,activebackground=VERDE_TERMINAL,activeforeground=BLANCO,highlightthickness=0,bd=0,)
         # Configuro la parte visible (Menubutton).
 
         widget["menu"].config(bg=panel,fg=texto,activebackground=acento,activeforeground=BLANCO,bd=0,)
@@ -3056,7 +3054,7 @@ def abrir_ventana_editor_fotos():
 
     frame_lista_scroll = Frame(frame_lista_imgs, bg=GRIS_NIEBLA)
     # Frame con scroll.
-    #fede posiblemente estuvo por aqui :/
+
     frame_lista_scroll.pack(fill="x", pady=5)
 
     scroll_imgs = tk.Scrollbar(frame_lista_scroll, orient="vertical")
@@ -3131,7 +3129,6 @@ def abrir_ventana_editor_fotos():
     lista_imagenes.bind("<<ListboxSelect>>", mostrar_previa_seleccionada)
 
     def agregar_imagen():
-        #fede estuvo aqui :3
         # Agrego una imagen a la base.
         et = entry_dni_perfil_ref.get()
         # DNI actual.
@@ -3162,7 +3159,7 @@ def abrir_ventana_editor_fotos():
                             VALUES (?, ?, ?, ?)""",
                             (nombre, formato, sqlite3.Binary(contenido), dni_actual))
             # Inserto la fila.
-            #fede estuvo aqui :3
+
             conexion.commit()
 
             refrescar_lista_imagenes()
@@ -3329,9 +3326,9 @@ def abrir_ventana_autores():
 
     nombres = ["Antonio Garcia", "Nahuel Villafañe", "Mateo Dabruzzo Wilczek",
                "Federico 'Fedelobo'", "Ignacio", "Thiago",
-               "Pablo Laporta", "Fernando 'Master' Yapuray", "Joaquin Arana/Geminis","fede estuvo aqui:3"]
+               "Pablo Laporta", "Fernando 'Master' Yapuray", "Joaquin Arana"]
     # Lista de nombres.
-    #fede estuvo aqui :3
+
     for nombre in nombres:
         # Recorro y creo un Label por nombre.
         Label(frame_textos, text=nombre, bg=AZUL_PETROLEO, fg=BLANCO,
@@ -3404,7 +3401,7 @@ def abrir_desde_principal():
 btn_info = RoundedButton(frame_btn_info, 50, 40, 20, VERDE_AZULADO, BLANCO,
                            text="Info", command=abrir_ventana_autores)
 # Botón Info.
-#fede no estuvo aqui :(
+
 btn_info.pack(side="left", padx=5, pady=5)
 # A la izquierda.
 
@@ -3447,8 +3444,7 @@ def crear_pdf_entrevistas(ruta, entrevistas):
 
     y = 0
     # Coordenada Y actual (arranca en 0, se setea al empezar página).
-    #fede no estuvo aqui :(
-    
+
     def nueva_pagina():
         # Empiezo una página nueva.
         nonlocal lineas_pagina, rectangulos_pagina, y
@@ -4156,138 +4152,3 @@ ventana.protocol("WM_DELETE_WINDOW", al_cerrar_app)
 
 ventana.mainloop()
 # Arranco el bucle de eventos (sin esto la ventana se cierra al instante).
-
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
-#fede estubo aqui :3
