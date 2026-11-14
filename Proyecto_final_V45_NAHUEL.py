@@ -15,7 +15,7 @@ import tkinter as tk
 # y la renombro como "tk" para escribir menos. Con tkinter hago
 # ventanas, botones, listas, entradas, etc.
 
-from tkinter import filedialog, messagebox, Label, Button, Entry, Frame, Toplevel, Listbox, OptionMenu, font, ttk
+from tkinter import filedialog, messagebox, Label, Button, Entry, Frame, Toplevel, Listbox
 # Del paquete tkinter traigo clases y módulos específicos:
 # - filedialog: diálogos "abrir archivo" / "guardar archivo".
 # - messagebox: cartelitos de aviso, error, confirmación.
@@ -69,7 +69,6 @@ import PyPDF2
 # la ventana de documentos cuando el usuario importa un PDF.
 
 import shutil
-#fede estuvo aqui :3
 # Módulo de operaciones de archivos de alto nivel. Lo uso para mover
 # archivos (shutil.move) a una carpeta por DNI.
 
@@ -261,12 +260,6 @@ cursor = conexion.cursor()
 # Creo un cursor a partir de la conexión. Con el cursor ejecuto
 # queries y recorro resultados.
 
-cursor.execute("PRAGMA foreign_keys = ON;")
-# Activo el chequeo de claves foráneas. Por defecto SQLite NO las
-# chequea, hay que activarlo en cada conexión. Esto hace que si
-# intento insertar un dni_paciente que no exista en personas, la base
-# me tire error de integridad referencial.
-
 cursor.execute("""CREATE TABLE IF NOT EXISTS personas(
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     nombre TEXT NOT NULL,
@@ -322,7 +315,6 @@ conexion.execute("""CREATE TABLE IF NOT EXISTS pdf (
     dni_personas INTEGER)""")
 # Tabla "pdf" para documentos y fotos del editor:
 # - nombre: nombre del archivo.
-#fede estuvo aqui :3
 # - formato: extensión (jpg, png, pdf...).
 # - contenido: bytes del archivo.
 # - dni_personas: paciente al que pertenece.
@@ -683,7 +675,6 @@ def eliminar():
         messagebox.showwarning("Atencion",
                                 "Selecciona una persona de la lista para eliminar.")
         return
-    #fede estuvo aqui :3
 
     texto = lista_personas.get(seleccion[0])
     dni = int(texto.split("DNI ")[1])
@@ -725,11 +716,9 @@ def buscar():
     # Preparo el formulario para buscar por DNI.
     boton_agregar_definitivo.grid_remove()
     # Oculto botón de agregar.
-    #fede estuvo aqui :3
 
     grids_remove_nom_ape()
     # Oculto nombre y apellido.
-    #fede estuvo aqui :3
 
     grids_dni()
     # Muestro DNI.
@@ -804,8 +793,7 @@ frame_btn.pack(side="top", fill="x", padx=15, pady=10)
 frame_btn.pack_propagate(False)
 # Respeto el alto.
 
-btn_tema = RoundedButton(frame_btn, 50, 40, 20, NEGRO, BLANCO, text="☾",
-                          command=lambda: aplicar_tema())
+btn_tema = RoundedButton(frame_btn, 50, 40, 20, NEGRO, BLANCO, text="☾",command= lambda: aplicar_tema())
 # Botón de tema. Uso lambda para no ejecutar al crear.
 
 btn_tema.pack(side="right", padx=5, pady=7)
@@ -1024,20 +1012,16 @@ boton_agregar_definitivo = RoundedButton(
     text="Confirmar agregar", command=agregar_definitivo)
 # Botón Confirmar agregar.
 
-boton_agregar_definitivo.grid(row=1, column=0, columnspan=8,
-                               sticky="ew", padx=5, pady=(5, 0))
+boton_agregar_definitivo.grid(row=1, column=0, columnspan=8,sticky="ew", padx=5, pady=(5, 0))
 # Ocupa las 8 columnas, estirado.
 
 boton_agregar_definitivo.grid_remove()
 # Oculto por defecto.
 
-boton_busqueda_definitivo = RoundedButton(
-    frame_form, 350, 40, 20, VERDE_AZULADO, BLANCO,
-    text="Confirmar busqueda", command=buscar_definitivo)
+boton_busqueda_definitivo = RoundedButton(frame_form, 350, 40, 20, VERDE_AZULADO, BLANCO,text="Confirmar busqueda", command=buscar_definitivo)
 # Botón Confirmar búsqueda.
 
-boton_busqueda_definitivo.grid(row=1, column=0, columnspan=8,
-                                sticky="ew", padx=5, pady=(5, 0))
+boton_busqueda_definitivo.grid(row=1, column=0, columnspan=8,sticky="ew", padx=5, pady=(5, 0))
 # Ocupa las 8 columnas.
 
 boton_busqueda_definitivo.grid_remove()
@@ -1089,27 +1073,12 @@ def actualizar_widget(widget, fondo, panel, texto, acento):
                 # Sin este return, un RoundedButton también caería en
                 # `elif clase == "Canvas"` y se le pisaría el bg.
 
-    if isinstance(widget, tk.OptionMenu):
-        # Si es un OptionMenu...
-        widget.config(
-            bg=panel,
-            fg=texto,
-            activebackground=GRIS_NIEBLA,
-            activeforeground=BLANCO,
-            highlightthickness=0,
-            bd=0,
-        )
+    if isinstance(widget, tk.OptionMenu):# Si es un OptionMenu...
+        widget.config(bg=panel,fg=texto,activebackground=panel,activeforeground=BLANCO,highlightthickness=0,bd=0,)
         # Configuro la parte visible (Menubutton).
 
-        widget["menu"].config(
-            bg=panel,
-            fg=texto,
-            activebackground=acento,
-            activeforeground=BLANCO,
-            bd=0,
-        )
+        widget["menu"].config(bg=panel,fg=texto,activebackground=acento,activeforeground=BLANCO,bd=0,)
         # Configuro el menú desplegable interno.
-
         return
         # Salgo.
 
@@ -1155,9 +1124,9 @@ def actualizar_ventanas_secundarias():
     if tema_oscuro:
         # Paleta oscura.
         fondo = NEGRO
-        panel = GRIS
+        panel = GRIS_AZULADO
         texto = BLANCO
-        acento = GRIS
+        acento = GRIS_MEDIO
         boton_luna_bg = BLANCO
         boton_luna_fg = NEGRO
     else:
@@ -1289,15 +1258,6 @@ def aplicar_tema():
 # ============================================================================
 # BLOQUE 14: AUXILIARES
 # ============================================================================
-
-def comprobar(i_del_for, entry_, orden):
-    # Devuelvo el valor del entry si no está vacío, si no el viejo.
-    variable = entry_.get()
-    if variable == "":
-        return i_del_for[orden]
-    else:
-        return variable
-
 def normalizar_fecha(texto):
     # Reemplazo separadores raros por "/".
     texto = texto.strip()
@@ -1618,14 +1578,6 @@ def pantalla_edit_entrevista(ventana_padre):
         entry_proxima.delete(0, tk.END)
         entry_proxima.insert(0, e[14] or "")
         # Cargo próxima sesión.
-
-    boton_recargar = RoundedButton(frame_editar_superior, 150, 30, 15,
-                                     VERDE_AZULADO, BLANCO, text="⟳",
-                                     command=cargar_entrevista)
-    # Botón recargar.
-
-    boton_recargar.grid(row=0, column=2, padx=10, sticky="ew")
-    # En la misma fila que el ID, columna 2.
 
     def guardar_entrevista():
         # Guardo los cambios.
@@ -2133,7 +2085,6 @@ def abrir_ventana_entrevistas(ventana_padre):
                   text="Eliminar entrevista",
                   command=eliminar_entrevista).grid(row=0, column=2, padx=10,
                                                      sticky="ew")
-    # Botón Eliminar entrevista.
 
     def abrir_editar():
         pantalla_edit_entrevista(ventana_entrevistas)
@@ -2192,8 +2143,7 @@ def abrir_ventana_entrevistas(ventana_padre):
     # A la derecha.
 
     Label(frame_texto, text="Anotaciones de la entrevista", bg=BLANCO,
-          fg=GRIS_AZULADO,
-          font=("Segoe UI", 13, "bold")).pack(pady=5)
+          fg=GRIS_AZULADO, font=("Segoe UI", 13, "bold")).pack(pady=5)
     # Título.
 
     text_entrevista = tk.Text(frame_texto, relief="solid", bd=1,
@@ -2953,15 +2903,17 @@ def abrir_ventana_perfil():
     boton_ver_doc.grid(row=17, column=2, columnspan=2, padx=10, pady=5,
                         sticky="ew")
 
-    boton_pdf_legajo = RoundedButton(frame_izquierdo, 230, 40, 20,VERDE_AZULADO, BLANCO,text="Legajo en formato PDF")
-    # Botón legajo PDF (sin funcionalidad asignada actualmente).
-
-    boton_pdf_legajo.grid(row=18, column=0, padx=10, pady=5, sticky="ew")
-
-    boton_word_legajo = RoundedButton(frame_izquierdo, 230, 40, 20,VERDE_AZULADO, BLANCO,text="Legajo en formato Word")
-    # Botón legajo Word (sin funcionalidad).
-
+    boton_word_legajo = RoundedButton(
+        frame_izquierdo, 230, 40, 20, VERDE_AZULADO, BLANCO,
+        text="Legajo en formato Word",
+        command=lambda: exportar_entrevistas_word(entry_dni_perfil.get().strip() or None))
     boton_word_legajo.grid(row=18, column=1, padx=10, pady=5, sticky="ew")
+
+    boton_pdf_legajo = RoundedButton(
+        frame_izquierdo, 230, 40, 20, VERDE_AZULADO, BLANCO,
+        text="Legajo en formato PDF",
+        command=lambda: exportar_entrevistas_pdf(entry_dni_perfil.get().strip() or None))
+    boton_pdf_legajo.grid(row=18, column=0, padx=10, pady=5, sticky="ew")
 
     frame_derecha = tk.Frame(ventana_perfil, bg=GRIS_NIEBLA)
     # Frame derecho.
@@ -3186,7 +3138,6 @@ def abrir_ventana_editor_fotos():
         # Agrego una imagen a la base.
         et = entry_dni_perfil_ref.get()
         # DNI actual.
-        #fede estuvo aqui :3
 
         if not dni_actual:
             messagebox.showwarning("Atencion",
@@ -3197,7 +3148,6 @@ def abrir_ventana_editor_fotos():
             title="Seleccionar imagen",
             filetypes=[("Imagenes", "*.png *.jpg *.jpeg *.bmp *.webp")])
         # Diálogo.
-        #fede estuvo aqui :3
 
         if not ruta:
             return
@@ -3364,36 +3314,34 @@ def abrir_ventana_autores():
 
     ventana_autores = tk.Toplevel(ventana)
     ventana_autores.title("Licencia y autores")
-    ventana_autores.geometry("900x600")
+    ventana_autores.geometry("1000x650")
     ventana_autores.config(bg=AZUL_PETROLEO)
 
     frame_textos = Frame(ventana_autores, bg=AZUL_PETROLEO, width=450)
     # Frame de textos (izquierda).
 
-    frame_textos.pack(side="left", fill="y")
+    frame_textos.pack(side="left", fill="y", padx=(60, 0)) 
 
     frame_textos.pack_propagate(False)
     # Respeto el ancho fijo.
 
     Label(frame_textos, text="AUTORES", bg=AZUL_PETROLEO, fg=BLANCO,
-          font=("Segoe UI", 24, "bold")).pack(pady=(40, 5))
+          font=("Segoe UI", 32, "bold")).pack(pady=(40, 5))
     # Título.
 
-    Label(frame_textos, text="EQUIPO DE DESARROLLO", bg=AZUL_PETROLEO,
-          fg=AMARILLO,
-          font=("Segoe UI", 12, "bold")).pack(pady=(0, 20))
+    Label(frame_textos, text="EQUIPO DE DESARROLLO", bg=AZUL_PETROLEO,fg=AMARILLO,
+          font=("Segoe UI", 14, "bold")).pack(pady=(0, 20))
     # Subtítulo.
 
     nombres = ["Antonio Garcia", "Nahuel Villafañe", "Mateo Dabruzzo Wilczek",
                "Federico 'Fedelobo'", "Ignacio", "Thiago",
-               "Pablo Laporta", "Fernando 'Master' Yapuray", "Gemini", "fede estuvo aqui :3"]
+               "Pablo Laporta", "Fernando 'Master' Yapuray", "Joaquin Arana"]
     # Lista de nombres.
-    #fede estuvo aqui :3
 
     for nombre in nombres:
         # Recorro y creo un Label por nombre.
         Label(frame_textos, text=nombre, bg=AZUL_PETROLEO, fg=BLANCO,
-              font=("Segoe UI", 10)).pack(pady=2)
+              font=("Segoe UI", 12)).pack(pady=2)
 
     Label(frame_textos,
           text="___________________________________________",
@@ -3401,7 +3349,7 @@ def abrir_ventana_autores():
     # Línea separadora.
 
     Label(frame_textos, text="LICENCIA", bg=AZUL_PETROLEO, fg=BLANCO,
-          font=("Segoe UI", 14, "bold")).pack(pady=5)
+          font=("Segoe UI", 18, "bold")).pack(pady=5)
     # Título licencia.
 
     texto_legal = ("© 2026 Equipo de programación Sanca.\n"
@@ -3413,21 +3361,21 @@ def abrir_ventana_autores():
     # Texto legal.
 
     Label(frame_textos, text=texto_legal, bg=AZUL_PETROLEO,
-          fg=GRIS_NIEBLA, font=("Segoe UI", 9),
+          fg=GRIS_NIEBLA, font=("Segoe UI", 12),
           justify="center").pack()
     # Lo muestro centrado.
 
     frame_foto = Frame(ventana_autores, bg=BLANCO)
     # Frame de la foto (derecha).
 
-    frame_foto.pack(side="right", fill="both", expand=True)
+    frame_foto.pack(side="right", fill="both", expand=True, padx=(20, 40))
 
     bytes_sanca = obtener_bytes_sanca()
     # Bytes de SANCA.
 
     if bytes_sanca:
         img = Image.open(BytesIO(bytes_sanca))
-        img.thumbnail((400, 400))
+        img.thumbnail((550, 550))
         foto_tk = ImageTk.PhotoImage(img)
         # Preparo la imagen.
 
@@ -3450,7 +3398,7 @@ def abrir_ventana_autores():
     # Lo ubico en la esquina superior derecha con margen.
 
     agregar_boton_luna(ventana_autores)
-    #fede estuvo aqui :3
+
 # ============================================================================
 # BLOQUE 22: BOTONES DE APERTURA
 # ============================================================================
@@ -3845,8 +3793,7 @@ def exportar_entrevistas_word(dni_paciente=None):
         return
 
     if not entrevistas:
-        messagebox.showinfo("Sin entrevistas",
-                              "No hay entrevistas para exportar.")
+        messagebox.showinfo("Sin entrevistas","No hay entrevistas para exportar.")
         return
 
     lineas = ["Casa de Jovenes Levantate y Camina. Parroquia San Juan Bautista. Obispado de San Isidro | Archivos de perfil",
@@ -4214,214 +4161,3 @@ ventana.protocol("WM_DELETE_WINDOW", al_cerrar_app)
 
 ventana.mainloop()
 # Arranco el bucle de eventos (sin esto la ventana se cierra al instante).
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
-    #fede estuvo aqui :3
