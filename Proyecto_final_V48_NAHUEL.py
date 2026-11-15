@@ -1249,10 +1249,22 @@ def abrir_ventana_perfil():
         ruta = filedialog.asksaveasfilename(title="Guardar perfil como Word", defaultextension=".rtf",
             initialfile=f"perfil_{entry_dni_perfil.get().strip()}.rtf", filetypes=[("Word (RTF)", "*.rtf")])
         if not ruta: return
+        
+        # --- NUEVO: Obtener la foto ---
+        dni = entry_dni_perfil.get().strip()
+        cursor.execute("SELECT foto FROM personas WHERE dni = ?", (dni,))
+        fila = cursor.fetchone()
+        foto_bytes = fila[0] if fila and fila[0] else None
+        # ------------------------------
+
         try:
-            crear_word_de_texto(ruta, texto)
+            # --- NUEVO: Pasar la foto ---
+            crear_word_de_texto(ruta, texto, foto_bytes)
+            # -----------------------------
             messagebox.showinfo("OK", f"Perfil guardado en:\n{ruta}")
-        except Exception: messagebox.showerror("Error", "No se pudo crear el Word.")
+        except Exception:
+            traceback.print_exc()
+            messagebox.showerror("Error", "No se pudo crear el Word.")
 
     boton_guardar_perfil = RoundedButton(frame_izquierdo, 160, 40, 20,VERDE_AZULADO, BLANCO,text="Guardar cambios",command=guardar_cambios_perfil)
     boton_guardar_perfil.grid(row=16, column=0, padx=10, pady=5, sticky="ew")
@@ -1595,21 +1607,94 @@ def crear_pdf_entrevistas(ruta, entrevistas):
     salida.extend(f"trailer\n<< /Size {len(objetos)+1} /Root 1 0 R >>\nstartxref\n{posicion_xref}\n%%EOF\n".encode("ascii"))
     with open(ruta, "wb") as archivo: archivo.write(salida)
 
-# BLOQUE 25: WORD Y PDF DE TEXTO
-def crear_word_de_texto(ruta, texto):
-    def escapar(s):
+def crear_word_de_texto(ruta, texto, foto_bytes=None):
+    def escapar_rtf(s):
         salida = []
         for ch in s:
             if ch == "\\": salida.append("\\\\")
-            elif ch =="{": salida.append("\\{")
+            elif ch == "{": salida.append("\\{")
             elif ch == "}": salida.append("\\}")
-            elif ord(ch)>127: salida.append("\\u" + str(ord(ch))+"?")
+            elif ord(ch) > 127:
+                try:
+                    val = ord(ch)
+                    if val < 0: val += 65536
+                    if val < 32768: salida.append(f"\\u{val}?")
+                    else: salida.append(f"\\u{val - 65536}?")
+                except: salida.append(ch)
             else: salida.append(ch)
         return "".join(salida)
-    partes = ["{\\rtf1\\ansi\\deff0{\\fonttbl{\\f0 Times New Roman;}}"]
-    for linea in (texto.splitlines() or [""]): partes.append("\\f0\\fs24 " + escapar(linea) + "\\par")
+
+    partes = [
+        "{\\rtf1\\ansi\\deff0",
+        "{\\fonttbl{\\f0 Arial;}}",
+        "{\\colortbl ;\\red0\\green0\\blue0;}",
+        "\\paperw11906\\paperh16838\\margl1000\\margr1000\\margt1000\\margb1000",
+        "\\viewkind4\\uc1\\pard\\cf1\\f0\\fs24\n"
+    ]
+
+    img_rtf = ""
+    if foto_bytes:
+        try:
+            img = Image.open(BytesIO(foto_bytes))
+            ancho_orig, alto_orig = img.size
+            
+            # =====================================================================
+            # TAMAÑO DE LA FOTO EN EL WORD:
+            # Acá definimos el ancho y alto EXACTO en "twips" (1 pulgada = 1440 twips).
+            # \picwgoal4320 = 3 pulgadas de ancho (aprox 7.6 cm).
+            # \pichgoal5760 = 4 pulgadas de alto (aprox 10 cm).
+            # 
+            # SI QUERÉS LA FOTO MÁS GRANDE: aumentá estos dos números.
+            # SI QUERÉS LA FOTO MÁS CHICA: reducilos.
+            # Para mantener la proporción, calculá: (4320 * alto_orig) / ancho_orig
+            # =====================================================================
+            
+            ancho_deseado = 4320 
+            alto_deseado = int((ancho_deseado * alto_orig) / ancho_orig) if ancho_orig else 4320
+
+            buffer = BytesIO()
+            img.save(buffer, format="PNG")
+            img_hex = buffer.getvalue().hex()
+
+            # Usamos \picwgoal y \pichgoal para forzar el tamaño visual
+            img_rtf = f"{{\\pict\\pngblip\\picw{ancho_orig}\\pich{alto_orig}\\picwgoal{ancho_deseado}\\pichgoal{alto_deseado} {img_hex}}}"
+        except Exception as e:
+            print("Error al cargar la imagen:", e)
+
+    # --- ESTRUCTURA DE LA TABLA ---
+    # \cellx4000 = La columna del texto ocupa hasta el twip 4000 (aprox 7cm).
+    # \cellx9500 = La columna de la foto ocupa desde 4000 hasta 9500.
+    partes.append("\\trowd\\trgaph108\\trleft0\\trpaddl108\\trpaddr108\\trpaddfl3\\trpaddfr3")
+    partes.append("\\cellx4000\\cellx9500")
+    
+    # --- COLUMNA IZQUIERDA (TEXTO) ---
+    partes.append("\\pard\\intbl\\ql ")
+    
+    for linea in (texto.splitlines() or [""]):
+        if linea.startswith("## "): 
+            partes.append(f"\\pard\\intbl\\b\\fs48 {escapar_rtf(linea[3:])}\\b0\\fs24\\sa200\\par\n")
+        elif linea.startswith("# "): 
+            partes.append(f"\\pard\\intbl\\b\\fs32 {escapar_rtf(linea[2:])}\\b0\\fs24\\sb200\\sa100\\par\n")
+        elif linea.strip() == "":
+            partes.append("\\pard\\intbl\\par\n")
+        else: 
+            partes.append(f"\\pard\\intbl {escapar_rtf(linea)}\\par\n")
+    
+    partes.append("\\cell")
+
+    # --- COLUMNA DERECHA (FOTO) ---
+    # \qc = Centrado en su celda.
+    # \sb0 = Espacio antes de la foto (0 para que pegue arriba).
+    partes.append("\\pard\\intbl\\qc\\sb0 ")
+    if img_rtf:
+        partes.append(img_rtf)
+    partes.append("\\cell")
+
+    partes.append("\\row\\pard\n")
     partes.append("}")
-    with open(ruta, "w", encoding="ascii") as archivo: archivo.write("\n".join(partes))
+    
+    with open(ruta, "wb") as archivo:
+        archivo.write("\n".join(partes).encode('utf-8'))
 
 def crear_pdf_de_texto(ruta, texto, foto_bytes=None):
     foto_jpeg = None
@@ -1718,6 +1803,7 @@ def crear_pdf_de_texto(ruta, texto, foto_bytes=None):
     with open(ruta, "wb") as archivo: archivo.write(salida)
 
 # BLOQUE 26: EXPORTAR
+# BLOQUE 26: EXPORTAR
 def exportar_entrevistas_word(dni_paciente=None):
     try:
         query = """SELECT p.nombre, p.apellido, e.id, p.fecha_nacimiento, p.fecha_ingreso, p.telefono, p.direccion, p.contacto_emergencia,
@@ -1733,6 +1819,16 @@ def exportar_entrevistas_word(dni_paciente=None):
     if not entrevistas:
         messagebox.showinfo("Sin entrevistas","No hay entrevistas para exportar.")
         return
+
+    # --- NUEVO: Obtener la foto ---
+    foto_bytes = None
+    if dni_paciente:
+        cursor.execute("SELECT foto FROM personas WHERE dni = ?", (dni_paciente,))
+        fila_foto = cursor.fetchone()
+        if fila_foto and fila_foto[0]:
+            foto_bytes = fila_foto[0]
+    # ------------------------------
+
     lineas = ["Casa de Jovenes Levantate y Camina. Parroquia San Juan Bautista. Obispado de San Isidro | Archivos de perfil", "Historial completo de entrevistas", ""]
     for datos in entrevistas:
         (nombre_paciente, apellido_paciente, id_entrevista, fecha_nacimiento_paciente, fecha_ingreso, telefono_paciente, direccion_paciente,
@@ -1740,25 +1836,45 @@ def exportar_entrevistas_word(dni_paciente=None):
          dni_profesional, matricula, especialidad, telefono_profecional, email_profecional, activo_profecional, entrevista, Dni_paciente, fecha_entrevista,
          hora_entrevista, tipo_entrevista, proxima_sesion) = datos
         paciente = " ".join(p for p in (nombre_paciente, apellido_paciente) if p) or "No registrado"
-        lineas.extend([f"=== Entrevista {id_entrevista} ===", f"Fecha: {fecha_entrevista}  Hora: {hora_entrevista or '-'}  DNI paciente: {Dni_paciente}",
-            f"Paciente: {paciente}", "", "--- Datos del profesional ---", f"Nombre: {nombre_profecional or '-'}  Apellido: {apellido_profecional or '-'}",
-            f"DNI: {dni_profesional or '-'}  Matricula: {matricula or '-'}", f"Especialidad: {especialidad or '-'}  Estado: {activo_profecional or '-'}",
-            f"Telefono: {telefono_profecional or '-'}  Email: {email_profecional or '-'}", f"Tipo: {tipo_entrevista or '-'}  Proxima sesion: {proxima_sesion or '-'}",
-            "", "--- Datos del paciente ---", f"Fecha nacimiento: {fecha_nacimiento_paciente or '-'}  Fecha ingreso: {fecha_ingreso or '-'}",
-            f"Telefono: {telefono_paciente or '-'}  Domicilio: {direccion_paciente or '-'}", f"Contacto emergencia: {nombre_contacto_emergencia or '-'}  Tel: {telefono_emergencia or '-'}",
-            f"Obra social: {nombre_obra_social or '-'}  Estado: {estado_paciente or '-'}  Consentimiento: {consentimiento or '-'}", "", "--- Anotaciones ---"])
-        for parrafo in (entrevista or "").splitlines() or ["Sin anotaciones"]: lineas.append(parrafo)
+        
+        # Usamos los marcadores # para que la nueva función los formatee bonito
+        lineas.append(f"# Entrevista {id_entrevista}")
+        lineas.append(f"Fecha: {fecha_entrevista}  Hora: {hora_entrevista or '-'}  DNI paciente: {Dni_paciente}")
+        lineas.append(f"Paciente: {paciente}")
         lineas.append("")
+        lineas.append("## Datos del profesional") # Doble # para que resalte más
+        lineas.append(f"Nombre: {nombre_profecional or '-'}  Apellido: {apellido_profecional or '-'}")
+        lineas.append(f"DNI: {dni_profesional or '-'}  Matricula: {matricula or '-'}")
+        lineas.append(f"Especialidad: {especialidad or '-'}  Estado: {activo_profecional or '-'}")
+        lineas.append(f"Telefono: {telefono_profecional or '-'}  Email: {email_profecional or '-'}")
+        lineas.append(f"Tipo: {tipo_entrevista or '-'}  Proxima sesion: {proxima_sesion or '-'}")
+        lineas.append("")
+        lineas.append("## Datos del paciente")
+        lineas.append(f"Fecha nacimiento: {fecha_nacimiento_paciente or '-'}  Fecha ingreso: {fecha_ingreso or '-'}")
+        lineas.append(f"Telefono: {telefono_paciente or '-'}  Domicilio: {direccion_paciente or '-'}")
+        lineas.append(f"Contacto emergencia: {nombre_contacto_emergencia or '-'}  Tel: {telefono_emergencia or '-'}")
+        lineas.append(f"Obra social: {nombre_obra_social or '-'}  Estado: {estado_paciente or '-'}  Consentimiento: {consentimiento or '-'}")
+        lineas.append("")
+        lineas.append("## Anotaciones")
+        for parrafo in (entrevista or "").splitlines() or ["Sin anotaciones"]: 
+            lineas.append(parrafo)
+        lineas.append("")
+        lineas.append("__________________________________________________")
+        lineas.append("")
+    
     texto = "\n".join(lineas)
     nombre_archivo = f"entrevistas_{dni_paciente}.rtf" if dni_paciente else "Archivo_perfil.rtf"
     ruta = filedialog.asksaveasfilename(title="Guardar entrevistas como Word", defaultextension=".rtf", initialfile=nombre_archivo, filetypes=[("Documento Word (RTF)", "*.rtf")])
     if not ruta: return
-    try: crear_word_de_texto(ruta, texto)
+    
+    try:
+        # --- NUEVO: Pasar la foto ---
+        crear_word_de_texto(ruta, texto, foto_bytes)
+        # -----------------------------
     except OSError:
         messagebox.showerror("Error al exportar", 'No se pudo crear el Word')
         return
     messagebox.showinfo("Word creado", f"Entrevistas guardadas en:\n{ruta}")
-
 def exportar_entrevistas_pdf(dni_paciente=None):
     try:
         query = """SELECT p.nombre, p.apellido, e.id, p.fecha_nacimiento, p.fecha_ingreso, p.telefono, p.direccion, p.contacto_emergencia,
