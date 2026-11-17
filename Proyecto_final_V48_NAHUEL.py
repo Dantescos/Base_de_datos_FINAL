@@ -1295,7 +1295,6 @@ def abrir_ventana_perfil():
     boton_quitar_foto.pack(side="top", padx=10, pady=5)
     frame_galeria = Frame(frame_derecha, bg=GRIS_NIEBLA)
     frame_galeria.pack(side="top", fill="x", pady=(0, 10))
-    Label(frame_galeria, text="Fotos del editor:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 10, "bold")).pack(anchor="w")
     frame_galeria_inner = Frame(frame_galeria, bg=GRIS_NIEBLA, height=120)
     frame_galeria_inner.pack(fill="x")
     frame_galeria_inner.pack_propagate(False)
