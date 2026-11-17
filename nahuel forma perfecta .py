@@ -539,7 +539,7 @@ def abrir_ventana_perfil():
     menu_consentimiento_perfil.config(font=("Segoe UI", 12), width=22)
     menu_consentimiento_perfil.grid(row=12, column=1, padx=5, pady=3)
 
-    Label(frame_izquierdo, text="Fecha de egreso:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=13, column=0, sticky="e", padx=5)
+    Label(frame_izquierdo, text="Fecha de ingreso:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=13, column=0, sticky="e", padx=5)
     entry_fecha_egreso_perfil = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
     entry_fecha_egreso_perfil.grid(row=13, column=1, padx=5, pady=3)
 
