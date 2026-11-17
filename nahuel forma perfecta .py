@@ -36,6 +36,7 @@ cursor.execute("""CREATE TABLE IF NOT EXISTS personas(
     obra_social TEXT, estado TEXT, 
     direccion TEXT,
     nacionalidad TEXT,
+    localidad TEXT,
     foto BLOB)""")  # Creo tabla personas
 
 
