@@ -1094,13 +1094,7 @@ def abrir_ventana_autores():
     boton_cerrar.place(relx=1.0, rely=0.0, anchor="ne", x=-15, y=15)
     agregar_boton_luna(ventana_autores)
 
-# BLOQUE 22: BOTONES DE APERTURA
-def abrir_desde_principal(): abrir_ventana_entrevistas(ventana)
-btn_info = RoundedButton(frame_btn_info, 50, 40, 20, VERDE_AZULADO, BLANCO, text="Info", command=abrir_ventana_autores)
-btn_info.pack(side="left", padx=5, pady=5)
-refrescar_lista()
-
-# BLOQUE 23: DOBLE CLIC PARA PERFIL
+# BLOQUE 22: DOBLE CLIC PARA PERFIL
 def abrir_perfil_doble_clic(event=None):
     if not lista_personas.curselection(): return
     al_seleccionar()
