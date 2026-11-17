@@ -1074,8 +1074,8 @@ def abrir_ventana_perfil():
         edad_txt = entry_edad_perfil.get().strip()
         edad = int(edad_txt) if edad_txt.isdigit() else None
         direccion = entry_direccion_perfil.get().strip()
-        f_nacimiento = entry_f_nacimiento_perfil.get().strip()
-        f_ingreso = entry_f_ingreso_perfil.get().strip()
+        f_nacimiento = comprobar_fecha(entry_f_nacimiento_perfil)
+        f_ingreso = comprobar_fecha(entry_f_ingreso_perfil)
         telefono = entry_telefono_perfil.get().strip()
         contacto_emergencia = entry_contacto_emergencia_perfil.get().strip()
         tel_emergencia = entry_tel_emergencia_perfil.get().strip()
