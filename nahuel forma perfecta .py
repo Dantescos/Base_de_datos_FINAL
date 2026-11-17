@@ -910,9 +910,9 @@ def abrir_ventana_perfil():
     Label(frame_lista_perfil, text="Entrevistas del paciente", bg=GRIS_AZULADO, fg=BLANCO, font=("Segoe UI", 15, "bold")).pack(side="top", padx=10, pady=10)
     scroll_perfil = tk.Scrollbar(frame_lista_perfil, orient="vertical")
     scroll_perfil.pack(side="right", fill="y")
-    lista_personas_perfil = Listbox(frame_lista_perfil, yscrollcommand=scroll_perfil.set, font=("Segoe UI", 12), bg=BLANCO, fg=GRIS_AZULADO, selectbackground=AZUL_SERENO, selectforeground=BLANCO)
-    lista_personas_perfil.pack(side="left", fill="both", expand=True)
-    scroll_perfil.config(command=lista_personas_perfil.yview)
+    lista_curos_hechos = Listbox(frame_lista_perfil, yscrollcommand=scroll_perfil.set, font=("Segoe UI", 12), bg=BLANCO, fg=GRIS_AZULADO, selectbackground=AZUL_SERENO, selectforeground=BLANCO)
+    lista_curos_hechos.pack(side="left", fill="both", expand=True)
+    scroll_perfil.config(command=lista_curos_hechos.yview)
     mostrar_foto_en_perfil()
     agregar_boton_luna(ventana_perfil)
     cargar_perfil()
@@ -1038,17 +1038,14 @@ def abrir_ventana_editor_fotos():
 
 # BLOQUE 20: IMAGEN DE SANCA
 def cargar_imagen():
-    if not SANCA_BASE64: return False
-    cursor.execute("SELECT 1 FROM recursos WHERE nombre=?", ("sanca",))
-    if cursor.fetchall(): return True
-    try:
-        imagen_bytes = base64.b64decode(SANCA_BASE64)
-        cursor.execute('INSERT INTO recursos (nombre,contenido) VALUES(?,?)', ("sanca", sqlite3.Binary(imagen_bytes)))
-        conexion.commit()
-        return True
-    except Exception:
-        print('Error al cargar la imagen invisible:')
-        return False
+    def cargar_perfil():
+        #fede estubo aqui :3
+        ista_curos_hechos.delete(0, tk.END)
+        cursor.execute("SELECT * FROM empleados")
+    
+        for u in cursor.fetchall():
+            lista_curos_hechos.insert(tk.END, u)
+            print("222")
 
 def obtener_bytes_sanca():
     if not SANCA_BASE64: return None
