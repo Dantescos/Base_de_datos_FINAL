@@ -783,8 +783,6 @@ def abrir_ventana_perfil():
             entry_motivo_egreso_perfil.insert(0, fila[14] or "")
             dni_original["valor"] = dni_txt
             mostrar_foto_en_perfil()
-            cursor.execute("""SELECT id, fecha_entrevista, nombre_profecional, apellido_profecional FROM entrevistas WHERE dni_paciente = ? ORDER BY fecha_entrevista""", (dni_txt,))
-            for e in cursor.fetchall(): lista_personas_perfil.insert(tk.END, f"ID {e[0]} — {e[1]} — {e[2]} {e[3] or ''}")
         else: messagebox.showinfo("Error", "No existe ese DNI.")
 
     def _texto_ficha_paciente():
@@ -873,8 +871,7 @@ def abrir_ventana_perfil():
     boton_guardar_perfil.grid(row=16, column=0, padx=10, pady=5, sticky="ew")
     boton_editor_fotos = RoundedButton(frame_izquierdo, 120, 40, 20,VERDE_AZULADO, BLANCO,text="Editar fotos",command=abrir_ventana_editor_fotos)
     boton_editor_fotos.grid(row=16, column=1, padx=10, sticky="ew")
-    boton_entrevistas = RoundedButton(frame_izquierdo, 100, 40, 20,VERDE_AZULADO, BLANCO, text="Entrevista",command=abrir_desde_principal)
-    boton_entrevistas.grid(row=16, column=3, padx=10, sticky="ew")
+    
     boton_pdf_paciente = RoundedButton(frame_izquierdo, 200, 40, 20,VERDE_AZULADO, BLANCO,text="PDF de este paciente",command=exportar_pdf_paciente)
     boton_pdf_paciente.grid(row=17, column=0, padx=10, sticky="ew")
     boton_word_paciente = RoundedButton(frame_izquierdo, 210, 40, 20,VERDE_AZULADO, BLANCO,text="Word de este paciente",command=exportar_word_paciente)
