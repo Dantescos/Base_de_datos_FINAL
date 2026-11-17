@@ -689,7 +689,7 @@ def abrir_ventana_perfil():
         fecha_egreso = comprobar_fecha(entry_fecha_egreso_perfil)
         tipo_egreso = var_tipo_egreso_perfil.get().strip()
         motivo_egreso = entry_motivo_egreso_perfil.get().strip()
-        if fecha_egreso and estado != "No activo":
+        if estado != "No activo":
             estado = "No activo"
             var_tipo_estado_perfil.set("No activo")
         if tipo_egreso == "-" and estado != "Activo":
