@@ -29,16 +29,15 @@ cursor = conexion.cursor()  # Creo el cursor
 
 cursor.execute("""CREATE TABLE IF NOT EXISTS personas(
     id INTEGER PRIMARY KEY AUTOINCREMENT, nombre TEXT NOT NULL, apellido TEXT NOT NULL,
-    dni INTEGER UNIQUE NOT NULL, edad INTEGER, fecha_nacimiento TEXT, fecha_ingreso TEXT,
-    telefono TEXT, direccion TEXT, contacto_emergencia TEXT, telefono_emergencia TEXT,
-    obra_social TEXT, estado TEXT, consentimiento TEXT, foto BLOB)""")  # Creo tabla personas
+    dni INTEGER UNIQUE NOT NULL, edad INTEGER, 
+    fecha_nacimiento TEXT, fecha_ingreso TEXT,
+    telefono TEXT, direccion TEXT, contacto_emergencia TEXT, 
+    telefono_emergencia TEXT,
+    obra_social TEXT, estado TEXT, 
+    direccion TEXT, 
+    foto BLOB)""")  # Creo tabla personas
 
-cursor.execute("""CREATE TABLE IF NOT EXISTS entrevistas(
-    id INTEGER PRIMARY KEY AUTOINCREMENT, nombre_profecional TEXT NOT NULL, apellido_profecional TEXT,
-    dni_profecional TEXT, matricula TEXT, especialidad TEXT, telefono_profecional TEXT,
-    email_profecional TEXT, activo_profecional TEXT, entrevista TEXT NOT NULL,
-    dni_paciente INTEGER NOT NULL, fecha_entrevista TEXT NOT NULL, hora_entrevista TEXT,
-    tipo_entrevista TEXT, proxima_sesion_entrevista TEXT)""")  # Creo tabla entrevistas
+
 
 cursor.execute("""CREATE TABLE IF NOT EXISTS pdf (
     id INTEGER PRIMARY KEY AUTOINCREMENT, nombre TEXT NOT NULL, formato TEXT NOT NULL,
@@ -533,11 +532,11 @@ def abrir_ventana_perfil():
     menu_estado_perfil.config(font=("Segoe UI", 12), width=22)
     menu_estado_perfil.grid(row=11, column=1, padx=5, pady=3)
 
-    Label(frame_izquierdo, text="Consentimiento:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=12, column=0, sticky="e", padx=5)
-    var_tipo_consentimiento_perfil = tk.StringVar(value="")
-    menu_consentimiento_perfil = tk.OptionMenu(frame_izquierdo, var_tipo_consentimiento_perfil, "Si", "No")
-    menu_consentimiento_perfil.config(font=("Segoe UI", 12), width=22)
-    menu_consentimiento_perfil.grid(row=12, column=1, padx=5, pady=3)
+    Label(frame_izquierdo, text="direccion:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=12, column=0, sticky="e", padx=5)
+    var_tipo_direccion_perfil = tk.StringVar(value="")
+    menu_direccion_perfil = tk.OptionMenu(frame_izquierdo, var_tipo_direccion_perfil, "Si", "No")
+    menu_direccion_perfil.config(font=("Segoe UI", 12), width=22)
+    menu_direccion_perfil.grid(row=12, column=1, padx=5, pady=3)
 
     Label(frame_izquierdo, text="Fecha de ingreso:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=13, column=0, sticky="e", padx=5)
     entry_fecha_egreso_perfil = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
@@ -640,7 +639,7 @@ def abrir_ventana_perfil():
         tel_emergencia = entry_tel_emergencia_perfil.get().strip()
         obra_social = entry_obra_social_perfil.get().strip()
         estado = var_tipo_estado_perfil.get()
-        consentimiento = var_tipo_consentimiento_perfil.get()
+        direccion = var_tipo_direccion_perfil.get()
         fecha_egreso = comprobar_fecha(entry_fecha_egreso_perfil)
         tipo_egreso = var_tipo_egreso_perfil.get().strip()
         motivo_egreso = entry_motivo_egreso_perfil.get().strip()
@@ -668,10 +667,10 @@ def abrir_ventana_perfil():
                     return
                 cursor.execute("UPDATE pdf SET dni_personas = ? WHERE dni_personas = ?", (dni, dni_cargado))
                 cursor.execute("""UPDATE personas SET nombre = ?, apellido = ?, edad = ?, direccion = ?, fecha_nacimiento = ?,
-                                fecha_ingreso = ?, telefono = ?, contacto_emergencia = ?, telefono_emergencia = ?, obra_social = ?, estado = ?, consentimiento = ?,
+                                fecha_ingreso = ?, telefono = ?, contacto_emergencia = ?, telefono_emergencia = ?, obra_social = ?, estado = ?, direccion = ?,
                                 fecha_egreso = ?, tipo_egreso = ?, motivo_egreso = ? WHERE dni = ?""",
                                 (nombre, apellido, edad, direccion, f_nacimiento, f_ingreso, telefono, contacto_emergencia, tel_emergencia, obra_social, estado,
-                                 consentimiento, fecha_egreso, tipo_egreso, motivo_egreso, dni))
+                                 direccion, fecha_egreso, tipo_egreso, motivo_egreso, dni))
                 dni_original["valor"] = str(dni)
                 entry_dni_perfil.delete(0, tk.END)
                 entry_dni_perfil.insert(0, dni)
@@ -679,19 +678,19 @@ def abrir_ventana_perfil():
                 elif foto_contenido is not None: cursor.execute("UPDATE personas SET foto = ? WHERE dni = ?", (foto_contenido, dni))
             else:
                 cursor.execute("""UPDATE personas SET dni = ?, nombre = ?, apellido = ?, edad = ?, direccion = ?, fecha_nacimiento = ?, fecha_ingreso = ?,
-                                telefono = ?, contacto_emergencia = ?, telefono_emergencia = ?, obra_social = ?, estado = ?, consentimiento = ?, fecha_egreso = ?,
+                                telefono = ?, contacto_emergencia = ?, telefono_emergencia = ?, obra_social = ?, estado = ?, direccion = ?, fecha_egreso = ?,
                                 tipo_egreso = ?, motivo_egreso = ? WHERE dni = ?""",
                                 (dni, nombre, apellido, edad, direccion, f_nacimiento, f_ingreso, telefono, contacto_emergencia, tel_emergencia, obra_social,
-                                 estado, consentimiento, fecha_egreso, tipo_egreso, motivo_egreso, dni_cargado))
+                                 estado, direccion, fecha_egreso, tipo_egreso, motivo_egreso, dni_cargado))
                 if borrar_foto: cursor.execute("UPDATE personas SET foto = NULL WHERE dni = ?", (dni,))
                 elif foto_contenido is not None: cursor.execute("UPDATE personas SET foto = ? WHERE dni = ?", (foto_contenido, dni))
         else:
             try:
                 cursor.execute("""INSERT INTO personas(nombre, apellido, dni, edad, direccion, fecha_nacimiento, fecha_ingreso, telefono, contacto_emergencia,
-                                telefono_emergencia, obra_social, estado, consentimiento, fecha_egreso, tipo_egreso, motivo_egreso, foto)
+                                telefono_emergencia, obra_social, estado, direccion, fecha_egreso, tipo_egreso, motivo_egreso, foto)
                                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
                                 (nombre, apellido, dni, edad, direccion, f_nacimiento, f_ingreso, telefono, contacto_emergencia, tel_emergencia, obra_social,
-                                 estado, consentimiento, fecha_egreso, tipo_egreso, motivo_egreso, foto_contenido))
+                                 estado, direccion, fecha_egreso, tipo_egreso, motivo_egreso, foto_contenido))
             except sqlite3.IntegrityError:
                 messagebox.showerror("Error", "Ya existe una persona con ese DNI.")
                 return
@@ -706,7 +705,7 @@ def abrir_ventana_perfil():
         lista_personas_perfil.delete(0, tk.END)
         foto_pendiente["bytes"] = None
         cursor.execute("""SELECT nombre, apellido, edad, direccion, fecha_nacimiento, fecha_ingreso, telefono, contacto_emergencia,
-                        telefono_emergencia, obra_social, estado, consentimiento, fecha_egreso, tipo_egreso, motivo_egreso FROM personas WHERE dni = ?""", (dni_txt,))
+                        telefono_emergencia, obra_social, estado, direccion, fecha_egreso, tipo_egreso, motivo_egreso FROM personas WHERE dni = ?""", (dni_txt,))
         fila = cursor.fetchone()
         if fila:
             entry_nombre_perfil.delete(0, tk.END)
@@ -730,7 +729,7 @@ def abrir_ventana_perfil():
             entry_obra_social_perfil.delete(0, tk.END)
             entry_obra_social_perfil.insert(0, fila[9] or "")
             var_tipo_estado_perfil.set(fila[10] or "")
-            var_tipo_consentimiento_perfil.set(fila[11] or "")
+            var_tipo_direccion_perfil.set(fila[11] or "")
             entry_fecha_egreso_perfil.delete(0, tk.END)
             entry_fecha_egreso_perfil.insert(0, fila[12] or "")
             var_tipo_egreso_perfil.set(fila[13] or "")
@@ -746,7 +745,7 @@ def abrir_ventana_perfil():
             messagebox.showwarning("Atencion", "Escribi un DNI primero.")
             return None
         cursor.execute("""SELECT nombre, apellido, dni, edad, fecha_nacimiento, fecha_ingreso, telefono, direccion, contacto_emergencia,
-                        telefono_emergencia, obra_social, estado, consentimiento, fecha_egreso, tipo_egreso, motivo_egreso FROM personas WHERE dni = ?""", (dni_txt,))
+                        telefono_emergencia, obra_social, estado, direccion, fecha_egreso, tipo_egreso, motivo_egreso FROM personas WHERE dni = ?""", (dni_txt,))
         p = cursor.fetchone()
         if not p:
             messagebox.showinfo("Sin resultados", "No existe ese DNI.")
@@ -772,7 +771,7 @@ def abrir_ventana_perfil():
             "",
             "# SALUD",
             f"Obra social: {p[10] or '-'}",
-            f"Consentimiento: {p[12] or '-'}",
+            f"direccion: {p[12] or '-'}",
             "",
             "# ESTADO",
             f"Fecha de ingreso: {p[5] or '-'}",
