@@ -1,0 +1,24 @@
+            dni_original["valor"] = dni_txt
+            mostrar_foto_en_perfil()
+
+            # --- ENCABEZADO EN LA LISTBOX ---
+            nombre_completo = f"{fila[0]} {fila[1]}".upper()
+            estado_actual = fila[10] if fila[10] else "Sin estado"
+            obra_soc = fila[9] if fila[9] else "Sin obra social"
+
+            lista_personas_perfil.insert(tk.END, f"=== FICHA DE {nombre_completo} ===")
+            lista_personas_perfil.insert(tk.END, f"DNI: {dni_txt}  |  Estado: {estado_actual}  |  O.S.: {obra_soc}")
+            lista_personas_perfil.insert(tk.END, "--------------------------------------------------")
+            lista_personas_perfil.insert(tk.END, "HISTORIAL DE ENTREVISTAS:")
+
+            # --- LISTADO DE ENTREVISTAS ---
+            cursor.execute("""SELECT id, fecha_entrevista, nombre_profecional, apellido_profecional, tipo_entrevista 
+                              FROM entrevistas WHERE dni_paciente = ? ORDER BY fecha_entrevista""", (dni_txt,))
+            entrevistas = cursor.fetchall()
+            
+            if not entrevistas:
+                lista_personas_perfil.insert(tk.END, "   (No hay entrevistas registradas)")
+            else:
+                for e in entrevistas:
+                    tipo = f"[{e[4]}]" if e[4] else ""
+                    lista_personas_perfil.insert(tk.END, f"   • ID {e[0]} — {e[1]} — Prof: {e[2]} {e[3] or ''} {tipo}")
