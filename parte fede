@@ -1,0 +1,48 @@
+
+
+cursor.execute(""" 
+        
+CREATE TABLE IF NOT EXISTS cursos (
+id INTEGER PRIMARY KEY AUTOINCREMENT,
+especialidad TEXT
+
+
+
+)            
+""")   
+
+conexion.commit()
+
+
+def asignar_curso():
+    conexion=sqlite3.connect("/home/programador10/Desktop/archivis/base de datos en grupo.db")
+    cursor=conexion.cursor()
+
+    cursor.execute("SELECT curos FROM personas WHERE dni = ?", ())
+
+    conexion.execute(
+        "INSERT INTO personas (cursos_hechos) "
+        "VALUES (?)",
+        (cursos_hechos)
+    )
+
+    conexion.commit()
+
+#####################################################333
+def quitar_curso():
+    t1=entry_curso.get()
+    cursor.execute("DELETE FROM empleados WHERE id=?",(t1,))
+    conexion.commit()
+    ver_lista()
+    
+################################################################
+
+
+def edicar_curso_asignado():
+    t1=entry_curso.get()
+    cursor.execute("DELETE FROM empleados WHERE id=?",(t1,))
+    conexion.commit()
+    ver_lista()
+    
+    asignar_curso()
+    
