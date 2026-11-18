@@ -50,7 +50,7 @@ fecha_ingreso TEXT,
 telefono TEXT, 
 contacto_emergencia TEXT, 
 telefono_emergencia TEXT,
-foto BLOB))""")
+foto BLOB)""")
 
 cursor.execute("""CREATE TABLE IF NOT EXISTS pdf (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
