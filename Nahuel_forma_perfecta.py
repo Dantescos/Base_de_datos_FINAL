@@ -24,7 +24,7 @@ conexion = sqlite3.connect("Centro de Formación Profesional 401  Escuela de ofi
 cursor = conexion.cursor()  # Creo el cursor
 
 # Base de datos para los cursos
-cursor.execute("""CREATE TABLE IF NOT EXISTS personas(id INTEGER PRIMARY KEY AUTOINCREMENT,
+cursor.execute("""CREATE TABLE IF NOT EXISTS cursoss(id INTEGER PRIMARY KEY AUTOINCREMENT,
 especialidad TEXT,
 fecha_de_iniciacion TEXT,
 lugar_en_el_que_se_dicta TEXT,
