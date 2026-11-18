@@ -24,7 +24,7 @@ conexion = sqlite3.connect("Centro de Formación Profesional 401  Escuela de ofi
 cursor = conexion.cursor()  # Creo el cursor
 
 # Base de datos para los cursos
-cursor.execute("""CREATE TABLE IF NOT EXISTS personas(id INTEGER PRIMARY KEY AUTOINCREMENT,
+cursor.execute("""CREATE TABLE IF NOT EXISTS cursos(id INTEGER PRIMARY KEY AUTOINCREMENT,
 especialidad TEXT,
 fecha_de_iniciacion TEXT,
 lugar_en_el_que_se_dicta TEXT,
@@ -131,7 +131,7 @@ VERDE_AZULADO = "#26A69A"  # Verde azulado para botones
 #Verde salvia	#5E8C6A	            Mensajes de éxito ("Curso guardado", "Persona registrada"). También para el estado "Activo".
 #Rojo ladrillo	#C0392B	            Errores, alertas, botón Eliminar. Solo para cosas que el usuario tiene que frenar y leer.
 
-# BLOQUE 5: VENTANA PRINCIPAL
+# BLOQUE 6: VENTANA PRINCIPAL
 ventana = tk.Tk()  # Creo la ventana principal
 ventana.title("Centro de Formación Profesional 401  Escuela de oficios SANCA")  # Título de la ventana
 ventana.config(bg=COLOR_FONDO)  # Fondo
@@ -145,7 +145,29 @@ _y = (alto_pantalla - alto_ventana) // 2  # Centrado vertical
 ventana.geometry(f"{ancho_ventana}x{alto_ventana}+{_x}+{_y}")  # Aplico geometría
 ventana.minsize(900, 550)  # Tamaño mínimo
 
-# BLOQUE 6: BANNER
+# BLOQUE 7: VENTANA DE CURSOS
+ventana_cursos = None  # Variable global para controlar la instancia
+entry_cursos_ref = None
+
+def abrir_ventana_cursos():
+    global ventana_cursos, entry_cursos_ref
+
+    ventana_cursos = Toplevel(ventana)  # Creo la ventana de cursos
+    ventana_cursos.title("CURSOS")  # Título de la ventana
+    ventana_cursos.geometry("900x750")  # Aplico geometría
+    ventana_cursos.minsize(700, 550)  # Tamaño mínimo
+    ventana_cursos.config(bg=COLOR_FONDO)  # Fondo
+
+    def al_cerrar_cursos():
+        global ventana_cursos, entry_cursos_ref
+        entry_cursos_ref = None
+        if ventana_cursos is not None and ventana_cursos.winfo_exists():
+            ventana_cursos.destroy()
+        ventana_cursos = None
+
+    ventana_cursos.protocol("WM_DELETE_WINDOW", al_cerrar_cursos)
+
+# BLOQUE 8: BANNER
 banner = tk.Frame(ventana, bg=COLOR_NAVBAR, height=150)  # Frame del banner
 banner.pack(side="top", fill="x")  # Empaquetado arriba
 banner.pack_propagate(False)  # Evito que se achique
@@ -165,7 +187,7 @@ except Exception:
     print('Error')  # Si falla, no rompo la app
 
 
-# BLOQUE 8: FUNCIONES PRINCIPALES
+# BLOQUE 9: FUNCIONES PRINCIPALES
 def refrescar_lista():
     lista_personas.delete(0, tk.END)  # Borro la lista
     cursor.execute("SELECT nombre, apellido, dni FROM personas ORDER BY apellido, nombre")  # Consulto personas
@@ -305,7 +327,7 @@ def limpiar():
     visor_foto.configure(image="", text="👤\nSin foto")
     visor_foto.image = None
 
-# BLOQUE 9: FRAME DE BOTONES
+# BLOQUE 10: FRAME DE BOTONES
 frame_btn = Frame(ventana, bg=GRIS_NIEBLA, height=55)  # Frame de botones
 frame_btn_info = Frame(ventana, bg=GRIS_NIEBLA)  # Frame botón info
 frame_btn_info.pack(side="bottom", fill="x", padx=10, pady=15)
@@ -328,8 +350,10 @@ sub_btn.columnconfigure(5, weight=1)
 #btn_buscar.grid(row=0, column=3, padx=5, pady=7)
 #btn_limpiar = RoundedButton(sub_btn, 200, 40, 20, VERDE_AZULADO, BLANCO, text="Limpiar", command=limpiar, hover_color=VERDE_TERMINAL)
 #btn_limpiar.grid(row=0, column=4, padx=5, pady=7)
+btn_cursos = tk.Button(sub_btn, text="Cursos", command=abrir_ventana_cursos, bg=COLOR_BOTON, fg=COLOR_BOTON_TEXTO, font=("Segoe UI", 11, "bold"))
+btn_cursos.pack(side="left", padx=5, pady=7)
 
-# BLOQUE 10: FORMULARIO
+# BLOQUE 11: FORMULARIO
 frame_form = Frame(ventana, bg=GRIS_NIEBLA)  # Frame formulario
 frame_form.pack(side="top", fill="x", padx=15, pady=10)
 
@@ -371,7 +395,7 @@ def grids_remove_dni():
 grids_remove_nom_ape()
 grids_remove_dni()
 
-# BLOQUE 11: CUERPO
+# BLOQUE 12: CUERPO
 cuerpo = Frame(ventana, bg=GRIS_NIEBLA)  # Frame cuerpo
 cuerpo.pack(fill="both", expand=True, padx=40, pady=10)
 cuerpo.columnconfigure(0, weight=0)
@@ -407,7 +431,7 @@ lista_personas = Listbox(caja_lista, yscrollcommand=scroll.set, font=("Segoe UI"
 lista_personas.pack(side="left", fill="both", expand=True)
 scroll.config(command=lista_personas.yview)
 
-# BLOQUE 12: BOTONES DEFINITIVOS
+# BLOQUE 13: BOTONES DEFINITIVOS
 #boton_agregar_definitivo = RoundedButton(frame_form, 350, 40, 20, VERDE_AZULADO, BLANCO, text="Confirmar agregar", command=agregar_definitivo)
 #boton_agregar_definitivo.grid(row=1, column=0, columnspan=8,sticky="ew", padx=5, pady=(5, 0))
 #boton_agregar_definitivo.grid_remove()
@@ -416,7 +440,7 @@ scroll.config(command=lista_personas.yview)
 #boton_busqueda_definitivo.grid(row=1, column=0, columnspan=8,sticky="ew", padx=5, pady=(5, 0))
 #boton_busqueda_definitivo.grid_remove()
 
-# BLOQUE 13: MODO OSCURO
+# BLOQUE 14: MODO OSCURO
 tema_oscuro = False  # Bandera modo oscuro
 ventanas_secundarias = []  # Lista de ventanas abiertas
 _ventana_entrevistas_abierta = None  # Referencia a ventana entrevistas
@@ -498,7 +522,7 @@ def aplicar_tema():
 
 #    actualizar_ventanas_secundarias()
 
-# BLOQUE 14: AUXILIARES
+# BLOQUE 15: AUXILIARES
 #def normalizar_fecha(texto):
 #    texto = texto.strip()
 #    for i in string.punctuation:
