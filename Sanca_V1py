@@ -24,13 +24,16 @@ conexion = sqlite3.connect("Centro de Formación Profesional 401  Escuela de ofi
 cursor = conexion.cursor()  # Creo el cursor
 
 # Base de datos para los cursos
-cursor.execute("""CREATE TABLE IF NOT EXISTS cursoss(id INTEGER PRIMARY KEY AUTOINCREMENT,
+cursor.execute("""CREATE TABLE IF NOT EXISTS personas(id INTEGER PRIMARY KEY AUTOINCREMENT,
 especialidad TEXT,
 fecha_de_iniciacion TEXT,
 lugar_en_el_que_se_dicta TEXT,
 fecha_de_terminacion TEXT,
+tipo TEXT,
 dias TEXT,
 horarios TEXT,
+docente TEXT,
+cantidad_de_modulos TEXT,
 curso_numero INTEGER)""")  
 
 # Creo tabla personas
@@ -38,18 +41,17 @@ cursor.execute("""CREATE TABLE IF NOT EXISTS personas(
 nombres TEXT,
 apellido TEXT,
 nacionalidad TEXT,
-tipo TEXT,
 fecha_de_nacimiento TEXT,
-documento__de_identidad TEXT,
+documento_de_identidad TEXT,
 direccion_domicilio TEXT,
 localidad_TEXT,
 dni INTEGER UNIQUE NOT NULL, 
 edad INTEGER, 
-fecha_nacimiento TEXT, 
 fecha_ingreso TEXT,
 telefono TEXT, 
 contacto_emergencia TEXT, 
 telefono_emergencia TEXT,
+obra_social TEXT,
 foto BLOB)""")
 
 cursor.execute("""CREATE TABLE IF NOT EXISTS pdf (
