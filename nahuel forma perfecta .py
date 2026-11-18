@@ -86,6 +86,22 @@ COLOR_ACENTO       = "#F2A63B"  # botones importantes
 COLOR_ACENTO_TEXTO = "#2E2E2E"  # letra sobre ámbar
 COLOR_EXITO        = "#5E8C6A"  # mensajes OK
 COLOR_ERROR        = "#C0392B"  # errores / eliminar
+# Viejo colores
+# BLOQUE 5: PALETA DE COLORES
+ROJO = "#E3000F"  # Rojo fuerte
+AMARILLO = "#FCAF17"  # Amarillo
+NEGRO = "#0a0a0a"  # Casi negro
+GRIS = "#222222"  # Gris oscuro
+AZUL_PETROLEO = "#006080"  # Azul petróleo
+BLANCO_HUESO = "#F5F5DC"  # Blanco hueso
+VERDE_TERMINAL = "#00FF00"  # Verde brillante
+GRIS_NIEBLA = "#F4F7F6"  # Gris claro para fondos
+BLANCO = "#FFFFFF"  # Blanco puro
+GRIS_AZULADO = "#2C3E50"  # Gris azulado oscuro
+GRIS_MEDIO = "#7F8C8D"  # Gris medio
+AZUL_SERENO = "#4A90E2"  # Azul sereno para selección
+VERDE_AZULADO = "#26A69A"  # Verde azulado para botones
+
 
 # Instrucciones para los colores
 #Resumen rápido de uso
@@ -177,8 +193,8 @@ def mostrar_foto(dni):
     visor_foto.image = None
 
 def al_seleccionar(event=None):
-    boton_busqueda_definitivo.grid_remove()  # Oculto botones
-    boton_agregar_definitivo.grid_remove()
+    #boton_busqueda_definitivo.grid_remove()  # Oculto botones
+    #boton_agregar_definitivo.grid_remove()
     grids_nom_ape()  # Muestro campos
     grids_dni()
     sel = lista_personas.curselection()
@@ -197,10 +213,10 @@ def al_seleccionar(event=None):
     mostrar_foto(dni)  # Muestro foto
 
 def agregar():
-    boton_busqueda_definitivo.grid_remove()  # Oculto buscar
+    #boton_busqueda_definitivo.grid_remove()  # Oculto buscar
     grids_nom_ape()  # Muestro campos
     grids_dni()
-    boton_agregar_definitivo.grid()  # Muestro confirmar agregar
+    #boton_agregar_definitivo.grid()  # Muestro confirmar agregar
 
 def agregar_definitivo():
     nombre = entry_nombre.get().strip()
@@ -228,7 +244,7 @@ def agregar_definitivo():
         return
     refrescar_lista()  # Refresco
     limpiar()  # Limpio
-    boton_agregar_definitivo.grid_remove()  # Oculto botón
+    #boton_agregar_definitivo.grid_remove()  # Oculto botón
     messagebox.showinfo("OK", "Persona agregada.")
 
 def eliminar():
@@ -239,8 +255,8 @@ def eliminar():
     texto = lista_personas.get(seleccion[0])
     dni = int(texto.split("DNI ")[1])
     if not messagebox.askyesno("Confirmar eliminación", f"¿Estas seguro de que deseas eliminar a esta persona?\n\n{texto}"): return
-    boton_busqueda_definitivo.grid_remove()
-    boton_agregar_definitivo.grid_remove()
+    #boton_busqueda_definitivo.grid_remove()
+    #boton_agregar_definitivo.grid_remove()
     grids_remove_nom_ape()
     grids_remove_dni()
     cursor.execute("DELETE FROM pdf WHERE dni_personas = ?", (dni,))  # Borro pdfs
@@ -252,10 +268,10 @@ def eliminar():
     messagebox.showinfo("OK", "Persona eliminada correctamente.")
 
 def buscar():
-    boton_agregar_definitivo.grid_remove()  # Oculto agregar
+    #boton_agregar_definitivo.grid_remove()  # Oculto agregar
     grids_remove_nom_ape()  # Oculto nombre y apellido
     grids_dni()  # Muestro DNI
-    boton_busqueda_definitivo.grid()  # Muestro confirmar búsqueda
+   # boton_busqueda_definitivo.grid()  # Muestro confirmar búsqueda
 
 def buscar_definitivo():
     dni_txt = entry_dni.get().strip()
@@ -390,13 +406,13 @@ lista_personas.pack(side="left", fill="both", expand=True)
 scroll.config(command=lista_personas.yview)
 
 # BLOQUE 12: BOTONES DEFINITIVOS
-boton_agregar_definitivo = RoundedButton(frame_form, 350, 40, 20, VERDE_AZULADO, BLANCO, text="Confirmar agregar", command=agregar_definitivo)
-boton_agregar_definitivo.grid(row=1, column=0, columnspan=8,sticky="ew", padx=5, pady=(5, 0))
-boton_agregar_definitivo.grid_remove()
+#boton_agregar_definitivo = RoundedButton(frame_form, 350, 40, 20, VERDE_AZULADO, BLANCO, text="Confirmar agregar", command=agregar_definitivo)
+#boton_agregar_definitivo.grid(row=1, column=0, columnspan=8,sticky="ew", padx=5, pady=(5, 0))
+#boton_agregar_definitivo.grid_remove()
 
-boton_busqueda_definitivo = RoundedButton(frame_form, 350, 40, 20, VERDE_AZULADO, BLANCO,text="Confirmar busqueda", command=buscar_definitivo)
-boton_busqueda_definitivo.grid(row=1, column=0, columnspan=8,sticky="ew", padx=5, pady=(5, 0))
-boton_busqueda_definitivo.grid_remove()
+#boton_busqueda_definitivo = RoundedButton(frame_form, 350, 40, 20, VERDE_AZULADO, BLANCO,text="Confirmar busqueda", command=buscar_definitivo)
+#boton_busqueda_definitivo.grid(row=1, column=0, columnspan=8,sticky="ew", padx=5, pady=(5, 0))
+#boton_busqueda_definitivo.grid_remove()
 
 # BLOQUE 13: MODO OSCURO
 tema_oscuro = False  # Bandera modo oscuro
@@ -404,25 +420,25 @@ ventanas_secundarias = []  # Lista de ventanas abiertas
 _ventana_entrevistas_abierta = None  # Referencia a ventana entrevistas
 
 def actualizar_widget(widget, fondo, panel, texto, acento):
-    if isinstance(widget, RoundedButton):
-        if widget == btn_tema: widget.set_colors(panel, acento, texto, fondo)  # Botón tema invertido
-        else: widget.set_colors(acento, VERDE_TERMINAL, BLANCO, fondo)  # Otros botones
+    #if isinstance(widget, RoundedButton):
+    #    if widget == btn_tema: widget.set_colors(panel, acento, texto, fondo)  # Botón tema invertido
+    #    else: widget.set_colors(acento, VERDE_TERMINAL, BLANCO, fondo)  # Otros botones
         for hijo in widget.winfo_children(): actualizar_widget(hijo, fondo, panel, texto, acento)
         return
 
-    if isinstance(widget, tk.OptionMenu):
-        widget.config(bg=panel,fg=texto,activebackground=VERDE_TERMINAL,activeforeground=BLANCO,highlightthickness=0,bd=0,)
+    #if isinstance(widget, tk.OptionMenu):
+    #    widget.config(bg=panel,fg=texto,activebackground=VERDE_TERMINAL,activeforeground=BLANCO,highlightthickness=0,bd=0,)
         widget["menu"].config(bg=panel,fg=texto,activebackground=acento,activeforeground=BLANCO,bd=0,)
         return
 
-    clase = widget.winfo_class()
-    if clase in ("Frame", "Labelframe", "Canvas"): widget.config(bg=fondo)
-    elif clase == "Label": widget.config(bg=fondo, fg=texto)
-    elif clase in ("Entry", "Text"): widget.config(bg=panel, fg=texto, insertbackground=texto)
-    elif clase == "Listbox": widget.config(bg=panel, fg=texto, selectbackground=AZUL_SERENO, selectforeground=BLANCO)
-    elif clase in ("Button", "Menubutton"): widget.config(bg=acento, fg=BLANCO, activebackground=acento, activeforeground=BLANCO)
+    #clase = widget.winfo_class()
+    #if clase in ("Frame", "Labelframe", "Canvas"): widget.config(bg=fondo)
+    #elif clase == "Label": widget.config(bg=fondo, fg=texto)
+     #elif clase in ("Entry", "Text"): widget.config(bg=panel, fg=texto, insertbackground=texto)
+    #elif clase == "Listbox": widget.config(bg=panel, fg=texto, selectbackground=AZUL_SERENO, selectforeground=BLANCO)
+    #elif clase in ("Button", "Menubutton"): widget.config(bg=acento, fg=BLANCO, activebackground=acento, activeforeground=BLANCO)
     
-    for hijo in widget.winfo_children(): actualizar_widget(hijo, fondo, panel, texto, acento)
+    #for hijo in widget.winfo_children(): actualizar_widget(hijo, fondo, panel, texto, acento)
 
 def actualizar_ventanas_secundarias():
     if tema_oscuro:
@@ -471,144 +487,144 @@ def aplicar_tema():
         elif isinstance(widget, Entry): widget.config(bg=lista_bg, fg=lista_fg, insertbackground=lista_fg)
             
     sub_btn.config(bg=fondo_general)
-    for widget in (btn_agregar, btn_eliminar, btn_buscar, btn_limpiar): widget.set_colors(boton_accion, boton_hover, boton_texto, fondo_general)
-    btn_tema.set_colors(btn_luna_bg, btn_luna_hover, btn_luna_fg, fondo_general)
+    #for widget in (btn_agregar, btn_eliminar, btn_buscar, btn_limpiar): widget.set_colors(boton_accion, boton_hover, boton_texto, fondo_general)
+    #btn_tema.set_colors(btn_luna_bg, btn_luna_hover, btn_luna_fg, fondo_general)
     for widget in frame_form.winfo_children():
-        if isinstance(widget, RoundedButton): widget.set_colors(boton_accion, boton_hover, boton_texto, fondo_general)
-    for widget in frame_btn_info.winfo_children():
-        if isinstance(widget, RoundedButton): widget.set_colors(boton_accion, boton_hover, boton_texto, fondo_general)
+    #    if isinstance(widget, RoundedButton): widget.set_colors(boton_accion, boton_hover, boton_texto, fondo_general)
+    #for widget in frame_btn_info.winfo_children():
+    #    if isinstance(widget, RoundedButton): widget.set_colors(boton_accion, boton_hover, boton_texto, fondo_general)
 
-    actualizar_ventanas_secundarias()
+#    actualizar_ventanas_secundarias()
 
 # BLOQUE 14: AUXILIARES
-def normalizar_fecha(texto):
-    texto = texto.strip()
-    for i in string.punctuation:
-        if i in (":", "/"): continue
-        texto = texto.replace(i, "/")
-    return texto
+#def normalizar_fecha(texto):
+#    texto = texto.strip()
+#    for i in string.punctuation:
+#        if i in (":", "/"): continue
+#        texto = texto.replace(i, "/")
+#    return texto
 
-def separar_fecha_hora(texto):
-    texto = normalizar_fecha(texto)
-    match = re.search(r"\s+(\d{1,2}:\d{2}(?::\d{2})?)\s*$", texto)
-    if match:
-        hora = match.group(1)
-        fecha = texto[:match.start()].strip()
-        return fecha, hora
-    return texto, ""
+#def separar_fecha_hora(texto):
+#    texto = normalizar_fecha(texto)
+#    match = re.search(r"\s+(\d{1,2}:\d{2}(?::\d{2})?)\s*$", texto)
+#    if match:
+#        hora = match.group(1)
+#        fecha = texto[:match.start()].strip()
+#        return fecha, hora
+#    return texto, ""
 
-def comprobar_fecha(entry_fecha):
-    fecha, _ = separar_fecha_hora(entry_fecha.get())
-    return fecha
+#def comprobar_fecha(entry_fecha):
+#    fecha, _ = separar_fecha_hora(entry_fecha.get())
+#    return fecha
 
 # BLOQUE 18: VENTANA DE PERFIL
-def abrir_ventana_perfil():
-    global entry_dni_perfil_ref
-    ventana_perfil = Toplevel(ventana)
-    ventana_perfil.title("PERFIL")
-    ventana_perfil.geometry("1500x800")
-    ventana_perfil.config(bg=GRIS_NIEBLA)
+#def abrir_ventana_perfil():
+#    global entry_dni_perfil_ref
+#    ventana_perfil = Toplevel(ventana)
+#    ventana_perfil.title("PERFIL")
+#    ventana_perfil.geometry("1500x800")
+#    ventana_perfil.config(bg=GRIS_NIEBLA)
 
-    def al_cerrar_perfil():
-        global entry_dni_perfil_ref
-        entry_dni_perfil_ref = None
-        ventana_perfil.destroy()
+#    def al_cerrar_perfil():
+#        global entry_dni_perfil_ref
+#        entry_dni_perfil_ref = None
+#        ventana_perfil.destroy()
 
-    ventana_perfil.protocol("WM_DELETE_WINDOW", al_cerrar_perfil)
+#    ventana_perfil.protocol("WM_DELETE_WINDOW", al_cerrar_perfil)
 
-    foto_pendiente = {"bytes": None}
-    dni_original = {"valor": entry_dni.get().strip()}
+#    foto_pendiente = {"bytes": None}
+#    dni_original = {"valor": entry_dni.get().strip()}
 
-    frame_izquierdo = Frame(ventana_perfil, bg=GRIS_NIEBLA)
-    frame_izquierdo.pack(side="left", fill="y", padx=15, pady=15)
+ #   frame_izquierdo = Frame(ventana_perfil, bg=GRIS_NIEBLA)
+  #  frame_izquierdo.pack(side="left", fill="y", padx=15, pady=15)
 
-    Label(frame_izquierdo, text=" Nombre:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=0, column=0, sticky="e", padx=5)
-    entry_nombre_perfil = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
-    entry_nombre_perfil.grid(row=0, column=1, padx=5, pady=3)
-    entry_nombre_perfil.insert(0, entry_nombre.get())
+   # Label(frame_izquierdo, text=" Nombre:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=0, column=0, sticky="e", padx=5)
+   # entry_nombre_perfil = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
+   # entry_nombre_perfil.grid(row=0, column=1, padx=5, pady=3)
+   # entry_nombre_perfil.insert(0, entry_nombre.get())
 
-    Label(frame_izquierdo, text=" Apellido:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=1, column=0, sticky="e", padx=5)
-    entry_apellido_perfil = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
-    entry_apellido_perfil.grid(row=1, column=1, padx=5, pady=3)
-    entry_apellido_perfil.insert(0, entry_apellido.get())
+    #Label(frame_izquierdo, text=" Apellido:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=1, column=0, sticky="e", padx=5)
+    #entry_apellido_perfil = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
+    #entry_apellido_perfil.grid(row=1, column=1, padx=5, pady=3)
+    #entry_apellido_perfil.insert(0, entry_apellido.get())
 
-    Label(frame_izquierdo, text="Edad:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=2, column=0, sticky="e", padx=5)
-    entry_edad_perfil = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
-    entry_edad_perfil.grid(row=2, column=1, padx=5, pady=3)
+    #Label(frame_izquierdo, text="Edad:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=2, column=0, sticky="e", padx=5)
+    #entry_edad_perfil = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
+    #entry_edad_perfil.grid(row=2, column=1, padx=5, pady=3)
 
-    Label(frame_izquierdo, text=" DNI:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=3, column=0, sticky="e", padx=5)
-    entry_dni_perfil = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
-    entry_dni_perfil.grid(row=3, column=1, padx=5, pady=3)
-    entry_dni_perfil.insert(0, entry_dni.get())
-    entry_dni_perfil_ref = entry_dni_perfil
+    #Label(frame_izquierdo, text=" DNI:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=3, column=0, sticky="e", padx=5)
+    #entry_dni_perfil = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
+    #entry_dni_perfil.grid(row=3, column=1, padx=5, pady=3)
+    #entry_dni_perfil.insert(0, entry_dni.get())
+    #entry_dni_perfil_ref = entry_dni_perfil
 
-    Label(frame_izquierdo, text=" Domicilio:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=4, column=0, sticky="e", padx=5)
-    entry_direccion_perfil = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
-    entry_direccion_perfil.grid(row=4, column=1, padx=5, pady=3)
+    #Label(frame_izquierdo, text=" Domicilio:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=4, column=0, sticky="e", padx=5)
+    #entry_direccion_perfil = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
+    #entry_direccion_perfil.grid(row=4, column=1, padx=5, pady=3)
 
-    Label(frame_izquierdo, text=" Fecha de nacimiento:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=5, column=0, sticky="e", padx=5)
-    entry_f_nacimiento_perfil = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
-    entry_f_nacimiento_perfil.grid(row=5, column=1, padx=5, pady=3)
+    #Label(frame_izquierdo, text=" Fecha de nacimiento:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=5, column=0, sticky="e", padx=5)
+    #entry_f_nacimiento_perfil = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
+    #entry_f_nacimiento_perfil.grid(row=5, column=1, padx=5, pady=3)
 
-    Label(frame_izquierdo, text=" Fecha de ingreso al instituto:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=6, column=0, sticky="e", padx=5)
-    entry_f_ingreso_perfil = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
-    entry_f_ingreso_perfil.grid(row=6, column=1, padx=5, pady=3)
+    #Label(frame_izquierdo, text=" Fecha de ingreso al instituto:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=6, column=0, sticky="e", padx=5)
+    #entry_f_ingreso_perfil = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
+    #entry_f_ingreso_perfil.grid(row=6, column=1, padx=5, pady=3)
 
-    Label(frame_izquierdo, text="Telefono:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=7, column=0, sticky="e", padx=5)
-    entry_telefono_perfil = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
-    entry_telefono_perfil.grid(row=7, column=1, padx=5, pady=3)
+    #Label(frame_izquierdo, text="Telefono:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=7, column=0, sticky="e", padx=5)
+    #entry_telefono_perfil = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
+    #entry_telefono_perfil.grid(row=7, column=1, padx=5, pady=3)
 
-    Label(frame_izquierdo, text="Nombre del contacto de emergencia:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=8, column=0, sticky="e", padx=5)
-    entry_contacto_emergencia_perfil = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
-    entry_contacto_emergencia_perfil.grid(row=8, column=1, padx=5, pady=3)
+    #Label(frame_izquierdo, text="Nombre del contacto de emergencia:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=8, column=0, sticky="e", padx=5)
+    #entry_contacto_emergencia_perfil = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
+    #entry_contacto_emergencia_perfil.grid(row=8, column=1, padx=5, pady=3)
 
-    Label(frame_izquierdo, text="Telefono del contacto de emergencia:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=9, column=0, sticky="e", padx=5)
-    entry_tel_emergencia_perfil = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
-    entry_tel_emergencia_perfil.grid(row=9, column=1, padx=5, pady=3)
+    #Label(frame_izquierdo, text="Telefono del contacto de emergencia:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=9, column=0, sticky="e", padx=5)
+    #entry_tel_emergencia_perfil = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
+    #entry_tel_emergencia_perfil.grid(row=9, column=1, padx=5, pady=3)
 
-    Label(frame_izquierdo, text="Obra social:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=10, column=0, sticky="e", padx=5)
-    entry_obra_social_perfil = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
-    entry_obra_social_perfil.grid(row=10, column=1, padx=5, pady=3)
+    #Label(frame_izquierdo, text="Obra social:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=10, column=0, sticky="e", padx=5)
+    #entry_obra_social_perfil = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
+    #entry_obra_social_perfil.grid(row=10, column=1, padx=5, pady=3)
 
-    Label(frame_izquierdo, text="Estado:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=11, column=0, sticky="e", padx=5)
-    var_tipo_estado_perfil = tk.StringVar(value="")
-    menu_estado_perfil = tk.OptionMenu(frame_izquierdo, var_tipo_estado_perfil, "Activo", "No activo")
-    menu_estado_perfil.config(font=("Segoe UI", 12), width=22)
-    menu_estado_perfil.grid(row=11, column=1, padx=5, pady=3)
+    #Label(frame_izquierdo, text="Estado:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=11, column=0, sticky="e", padx=5)
+    #var_tipo_estado_perfil = tk.StringVar(value="")
+    #menu_estado_perfil = tk.OptionMenu(frame_izquierdo, var_tipo_estado_perfil, "Activo", "No activo")
+    #menu_estado_perfil.config(font=("Segoe UI", 12), width=22)
+    #menu_estado_perfil.grid(row=11, column=1, padx=5, pady=3)
 
-    Label(frame_izquierdo, text="direccion:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=12, column=0, sticky="e", padx=5)
-    var_tipo_direccion_perfil = tk.StringVar(value="")
-    menu_direccion_perfil = tk.OptionMenu(frame_izquierdo, var_tipo_direccion_perfil, "Si", "No")
-    menu_direccion_perfil.config(font=("Segoe UI", 12), width=22)
-    menu_direccion_perfil.grid(row=12, column=1, padx=5, pady=3)
+    #Label(frame_izquierdo, text="direccion:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=12, column=0, sticky="e", padx=5)
+    #var_tipo_direccion_perfil = tk.StringVar(value="")
+    #menu_direccion_perfil = tk.OptionMenu(frame_izquierdo, var_tipo_direccion_perfil, "Si", "No")
+    #menu_direccion_perfil.config(font=("Segoe UI", 12), width=22)
+    #menu_direccion_perfil.grid(row=12, column=1, padx=5, pady=3)
 
-    Label(frame_izquierdo, text="Fecha de ingreso:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=13, column=0, sticky="e", padx=5)
-    entry_fecha_egreso_perfil = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
-    entry_fecha_egreso_perfil.grid(row=13, column=1, padx=5, pady=3)
+    #Label(frame_izquierdo, text="Fecha de ingreso:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=13, column=0, sticky="e", padx=5)
+    #entry_fecha_egreso_perfil = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
+    #entry_fecha_egreso_perfil.grid(row=13, column=1, padx=5, pady=3)
 
-    Label(frame_izquierdo, text="Tipo de egreso:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=14, column=0, sticky="e", padx=5)
-    var_tipo_egreso_perfil = tk.StringVar(value="")
-    menu_tipo_egreso_perfil = tk.OptionMenu(frame_izquierdo, var_tipo_egreso_perfil, "Alta", "Derivación", "Voluntario", "Fallecimiento", "Otro", "-")
-    menu_tipo_egreso_perfil.config(font=("Segoe UI", 12), width=22)
-    menu_tipo_egreso_perfil.grid(row=14, column=1, padx=5, pady=3)
+    #Label(frame_izquierdo, text="Tipo de egreso:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=14, column=0, sticky="e", padx=5)
+    #var_tipo_egreso_perfil = tk.StringVar(value="")
+    #menu_tipo_egreso_perfil = tk.OptionMenu(frame_izquierdo, var_tipo_egreso_perfil, "Alta", "Derivación", "Voluntario", "Fallecimiento", "Otro", "-")
+    #menu_tipo_egreso_perfil.config(font=("Segoe UI", 12), width=22)
+    #menu_tipo_egreso_perfil.grid(row=14, column=1, padx=5, pady=3)
 
-    Label(frame_izquierdo, text="Motivo de egreso:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=15, column=0, sticky="e", padx=5)
-    entry_motivo_egreso_perfil = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
-    entry_motivo_egreso_perfil.grid(row=15, column=1, padx=5, pady=3)
+    #Label(frame_izquierdo, text="Motivo de egreso:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=15, column=0, sticky="e", padx=5)
+    #entry_motivo_egreso_perfil = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
+    #entry_motivo_egreso_perfil.grid(row=15, column=1, padx=5, pady=3)
 
-    def mostrar_foto_en_perfil():
-        dni_txt = entry_dni_perfil.get().strip()
-        if dni_txt:
-            cursor.execute("SELECT nombre FROM pdf WHERE dni_personas = ? ORDER BY id", (dni_txt,))
+#    def mostrar_foto_en_perfil():
+ #       dni_txt = entry_dni_perfil.get().strip()
+        #if dni_txt:
+        #    cursor.execute("SELECT nombre FROM pdf WHERE dni_personas = ? ORDER BY id", (dni_txt,))
             filas = cursor.fetchall()
-            if lista_fotos_galeria.size() != len(filas):
-                lista_fotos_galeria.delete(0, tk.END)
-                for (nombre,) in filas: lista_fotos_galeria.insert(tk.END, nombre)
-        if foto_pendiente["bytes"] == b"":
-            visor_foto_perfil.configure(image="", text="👤\nClic para subir foto")
-            visor_foto_perfil.image = None
+         #   if lista_fotos_galeria.size() != len(filas):
+          #      lista_fotos_galeria.delete(0, tk.END)
+           #     for (nombre,) in filas: lista_fotos_galeria.insert(tk.END, nombre)
+  #      if foto_pendiente["bytes"] == b"":
+            #visor_foto_perfil.configure(image="", text="👤\nClic para subir foto")
+            #visor_foto_perfil.image = None
             return
-        if foto_pendiente["bytes"] is not None:
+    #     if foto_pendiente["bytes"] is not None:
             try:
                 img = Image.open(BytesIO(foto_pendiente["bytes"]))
                 img.thumbnail((300, 300))
@@ -617,14 +633,14 @@ def abrir_ventana_perfil():
                 visor_foto_perfil.image = foto_tk
                 return
             except Exception: pass
-        dni_txt = entry_dni_perfil.get().strip()
-        if not dni_txt:
+     #   dni_txt = entry_dni_perfil.get().strip()
+      #  if not dni_txt:
             visor_foto_perfil.configure(image="", text="👤\nClic para subir foto")
             visor_foto_perfil.image = None
             return
-        cursor.execute("SELECT foto FROM personas WHERE dni = ?", (dni_txt,))
-        fila = cursor.fetchone()
-        if fila and fila[0]:
+       # cursor.execute("SELECT foto FROM personas WHERE dni = ?", (dni_txt,))
+        #fila = cursor.fetchone()
+        #if fila and fila[0]:
             try:
                 img = Image.open(BytesIO(fila[0]))
                 img.thumbnail((300, 300))
@@ -633,77 +649,77 @@ def abrir_ventana_perfil():
                 visor_foto_perfil.image = foto
                 return
             except Exception: pass
-        visor_foto_perfil.configure(image="", text="👤\nClic para subir foto")
-        visor_foto_perfil.image = None
+        #visor_foto_perfil.configure(image="", text="👤\nClic para subir foto")
+       # visor_foto_perfil.image = None
 
     def subir_foto_perfil(event=None):
         et = entry_dni_perfil_ref.get()
         ruta = filedialog.askopenfilename(title="Seleccionar foto", filetypes=[("Imágenes", "*.png *.jpg *.jpeg *.bmp *.webp")])
         if not ruta: return
-        try:
-            with open(ruta, "rb") as f: foto_pendiente["bytes"] = f.read()
-            mostrar_foto_en_perfil()
-        except Exception: messagebox.showerror("Error", 'No se pudo cargar la foto')
-        os.makedirs(str(et), exist_ok=True)
-        shutil.move(ruta, str(et))
+        #try:
+        #    with open(ruta, "rb") as f: foto_pendiente["bytes"] = f.read()
+        #    mostrar_foto_en_perfil()
+        #except Exception: messagebox.showerror("Error", 'No se pudo cargar la foto')
+        #os.makedirs(str(et), exist_ok=True)
+        #shutil.move(ruta, str(et))
 
     def asignar_foto_galeria(event=None):
-        sel = lista_fotos_galeria.curselection()
-        if not sel: return
-        dni_txt = entry_dni_perfil.get().strip()
-        if not dni_txt: return
-        cursor.execute("SELECT contenido FROM pdf WHERE dni_personas = ? ORDER BY id", (dni_txt,))
+      #  sel = lista_fotos_galeria.curselection()
+       # if not sel: return
+        #dni_txt = entry_dni_perfil.get().strip()
+        #if not dni_txt: return
+      #  cursor.execute("SELECT contenido FROM pdf WHERE dni_personas = ? ORDER BY id", (dni_txt,))
         filas = cursor.fetchall()
-        if sel[0] >= len(filas): return
-        foto_pendiente["bytes"] = filas[sel[0]][0]
-        mostrar_foto_en_perfil()
+      #  if sel[0] >= len(filas): return
+        #foto_pendiente["bytes"] = filas[sel[0]][0]
+        #mostrar_foto_en_perfil()
 
     def quitar_foto_perfil():
-        foto_pendiente["bytes"] = b""
-        mostrar_foto_en_perfil()
+        #foto_pendiente["bytes"] = b""
+        #mostrar_foto_en_perfil()
 
-    def guardar_cambios_perfil():
-        nombre = entry_nombre_perfil.get().strip()
-        apellido = entry_apellido_perfil.get().strip()
-        dni_txt = entry_dni_perfil.get().strip()
-        if not (nombre and apellido and dni_txt):
+    #def guardar_cambios_perfil():
+    #    nombre = entry_nombre_perfil.get().strip()
+    #    apellido = entry_apellido_perfil.get().strip()
+    #    dni_txt = entry_dni_perfil.get().strip()
+    #    if not (nombre and apellido and dni_txt):
             messagebox.showwarning("Faltan datos", "Completa nombre, apellido y DNI.")
             return
-        try: dni = int(dni_txt)
-        except ValueError:
-            messagebox.showerror("Error", "El DNI debe ser numerico.")
+    #    try: dni = int(dni_txt)
+    #    except ValueError:
+    #        messagebox.showerror("Error", "El DNI debe ser numerico.")
             return
-        edad_txt = entry_edad_perfil.get().strip()
-        edad = int(edad_txt) if edad_txt.isdigit() else None
-        direccion = entry_direccion_perfil.get().strip()
-        f_nacimiento = comprobar_fecha(entry_f_nacimiento_perfil)
-        f_ingreso = comprobar_fecha(entry_f_ingreso_perfil)
-        telefono = entry_telefono_perfil.get().strip()
-        contacto_emergencia = entry_contacto_emergencia_perfil.get().strip()
-        tel_emergencia = entry_tel_emergencia_perfil.get().strip()
-        obra_social = entry_obra_social_perfil.get().strip()
-        estado = var_tipo_estado_perfil.get()
-        direccion = var_tipo_direccion_perfil.get()
-        fecha_egreso = comprobar_fecha(entry_fecha_egreso_perfil)
-        tipo_egreso = var_tipo_egreso_perfil.get().strip()
-        motivo_egreso = entry_motivo_egreso_perfil.get().strip()
-        if estado != "No activo":
+    #    edad_txt = entry_edad_perfil.get().strip()
+    #    edad = int(edad_txt) if edad_txt.isdigit() else None
+    #    direccion = entry_direccion_perfil.get().strip()
+  #      f_nacimiento = comprobar_fecha(entry_f_nacimiento_perfil)
+  #      f_ingreso = comprobar_fecha(entry_f_ingreso_perfil)
+  #      telefono = entry_telefono_perfil.get().strip()
+ #       contacto_emergencia = entry_contacto_emergencia_perfil.get().strip()
+ #       tel_emergencia = entry_tel_emergencia_perfil.get().strip()
+  #      obra_social = entry_obra_social_perfil.get().strip()
+   #     estado = var_tipo_estado_perfil.get()
+    #    direccion = var_tipo_direccion_perfil.get()
+    #    fecha_egreso = comprobar_fecha(entry_fecha_egreso_perfil)
+     #   tipo_egreso = var_tipo_egreso_perfil.get().strip()
+     #   motivo_egreso = entry_motivo_egreso_perfil.get().strip()
+      #  if estado != "No activo":
             estado = "No activo"
             var_tipo_estado_perfil.set("No activo")
-        if tipo_egreso == "-" and estado != "Activo":
+     #   if tipo_egreso == "-" and estado != "Activo":
             estado = "Activo"
             var_tipo_estado_perfil.set("Activo")
-        if foto_pendiente["bytes"] == b"":
+   #     if foto_pendiente["bytes"] == b"":
             foto_contenido = None
             borrar_foto = True
-        elif foto_pendiente["bytes"] is not None:
+    #    elif foto_pendiente["bytes"] is not None:
             foto_contenido = sqlite3.Binary(foto_pendiente["bytes"])
             borrar_foto = False
-        else:
+     #   else:
             foto_contenido = None
             borrar_foto = False
-        dni_cargado = dni_original["valor"]
-        if dni_cargado:
+      #  dni_cargado = dni_original["valor"]
+     #   if dni_cargado:
             if str(dni) != str(dni_cargado):
                 cursor.execute("SELECT id FROM personas WHERE dni = ?", (dni,))
                 if cursor.fetchone():
@@ -728,7 +744,7 @@ def abrir_ventana_perfil():
                                  estado, direccion, fecha_egreso, tipo_egreso, motivo_egreso, dni_cargado))
                 if borrar_foto: cursor.execute("UPDATE personas SET foto = NULL WHERE dni = ?", (dni,))
                 elif foto_contenido is not None: cursor.execute("UPDATE personas SET foto = ? WHERE dni = ?", (foto_contenido, dni))
-        else:
+    #    else:
             try:
                 cursor.execute("""INSERT INTO personas(nombre, apellido, dni, edad, direccion, fecha_nacimiento, fecha_ingreso, telefono, contacto_emergencia,
                                 telefono_emergencia, obra_social, estado, direccion, fecha_egreso, tipo_egreso, motivo_egreso, foto)
@@ -738,56 +754,56 @@ def abrir_ventana_perfil():
             except sqlite3.IntegrityError:
                 messagebox.showerror("Error", "Ya existe una persona con ese DNI.")
                 return
-            dni_original["valor"] = str(dni)
-        conexion.commit()
-        refrescar_lista()
-        foto_pendiente["bytes"] = None
-        messagebox.showinfo("OK", "Datos guardados.")
+        #    dni_original["valor"] = str(dni)
+    #    conexion.commit()
+   #     refrescar_lista()
+        #foto_pendiente["bytes"] = None
+    #    messagebox.showinfo("OK", "Datos guardados.")
 
     def cargar_perfil():
         dni_txt = entry_dni.get().strip()
-        lista_personas_perfil.delete(0, tk.END)
-        foto_pendiente["bytes"] = None
+        #lista_personas_perfil.delete(0, tk.END)
+        #foto_pendiente["bytes"] = None
         cursor.execute("""SELECT nombre, apellido, edad, direccion, fecha_nacimiento, fecha_ingreso, telefono, contacto_emergencia,
                         telefono_emergencia, obra_social, estado, direccion, fecha_egreso, tipo_egreso, motivo_egreso FROM personas WHERE dni = ?""", (dni_txt,))
-        fila = cursor.fetchone()
-        if fila:
-            entry_nombre_perfil.delete(0, tk.END)
-            entry_nombre_perfil.insert(0, fila[0])
-            entry_apellido_perfil.delete(0, tk.END)
-            entry_apellido_perfil.insert(0, fila[1])
-            entry_edad_perfil.delete(0, tk.END)
-            entry_edad_perfil.insert(0, fila[2] or "")
-            entry_direccion_perfil.delete(0, tk.END)
-            entry_direccion_perfil.insert(0, fila[3] or "")
-            entry_f_nacimiento_perfil.delete(0, tk.END)
-            entry_f_nacimiento_perfil.insert(0, fila[4] or "")
-            entry_f_ingreso_perfil.delete(0, tk.END)
-            entry_f_ingreso_perfil.insert(0, fila[5] or "")
-            entry_telefono_perfil.delete(0, tk.END)
-            entry_telefono_perfil.insert(0, fila[6] or "")
-            entry_contacto_emergencia_perfil.delete(0, tk.END)
-            entry_contacto_emergencia_perfil.insert(0, fila[7] or "")
-            entry_tel_emergencia_perfil.delete(0, tk.END)
-            entry_tel_emergencia_perfil.insert(0, fila[8] or "")
-            entry_obra_social_perfil.delete(0, tk.END)
-            entry_obra_social_perfil.insert(0, fila[9] or "")
-            var_tipo_estado_perfil.set(fila[10] or "")
-            var_tipo_direccion_perfil.set(fila[11] or "")
-            entry_fecha_egreso_perfil.delete(0, tk.END)
-            entry_fecha_egreso_perfil.insert(0, fila[12] or "")
-            var_tipo_egreso_perfil.set(fila[13] or "")
-            entry_motivo_egreso_perfil.delete(0, tk.END)
-            entry_motivo_egreso_perfil.insert(0, fila[14] or "")
-            dni_original["valor"] = dni_txt
-            mostrar_foto_en_perfil()
-        else: messagebox.showinfo("Error", "No existe ese DNI.")
+        #fila = cursor.fetchone()
+    #    if fila:
+      #      entry_nombre_perfil.delete(0, tk.END)
+     #       entry_nombre_perfil.insert(0, fila[0])
+       #     entry_apellido_perfil.delete(0, tk.END)
+        #    entry_apellido_perfil.insert(0, fila[1])
+         #   entry_edad_perfil.delete(0, tk.END)
+          #  entry_edad_perfil.insert(0, fila[2] or "")
+           # entry_direccion_perfil.delete(0, tk.END)
+            #entry_direccion_perfil.insert(0, fila[3] or "")
+            #entry_f_nacimiento_perfil.delete(0, tk.END)
+ #           entry_f_nacimiento_perfil.insert(0, fila[4] or "")
+  #          entry_f_ingreso_perfil.delete(0, tk.END)
+  #          entry_f_ingreso_perfil.insert(0, fila[5] or "")
+   #         entry_telefono_perfil.delete(0, tk.END)
+    #        entry_telefono_perfil.insert(0, fila[6] or "")
+     #       entry_contacto_emergencia_perfil.delete(0, tk.END)
+      #      entry_contacto_emergencia_perfil.insert(0, fila[7] or "")
+       #     entry_tel_emergencia_perfil.delete(0, tk.END)
+        #    entry_tel_emergencia_perfil.insert(0, fila[8] or "")
+         #   entry_obra_social_perfil.delete(0, tk.END)
+          #  entry_obra_social_perfil.insert(0, fila[9] or "")
+           # var_tipo_estado_perfil.set(fila[10] or "")
+            #var_tipo_direccion_perfil.set(fila[11] or "")
+            #entry_fecha_egreso_perfil.delete(0, tk.END)
+#            entry_fecha_egreso_perfil.insert(0, fila[12] or "")
+ #           var_tipo_egreso_perfil.set(fila[13] or "")
+  #          entry_motivo_egreso_perfil.delete(0, tk.END)
+   #         entry_motivo_egreso_perfil.insert(0, fila[14] or "")
+    #        dni_original["valor"] = dni_txt
+      #      mostrar_foto_en_perfil()
+       # else: messagebox.showinfo("Error", "No existe ese DNI.")
 
-    def _texto_ficha_paciente():
-        dni_txt = entry_dni_perfil.get().strip()
-        if not dni_txt:
-            messagebox.showwarning("Atencion", "Escribi un DNI primero.")
-            return None
+    #def _texto_ficha_paciente():
+    #    dni_txt = entry_dni_perfil.get().strip()
+   #     if not dni_txt:
+            #messagebox.showwarning("Atencion", "Escribi un DNI primero.")
+            #return None
         cursor.execute("""SELECT nombre, apellido, dni, edad, fecha_nacimiento, fecha_ingreso, telefono, direccion, contacto_emergencia,
                         telefono_emergencia, obra_social, estado, direccion, fecha_egreso, tipo_egreso, motivo_egreso FROM personas WHERE dni = ?""", (dni_txt,))
         p = cursor.fetchone()
@@ -826,44 +842,44 @@ def abrir_ventana_perfil():
         return "\n".join(lineas)
 
     def exportar_pdf_paciente():
-        texto = _texto_ficha_paciente()
-        if texto is None: return
-        ruta = filedialog.asksaveasfilename(title="Guardar perfil como PDF", defaultextension=".pdf",
-            initialfile=f"perfil_{entry_dni_perfil.get().strip()}.pdf", filetypes=[("PDF", "*.pdf")])
-        if not ruta: return
-        dni = entry_dni_perfil.get().strip()
-        cursor.execute("SELECT foto FROM personas WHERE dni = ?", (dni,))
+     #   texto = _texto_ficha_paciente()
+       # if texto is None: return
+        #ruta = filedialog.asksaveasfilename(title="Guardar perfil como PDF", defaultextension=".pdf",
+      #      initialfile=f"perfil_{entry_dni_perfil.get().strip()}.pdf", filetypes=[("PDF", "*.pdf")])
+       # if not ruta: return
+        #dni = entry_dni_perfil.get().strip()
+        #cursor.execute("SELECT foto FROM personas WHERE dni = ?", (dni,))
         fila = cursor.fetchone()
         foto_bytes = fila[0] if fila and fila[0] else None
-        try:
-            crear_pdf_de_texto(ruta, texto, foto_bytes)
-            messagebox.showinfo("OK", f"Perfil guardado en:\n{ruta}")
-        except Exception:
-            traceback.print_exc()
-            messagebox.showerror("Error", "No se pudo crear el PDF.")
+        #try:
+        #    crear_pdf_de_texto(ruta, texto, foto_bytes)
+         #   messagebox.showinfo("OK", f"Perfil guardado en:\n{ruta}")
+        #except Exception:
+        #    traceback.print_exc()
+        #    messagebox.showerror("Error", "No se pudo crear el PDF.")
 
     def exportar_word_paciente():
-        texto = _texto_ficha_paciente()
+        #texto = _texto_ficha_paciente()
         if texto is None: return
-        ruta = filedialog.asksaveasfilename(title="Guardar perfil como Word", defaultextension=".rtf",
-            initialfile=f"perfil_{entry_dni_perfil.get().strip()}.rtf", filetypes=[("Word (RTF)", "*.rtf")])
-        if not ruta: return
+       # ruta = filedialog.asksaveasfilename(title="Guardar perfil como Word", defaultextension=".rtf",
+       #      initialfile=f"perfil_{entry_dni_perfil.get().strip()}.rtf", filetypes=[("Word (RTF)", "*.rtf")])
+        #if not ruta: return
         
         # --- NUEVO: Obtener la foto ---
-        dni = entry_dni_perfil.get().strip()
-        cursor.execute("SELECT foto FROM personas WHERE dni = ?", (dni,))
+        #dni = entry_dni_perfil.get().strip()
+        #cursor.execute("SELECT foto FROM personas WHERE dni = ?", (dni,))
         fila = cursor.fetchone()
         foto_bytes = fila[0] if fila and fila[0] else None
         # ------------------------------
 
-        try:
+       # try:
             # --- NUEVO: Pasar la foto ---
-            crear_word_de_texto(ruta, texto, foto_bytes)
+         #   crear_word_de_texto(ruta, texto, foto_bytes)
             # -----------------------------
-            messagebox.showinfo("OK", f"Perfil guardado en:\n{ruta}")
-        except Exception:
-            traceback.print_exc()
-            messagebox.showerror("Error", "No se pudo crear el Word.")
+    #        messagebox.showinfo("OK", f"Perfil guardado en:\n{ruta}")
+      #  except Exception:
+     #       traceback.print_exc()
+       #     messagebox.showerror("Error", "No se pudo crear el Word.")
 
     #boton_guardar_perfil = RoundedButton(frame_izquierdo, 160, 40, 20,VERDE_AZULADO, BLANCO,text="Guardar cambios",command=guardar_cambios_perfil)
     #boton_guardar_perfil.grid(row=16, column=0, padx=10, pady=5, sticky="ew")
@@ -881,38 +897,38 @@ def abrir_ventana_perfil():
     #boton_pdf_legajo = RoundedButton(frame_izquierdo, 230, 40, 20, VERDE_AZULADO, BLANCO, text="Legajo en formato PDF", command=lambda: exportar_entrevistas_pdf(entry_dni_perfil.get().strip() or None))
     #boton_pdf_legajo.grid(row=18, column=0, padx=10, pady=5, sticky="ew")
 
-    frame_derecha = tk.Frame(ventana_perfil, bg=GRIS_NIEBLA)
-    frame_derecha.pack(side="right", fill="both", expand=True, padx=(0, 15), pady=15)
-    frame_foto_perfil = Frame(frame_derecha, bg=BLANCO, relief="solid",bd=1, height=280)
-    frame_foto_perfil.pack(side="top", fill="x", pady=(0, 10))
-    frame_foto_perfil.pack_propagate(False)
-    visor_foto_perfil = tk.Label(frame_foto_perfil,text="👤\nClic para subir foto",bg=BLANCO, fg=GRIS_MEDIO,font=("Segoe UI", 20), cursor="hand2")
-    visor_foto_perfil.pack(fill="both", expand=True, padx=10, pady=10)
-    visor_foto_perfil.bind("<Button-1>", subir_foto_perfil)
+    #frame_derecha = tk.Frame(ventana_perfil, bg=GRIS_NIEBLA)
+    #frame_derecha.pack(side="right", fill="both", expand=True, padx=(0, 15), pady=15)
+    #frame_foto_perfil = Frame(frame_derecha, bg=BLANCO, relief="solid",bd=1, height=280)
+    #frame_foto_perfil.pack(side="top", fill="x", pady=(0, 10))
+    #frame_foto_perfil.pack_propagate(False)
+    #visor_foto_perfil = tk.Label(frame_foto_perfil,text="👤\nClic para subir foto",bg=BLANCO, fg=GRIS_MEDIO,font=("Segoe UI", 20), cursor="hand2")
+    #visor_foto_perfil.pack(fill="both", expand=True, padx=10, pady=10)
+    #visor_foto_perfil.bind("<Button-1>", subir_foto_perfil)
     #boton_quitar_foto = RoundedButton(frame_derecha, 100, 40, 20,VERDE_AZULADO, BLANCO,text="Quitar foto",command=quitar_foto_perfil)
     #boton_quitar_foto.pack(side="top", padx=10, pady=5)
-    frame_galeria = Frame(frame_derecha, bg=GRIS_NIEBLA)
-    frame_galeria.pack(side="top", fill="x", pady=(0, 10))
-    Label(frame_galeria, text="Fotos del editor:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 10, "bold")).pack(anchor="w")
-    frame_galeria_inner = Frame(frame_galeria, bg=GRIS_NIEBLA, height=120)
-    frame_galeria_inner.pack(fill="x")
-    frame_galeria_inner.pack_propagate(False)
-    scroll_galeria = tk.Scrollbar(frame_galeria_inner, orient="vertical")
-    scroll_galeria.pack(side="right", fill="y")
-    lista_fotos_galeria = tk.Listbox(frame_galeria_inner, font=("Segoe UI", 10), yscrollcommand=scroll_galeria.set, selectbackground=AZUL_SERENO, selectforeground=BLANCO)
-    lista_fotos_galeria.pack(side="left", fill="both", expand=True)
-    scroll_galeria.config(command=lista_fotos_galeria.yview)
-    lista_fotos_galeria.bind("<<ListboxSelect>>", asignar_foto_galeria)
-    frame_lista_perfil = Frame(frame_derecha, bg=GRIS_AZULADO, relief="solid", bd=1)
-    frame_lista_perfil.pack(side="top", fill="both", expand=True, pady=(0, 20))
-    Label(frame_lista_perfil, text="Entrevistas del paciente", bg=GRIS_AZULADO, fg=BLANCO, font=("Segoe UI", 15, "bold")).pack(side="top", padx=10, pady=10)
-    scroll_perfil = tk.Scrollbar(frame_lista_perfil, orient="vertical")
-    scroll_perfil.pack(side="right", fill="y")
-    lista_curos_hechos = Listbox(frame_lista_perfil, yscrollcommand=scroll_perfil.set, font=("Segoe UI", 12), bg=BLANCO, fg=GRIS_AZULADO, selectbackground=AZUL_SERENO, selectforeground=BLANCO)
-    lista_curos_hechos.pack(side="left", fill="both", expand=True)
-    scroll_perfil.config(command=lista_curos_hechos.yview)
-    mostrar_foto_en_perfil()
-    agregar_boton_luna(ventana_perfil)
+    #frame_galeria = Frame(frame_derecha, bg=GRIS_NIEBLA)
+    #frame_galeria.pack(side="top", fill="x", pady=(0, 10))
+    #Label(frame_galeria, text="Fotos del editor:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 10, "bold")).pack(anchor="w")
+    #frame_galeria_inner = Frame(frame_galeria, bg=GRIS_NIEBLA, height=120)
+    #frame_galeria_inner.pack(fill="x")
+    #frame_galeria_inner.pack_propagate(False)
+    #scroll_galeria = tk.Scrollbar(frame_galeria_inner, orient="vertical")
+    #scroll_galeria.pack(side="right", fill="y")
+    #lista_fotos_galeria = tk.Listbox(frame_galeria_inner, font=("Segoe UI", 10), yscrollcommand=scroll_galeria.set, selectbackground=AZUL_SERENO, selectforeground=BLANCO)
+    #lista_fotos_galeria.pack(side="left", fill="both", expand=True)
+    #scroll_galeria.config(command=lista_fotos_galeria.yview)
+    #lista_fotos_galeria.bind("<<ListboxSelect>>", asignar_foto_galeria)
+    #frame_lista_perfil = Frame(frame_derecha, bg=GRIS_AZULADO, relief="solid", bd=1)
+    #frame_lista_perfil.pack(side="top", fill="both", expand=True, pady=(0, 20))
+    #Label(frame_lista_perfil, text="Entrevistas del paciente", bg=GRIS_AZULADO, fg=BLANCO, font=("Segoe UI", 15, "bold")).pack(side="top", padx=10, pady=10)
+     #scroll_perfil = tk.Scrollbar(frame_lista_perfil, orient="vertical")
+    #scroll_perfil.pack(side="right", fill="y")
+    #lista_curos_hechos = Listbox(frame_lista_perfil, yscrollcommand=scroll_perfil.set, font=("Segoe UI", 12), bg=BLANCO, fg=GRIS_AZULADO, selectbackground=AZUL_SERENO, selectforeground=BLANCO)
+    #lista_curos_hechos.pack(side="left", fill="both", expand=True)
+    #scroll_perfil.config(command=lista_curos_hechos.yview)
+    #mostrar_foto_en_perfil()
+    #agregar_boton_luna(ventana_perfil)
     cargar_perfil()
 
 # BLOQUE 19: EDITOR DE FOTOS
@@ -1038,11 +1054,11 @@ def abrir_ventana_editor_fotos():
 def cargar_imagen():
     def cargar_perfil():
         #fede estubo aqui :3
-        ista_curos_hechos.delete(0, tk.END)
+     #   ista_curos_hechos.delete(0, tk.END)
         cursor.execute("SELECT * FROM empleados")
     
         for u in cursor.fetchall():
-            lista_curos_hechos.insert(tk.END, u)
+      #      lista_curos_hechos.insert(tk.END, u)
             print("222")
 
 def obtener_bytes_sanca():
@@ -1085,15 +1101,15 @@ def abrir_ventana_autores():
     else:
         Label(frame_foto, text="No se encontró la imagen", bg=BLANCO, fg=NEGRO).pack(expand=True)
 
-    boton_cerrar = RoundedButton(ventana_autores, 40, 30, 15, ROJO, BLANCO, text="X", command=ventana_autores.destroy)
-    boton_cerrar.place(relx=1.0, rely=0.0, anchor="ne", x=-15, y=15)
+#    boton_cerrar = RoundedButton(ventana_autores, 40, 30, 15, ROJO, BLANCO, text="X", command=ventana_autores.destroy)
+#    boton_cerrar.place(relx=1.0, rely=0.0, anchor="ne", x=-15, y=15)
     agregar_boton_luna(ventana_autores)
 
 # BLOQUE 22: DOBLE CLIC PARA PERFIL
 def abrir_perfil_doble_clic(event=None):
     if not lista_personas.curselection(): return
     al_seleccionar()
-    abrir_ventana_perfil()
+#    abrir_ventana_perfil()
 lista_personas.bind("<Double-Button-1>", abrir_perfil_doble_clic)
 lista_personas.bind("<<ListboxSelect>>", al_seleccionar)
 
@@ -1374,15 +1390,15 @@ def abrir_ventana_ver_documento(dni_paciente=None):
         try:
             if extension == ".pdf":
                 with open(ruta, "rb") as archivo:
-                    lector = PyPDF2.PdfReader(archivo)
-                    for pagina in lector.pages: texto += pagina.extract_text() + "\n"
-            elif extension in (".doc", ".docx", ".txt"):
-                try:
+                    #lector = PyPDF2.PdfReader(archivo)
+                    #for pagina in lector.pages: texto += pagina.extract_text() + "\n"
+            #elif extension in (".doc", ".docx", ".txt"):
+            #    try:
                     with open(ruta, "r", encoding="utf-8") as archivo: contenido = archivo.read()
                     if "<p>" in contenido: contenido = re.sub(r"<[^>]+>", "", contenido)
                     texto = contenido
-                except UnicodeDecodeError:
-                    messagebox.showerror("Error", "No se pudo leer el archivo (codificación no soportada).")
+              #  except UnicodeDecodeError:
+             #        messagebox.showerror("Error", "No se pudo leer el archivo (codificación no soportada).")
                     return
             else:
                 messagebox.showwarning("Formato", "Formato no soportado. Usá PDF, DOC, DOCX o TXT.")
@@ -1411,4 +1427,4 @@ def al_cerrar_app():
     ventana.destroy()
 
 ventana.protocol("WM_DELETE_WINDOW", al_cerrar_app)
-ventana.mainloop()
+#ventana.mainloop()
