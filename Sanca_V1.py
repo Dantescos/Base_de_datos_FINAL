@@ -517,11 +517,11 @@ frame_btn_info = Frame(ventana, bg=GRIS_NIEBLA)  # Frame botón info
 frame_btn_info.pack(side="bottom", fill="x", padx=10, pady=15)
 frame_btn.pack(side="top", fill="x", padx=15, pady=10)
 frame_btn.pack_propagate(False)
-btn_tema       = Button(frame_btn, text="☾")  # Botón tema
+btn_tema       = Button(frame_btn, text="☾",bg=NEGRO, fg=BLANCO, activebackground=AZUL_PETROLEO, activeforeground=NEGRO, relief="flat")  # Botón tema
 btn_tema.pack(side="right", padx=5, pady=7)
-btn_cursos     = Button(frame_btn, text="Cursos", command=abrir_ventana_cursos)
+btn_cursos     = Button(frame_btn, text="Cursos",bg=AZUL_SERENO, fg=BLANCO, activebackground=AZUL_PETROLEO, activeforeground=NEGRO, relief="flat", command=abrir_ventana_cursos)
 btn_cursos.pack(side="left", padx=5, pady=7)
-btn_personas   = Button(frame_btn, text="Persona 👤")
+btn_personas   = Button(frame_btn, text="Persona 👤",bg=AZUL_SERENO, fg=BLANCO, activebackground=AZUL_PETROLEO, activeforeground=NEGRO, relief="flat")
 btn_personas.pack(side="left", padx=5, pady=7)
 
 sub_btn = Frame(frame_btn, bg=GRIS_NIEBLA)  # Sub-frame botones para el medio arriba
@@ -529,14 +529,14 @@ sub_btn.pack(side="left", fill="both", expand=True)
 sub_btn.columnconfigure(0, weight=1)
 sub_btn.columnconfigure(5, weight=1)
 
-btn_agregar = Button(sub_btn,text="Agregar", width=5, height=2)
+btn_agregar = Button(sub_btn,text="Agregar",bg=AZUL_SERENO, fg=BLANCO, activebackground=AZUL_PETROLEO, activeforeground=NEGRO, relief="flat", width=5, height=2)
 btn_agregar.grid(row=0, column=1, padx=5, pady=7)
 
-btn_eliminar = Button(sub_btn,text="Eliminar", width=5, height=2)
+btn_eliminar = Button(sub_btn,text="Eliminar",bg=AZUL_SERENO, fg=BLANCO, activebackground=AZUL_PETROLEO, activeforeground=NEGRO, relief="flat", width=5, height=2)
 btn_eliminar.grid(row=0, column=2, padx=5, pady=7)
-btn_buscar = Button(sub_btn, text="Buscar", width=5, height=2)
+btn_buscar = Button(sub_btn, text="Buscar",bg=AZUL_SERENO, fg=BLANCO, activebackground=AZUL_PETROLEO, activeforeground=NEGRO, relief="flat", width=5, height=2)
 btn_buscar.grid(row=0, column=3, padx=5, pady=7)
-btn_limpiar = Button(sub_btn, text="Limpiar", width=5, height=2)
+btn_limpiar = Button(sub_btn, text="Limpiar",bg=AZUL_SERENO, fg=BLANCO, activebackground=AZUL_PETROLEO, activeforeground=NEGRO, relief="flat", width=5, height=2)
 btn_limpiar.grid(row=0, column=4, padx=5, pady=7)
 
 # BLOQUE 11: FORMULARIO
