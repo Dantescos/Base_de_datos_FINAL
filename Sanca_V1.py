@@ -702,6 +702,8 @@ def abrir_ventana_perfil():
     entry_localidad = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
     entry_localidad.grid(row=12, column=1, padx=5, pady=3)
 
+btn_perfil = Button(frame_btn,text = "Perfil de persona 👤",command= abrir_ventana_perfil)
+btn_perfil.pack(side="left",padx = 5, pady = 7)
 # BLOQUE 14: MODO OSCURO
 tema_oscuro = False  # Bandera modo oscuro
 ventanas_secundarias = []  # Lista de ventanas abiertas
