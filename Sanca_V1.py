@@ -1317,7 +1317,6 @@ def abrir_perfil_doble_clic(event=None):
     al_seleccionar()
 #    abrir_ventana_perfil()
 lista_personas.bind("<Double-Button-1>", abrir_perfil_doble_clic)
-lista_personas.bind("<<ListboxSelect>>", al_seleccionar)
 
 # BLOQUE 24: crear_word_de_texto
 
