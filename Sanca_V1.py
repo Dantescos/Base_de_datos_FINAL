@@ -145,6 +145,27 @@ _y = (alto_pantalla - alto_ventana) // 2  # Centrado vertical
 ventana.geometry(f"{ancho_ventana}x{alto_ventana}+{_x}+{_y}")  # Aplico geometría
 ventana.minsize(900, 550)  # Tamaño mínimo
 
+# BLOQUE 6.5: AUXILIARES
+def normalizar_fecha(texto):
+    texto = texto.strip()
+    for i in string.punctuation:
+        if i in (":", "/"): continue
+        texto = texto.replace(i, "/")
+    return texto
+
+def separar_fecha_hora(texto):
+    texto = normalizar_fecha(texto)
+    match = re.search(r"\s+(\d{1,2}:\d{2}(?::\d{2})?)\s*$", texto)
+    if match:
+        hora = match.group(1)
+        fecha = texto[:match.start()].strip()
+        return fecha, hora
+    return texto, ""
+
+def comprobar_fecha(entry_fecha):
+    fecha, _ = separar_fecha_hora(entry_fecha.get())
+    return fecha
+
 # BLOQUE 7: VENTANA DE CURSOS
 ventana_cursos = None  # Variable global para controlar la instancia
 entry_cursos_ref = None
@@ -166,6 +187,185 @@ def abrir_ventana_cursos():
         ventana_cursos = None
 
     ventana_cursos.protocol("WM_DELETE_WINDOW", al_cerrar_cursos)
+
+    label_especialidad = Label(ventana_cursos, text="Nombre del curso")
+    label_especialidad.grid()
+    entry_especialidad = Entry(ventana_cursos)
+    entry_especialidad.grid()
+    label_f_inicio = Label(ventana_cursos, text="Fecha de inicio:")
+    label_f_inicio.grid()
+    entry_f_inicio = Entry(ventana_cursos)
+    entry_f_inicio.grid()
+    label_lugar_en_que_se_dicta = Label(ventana_cursos, text="Lugar en el que se dicta:")
+    label_lugar_en_que_se_dicta.grid()
+    entry_lugar_en_que_se_dicta = Entry(ventana_cursos)
+    entry_lugar_en_que_se_dicta.grid()
+    label__f_final = Label(ventana_cursos, text="Fecha de finalizacion:")
+    label__f_final.grid()
+    entry_f_final = Entry(ventana_cursos)
+    entry_f_final.grid()
+    label_dia = Label(ventana_cursos, text="Dias:")
+    label_dia.grid()
+    entry_dias = Entry(ventana_cursos)
+    entry_dias.grid()
+    label_horarios = Label(ventana_cursos, text="Horarios:")
+    label_horarios.grid()
+    entry_horarios = Entry(ventana_cursos)
+    entry_horarios.grid()
+    label_docente = Label(ventana_cursos, text="Docente")
+    label_docente.grid()
+    entry_docente = Entry(ventana_cursos)
+    entry_docente.grid()
+    label_cantidad_de_modulos = Label(ventana_cursos, text="Cantidad de modulos")
+    label_cantidad_de_modulos.grid()
+    entry_cantidad_de_modulos = Entry(ventana_cursos)
+    entry_cantidad_de_modulos.grid()
+    label_curso_numero = Label(ventana_cursos, text="Numero del curso:")
+    label_curso_numero.grid()
+    entry_curso_numero = Entry(ventana_cursos)
+    entry_curso_numero.grid()
+
+    def detalles_curso(event=None):
+        seleccion = lista_cursos.curselection()
+        if not seleccion: return
+        dato = lista_cursos.get(seleccion[0])
+        id_c = int(dato.split("ID ")[1])
+
+        cursor.execute("""SELECT especialidad, fecha_de_iniciacion, lugar_en_el_que_se_dicta, fecha_de_terminacion, dias, horarios, docente, cantidad_de_modulos, curso_numero FROM cursos WHERE id = ?""", (id_c,))
+        fila = cursor.fetchone()
+
+        ventana_detalle = Toplevel()
+        ventana_detalle.title(f"Detalle del curso #{id_c}")
+        ventana_detalle.geometry("600x550")
+
+        info = [("ID", id_c), ("Curso", fila[0] or "-"), ("Docente", fila[6] or "-"), ("Fecha de inicio", fila[1] or "-"), ("Fecha de terminacion", fila[3] or "-"), ("Dias", fila[4] or "-"), 
+                ("Horarios", fila[5] or "-"), ("cantidad de modulos", fila[7] or "-"), ("Numero del curso", fila[8] or "-"), ("Lugar en el que se dicta", fila[2] or "-")]
+        for etiqueta, valor in info:
+            Label(ventana_detalle, text=f"{etiqueta}:   {valor}").grid()
+
+    
+    lista_cursos = Listbox(ventana_cursos)
+    lista_cursos.grid()
+    lista_cursos.bind("<Double-Button-1>", detalles_curso)
+
+
+    
+    label_id = Label(ventana_cursos, text="ID para editar:")
+    label_id.grid_remove()
+    entry_id = Entry(ventana_cursos)
+    entry_id.grid_remove()
+    
+    def grids():
+        label_id.grid()
+        entry_id.grid()
+        boton_cargar_datos.grid()
+        boton_para_editar.grid()
+    
+    def grids_remove():
+        label_id.grid_remove()
+        entry_id.delete(0, tk.END)
+        entry_id.grid_remove()
+        boton_cargar_datos.grid_remove()
+        boton_para_editar.grid_remove()
+
+    def agregar_curso():
+        grids_remove()
+        especialidad = entry_especialidad.get().strip()
+        f_inicio = comprobar_fecha(entry_f_inicio)
+        lugar_en_que_se_dicta = entry_lugar_en_que_se_dicta.get().strip()
+        f_final = comprobar_fecha(entry_f_final)
+        dias = entry_dias.get().strip()
+        horarios = entry_horarios.get().strip()
+        docente = entry_docente.get().strip()
+        cantidad_de_modulos = entry_cantidad_de_modulos.get().strip()
+        curso_numero = entry_curso_numero.get().strip()
+        cursor.execute("""INSERT INTO cursos(especialidad, fecha_de_iniciacion, lugar_en_el_que_se_dicta, fecha_de_terminacion, dias, horarios, docente, cantidad_de_modulos, curso_numero) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""", (especialidad, f_inicio, lugar_en_que_se_dicta, f_final, dias, horarios, docente, cantidad_de_modulos, curso_numero))
+        conexion.commit()
+        refrescar_lista_cursos()
+
+    def eliminar_curso():
+        grids_remove()
+        seleccion = lista_cursos.curselection()
+        if not seleccion:
+            messagebox.showwarning("Atencion", "Selecciona un cursos de la lista para eliminar.")
+            return
+        texto = lista_cursos.get(seleccion[0])
+        id_c = int(texto.split("ID ")[1])
+        cursor.execute("DELETE FROM cursos WHERE id = ?", (id_c,))
+        conexion.commit()
+        refrescar_lista_cursos()
+
+    def cargar_datos_curso():
+        id_c = int(entry_id.get().strip())
+        cursor.execute("""SELECT especialidad, fecha_de_iniciacion, lugar_en_el_que_se_dicta, fecha_de_terminacion, dias, horarios, docente, cantidad_de_modulos, curso_numero FROM cursos WHERE id = ?""", (id_c,))
+        fila = cursor.fetchone()
+        if fila:
+            entry_especialidad.delete(0, tk.END)
+            entry_especialidad.insert(0, fila[0])
+            
+            entry_f_inicio.delete(0, tk.END)
+            entry_f_inicio.insert(0, fila[1])
+            
+            entry_lugar_en_que_se_dicta.delete(0, tk.END)
+            entry_lugar_en_que_se_dicta.insert(0, fila[2])
+            
+            entry_f_final.delete(0, tk.END)
+            entry_f_final.insert(0, fila[3])
+            
+            entry_dias.delete(0, tk.END)
+            entry_dias.insert(0, fila[4])
+            
+            entry_horarios.delete(0, tk.END)
+            entry_horarios.insert(0, fila[5])
+
+            entry_docente.delete(0, tk.END)
+            entry_docente.insert(0, fila[6])
+
+            entry_cantidad_de_modulos.delete(0, tk.END)
+            entry_cantidad_de_modulos.insert(0, fila[7])
+            
+            entry_curso_numero.delete(0, tk.END)
+            entry_curso_numero.insert(0, fila[8])
+
+    def editar_curso():
+        id_c = int(entry_id.get().strip())
+
+        especialidad = entry_especialidad.get().strip()
+        f_inicio = comprobar_fecha(entry_f_inicio)
+        lugar_en_que_se_dicta = entry_lugar_en_que_se_dicta.get().strip()
+        f_final = comprobar_fecha(entry_f_final)
+        dias = entry_dias.get().strip()
+        horarios = entry_horarios.get().strip()
+        docente = entry_docente.get().strip()
+        cantidad_de_modulos = entry_cantidad_de_modulos.get().strip()
+        curso_numero = entry_curso_numero.get().strip()
+        cursor.execute("""UPDATE cursos SET especialidad = ?, fecha_de_iniciacion = ?, lugar_en_el_que_se_dicta = ?, fecha_de_terminacion = ?, dias = ?, horarios = ?, docente = ?, cantidad_de_modulos = ?, curso_numero = ? WHERE id = ?""",
+                       (especialidad, f_inicio, lugar_en_que_se_dicta, f_final, dias, horarios, docente, cantidad_de_modulos, curso_numero, id_c))
+        conexion.commit()
+        refrescar_lista_cursos()
+
+    def refrescar_lista_cursos():
+        lista_cursos.delete(0, tk.END)
+        cursor.execute("SELECT id, especialidad FROM cursos ORDER BY id, especialidad")
+        for id, especialidad in cursor.fetchall():
+                lista_cursos.insert(tk.END, f"{especialidad} / ID {id}")
+
+    botpn_agregar_curso = Button(ventana_cursos, text="Agregar",command=agregar_curso)
+    botpn_agregar_curso.grid()
+    
+    boton_mostrar_edit_carg_id = Button(ventana_cursos, text="Editar cursos", command=grids)     #Abilita las opciones de cargar y editar definitivo
+    boton_mostrar_edit_carg_id.grid()
+    
+    boton_cargar_datos = Button(ventana_cursos, text="Cargar datos de curso", command=cargar_datos_curso)
+    boton_cargar_datos.grid_remove()
+    
+    boton_para_editar = Button(ventana_cursos, text="EDITAR", command=editar_curso)
+    boton_para_editar.grid_remove()
+
+    boton_eliminar = Button(ventana_cursos, text="Eliminar", command=eliminar_curso)
+    boton_eliminar.grid()
+    refrescar_lista_cursos()
 
 # BLOQUE 8: BANNER
 banner = tk.Frame(ventana, bg=COLOR_NAVBAR, height=150)  # Frame del banner
