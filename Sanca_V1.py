@@ -534,12 +534,10 @@ frame_btn.pack(side="top", fill="x", padx=15, pady=10)
 frame_btn.pack_propagate(False)
 btn_tema       = Button(frame_btn, text="☾")  # Botón tema
 btn_tema.pack(side="right", padx=5, pady=7)
-
-btn_personas   = Button(frame_btn, text="Persona 👤", command=abrir_ventana_cursos)
+btn_cursos     = Button(frame_btn, text="Cursos", command=abrir_ventana_cursos)
+btn_cursos.pack(side="left", padx=5, pady=7)
+btn_personas   = Button(frame_btn, text="Persona 👤")
 btn_personas.pack(side="left", padx=5, pady=7)
-
-#btn_tema = RoundedButton(frame_btn, 50, 40, 20, NEGRO, BLANCO, text="☾", command=lambda: aplicar_tema())  # Botón tema
-#btn_tema.pack(side="right", padx=5, pady=7)
 
 sub_btn = Frame(frame_btn, bg=GRIS_NIEBLA)  # Sub-frame botones para el medio arriba
 sub_btn.pack(side="left", fill="both", expand=True)
@@ -555,17 +553,6 @@ btn_buscar = Button(sub_btn, text="Buscar", width=5, height=2)
 btn_buscar.grid(row=0, column=3, padx=5, pady=7)
 btn_limpiar = Button(sub_btn, text="Limpiar", width=5, height=2)
 btn_limpiar.grid(row=0, column=4, padx=5, pady=7)
-
-#btn_agregar = RoundedButton(sub_btn, 200, 40, 20, VERDE_AZULADO, BLANCO, text="Agregar", command=agregar, hover_color=VERDE_TERMINAL)
-#btn_agregar.grid(row=0, column=1, padx=5, pady=7)
-#btn_eliminar = RoundedButton(sub_btn, 200, 40, 20, VERDE_AZULADO, BLANCO, text="Eliminar", command=eliminar, hover_color=VERDE_TERMINAL)
-#btn_eliminar.grid(row=0, column=2, padx=5, pady=7)
-#btn_buscar = RoundedButton(sub_btn, 200, 40, 20, VERDE_AZULADO, BLANCO, text="Buscar", command=buscar, hover_color=VERDE_TERMINAL)
-#btn_buscar.grid(row=0, column=3, padx=5, pady=7)
-#btn_limpiar = RoundedButton(sub_btn, 200, 40, 20, VERDE_AZULADO, BLANCO, text="Limpiar", command=limpiar, hover_color=VERDE_TERMINAL)
-#btn_limpiar.grid(row=0, column=4, padx=5, pady=7)
-btn_cursos = tk.Button(sub_btn, text="Cursos", command=abrir_ventana_cursos, bg=COLOR_BOTON, fg=COLOR_BOTON_TEXTO, font=("Segoe UI", 11, "bold"))
-btn_cursos.pack(side="left", padx=5, pady=7)
 
 # BLOQUE 11: FORMULARIO
 frame_form = Frame(ventana, bg=GRIS_NIEBLA)  # Frame formulario
