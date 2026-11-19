@@ -341,21 +341,24 @@ def abrir_ventana_cursos():
         for id, especialidad in cursor.fetchall():
                 lista_cursos.insert(tk.END, f"{especialidad} / ID {id}")
 
-    botpn_agregar_curso = Button(ventana_cursos, text="Agregar",command=agregar_curso, bg=AMARILLO)
-    botpn_agregar_curso.grid(row=25, column=1, padx=5, pady=3)
-    
-    boton_mostrar_edit_carg_id = Button(ventana_cursos, text="Editar cursos", command=grids, bg=AMARILLO)     #Abilita las opciones de cargar y editar definitivo
-    boton_mostrar_edit_carg_id.grid(row=27, column=1, padx=5, pady=3)
-    #fede estubo aqui :3
-    boton_cargar_datos = Button(ventana_cursos, text="Cargar datos de curso", command=cargar_datos_curso, bg=AMARILLO)
-    boton_cargar_datos.grid_remove(row=29, column=1, padx=5, pady=3)
-    
-    boton_para_editar = Button(ventana_cursos, text="EDITAR", command=editar_curso, bg=AMARILLO)
-    boton_para_editar.grid_remove(row=31, column=1, padx=5, pady=3)
+    botpn_agregar_curso = Button(ventana_cursos, text="Agregar",bg=AMARILLO, fg=BLANCO, activebackground=AZUL_PETROLEO, activeforeground=NEGRO, relief="flat",command=agregar_curso)
+    botpn_agregar_curso.grid(row=20, column=0, padx=5, pady=10)
 
-    boton_eliminar = Button(ventana_cursos, text="Eliminar", command=eliminar_curso, bg=AMARILLO)
-    boton_eliminar.grid(row=23, column=33, padx=5, pady=3)
+    boton_mostrar_edit_carg_id = Button(ventana_cursos, text="Editar cursos", bg=AMARILLO, fg=BLANCO, activebackground=AZUL_PETROLEO, activeforeground=NEGRO, relief="flat", command=grids)     #Abilita las opciones de cargar y editar definitivo
+    boton_mostrar_edit_carg_id.grid(row=20, column=1, padx=5, pady=10)
+    
+    boton_cargar_datos = Button(ventana_cursos, text="Cargar datos de curso", bg=AMARILLO, fg=BLANCO, activebackground=AZUL_PETROLEO, activeforeground=NEGRO, relief="flat", command=cargar_datos_curso)
+    boton_cargar_datos.grid_remove()
+    boton_cargar_datos.grid(row=20, column=2, padx=5, pady=10)
+    
+    boton_para_editar = Button(ventana_cursos, text="EDITAR", bg=AMARILLO, fg=BLANCO, activebackground=AZUL_PETROLEO, activeforeground=NEGRO, relief="flat", command=editar_curso)
+    boton_para_editar.grid_remove()
+    boton_para_editar.grid(row=20, column=3, padx=5, pady=10)
+
+    boton_eliminar = Button(ventana_cursos, text="Eliminar", bg=AMARILLO, fg=BLANCO, activebackground=AZUL_PETROLEO, activeforeground=NEGRO, relief="flat", command=eliminar_curso)
+    boton_eliminar.grid(row=20, column=4, padx=5, pady=10)
     refrescar_lista_cursos()
+
 
 # BLOQUE 8: BANNER
 banner = tk.Frame(ventana, bg=COLOR_NAVBAR, height=150)  # Frame del banner
