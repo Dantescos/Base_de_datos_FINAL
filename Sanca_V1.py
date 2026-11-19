@@ -343,19 +343,21 @@ def abrir_ventana_cursos():
                 lista_cursos.insert(tk.END, f"{especialidad} / ID {id}")
 
     botpn_agregar_curso = Button(ventana_cursos, text="Agregar",bg=AZUL_SERENO, fg=BLANCO, activebackground=AZUL_PETROLEO, activeforeground=NEGRO, relief="flat",command=agregar_curso)
-    botpn_agregar_curso.grid()
-    
+    botpn_agregar_curso.grid(row=20, column=0, padx=5, pady=10)
+
     boton_mostrar_edit_carg_id = Button(ventana_cursos, text="Editar cursos", bg=AZUL_SERENO, fg=BLANCO, activebackground=AZUL_PETROLEO, activeforeground=NEGRO, relief="flat", command=grids)     #Abilita las opciones de cargar y editar definitivo
-    boton_mostrar_edit_carg_id.grid()
+    boton_mostrar_edit_carg_id.grid(row=20, column=1, padx=5, pady=10)
     
     boton_cargar_datos = Button(ventana_cursos, text="Cargar datos de curso", bg=AZUL_SERENO, fg=BLANCO, activebackground=AZUL_PETROLEO, activeforeground=NEGRO, relief="flat", command=cargar_datos_curso)
     boton_cargar_datos.grid_remove()
+    boton_cargar_datos.grid(row=20, column=3, padx=5, pady=10)
     
     boton_para_editar = Button(ventana_cursos, text="EDITAR", bg=AZUL_SERENO, fg=BLANCO, activebackground=AZUL_PETROLEO, activeforeground=NEGRO, relief="flat", command=editar_curso)
     boton_para_editar.grid_remove()
+    boton_para_editar.grid(row=20, column=4, padx=5, pady=10)
 
     boton_eliminar = Button(ventana_cursos, text="Eliminar", bg=AZUL_SERENO, fg=BLANCO, activebackground=AZUL_PETROLEO, activeforeground=NEGRO, relief="flat", command=eliminar_curso)
-    boton_eliminar.grid()
+    boton_eliminar.grid(row=20, column=5, padx=5, pady=10)
     refrescar_lista_cursos()
 
 # BLOQUE 8: BANNER
