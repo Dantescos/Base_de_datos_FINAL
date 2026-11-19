@@ -534,8 +534,7 @@ frame_btn.pack(side="top", fill="x", padx=15, pady=10)
 frame_btn.pack_propagate(False)
 btn_tema       = Button(frame_btn, text="☾")  # Botón tema
 btn_tema.pack(side="right", padx=5, pady=7)
-btn_cursos     = Button(frame_btn, text="Cursos", command=abrir_ventana_cursos)
-btn_cursos.pack(side="left", padx=5, pady=7)
+
 btn_personas   = Button(frame_btn, text="Persona 👤", command=abrir_ventana_cursos)
 btn_personas.pack(side="left", padx=5, pady=7)
 
