@@ -460,7 +460,7 @@ def agregar_definitivo():
     messagebox.showinfo("OK", "Persona agregada.")
 def refrescar_lista():
     lista_personas.delete(0, tk.END)  # Borro la lista
-    cursor.execute("SELECT nombre, apellido, dni FROM personas ORDER BY apellido, nombre")  # Consulto personas
+    cursor.execute("SELECT nombres, apellido, dni FROM personas ORDER BY apellido, nombres")  # Consulto personas fede estubo aqui :3
     for nombre, apellido, dni in cursor.fetchall():
         lista_personas.insert(tk.END, f"{apellido}, {nombre} — DNI {dni}")  # Inserto en la lista
     #fede estubo aqui :3
