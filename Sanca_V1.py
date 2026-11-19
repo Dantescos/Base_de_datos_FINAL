@@ -1033,9 +1033,7 @@ def aplicar_tema():
             "",
             "# ESTADO",
             f"Fecha de ingreso: {p[5] or '-'}",
-            f"Fecha de egreso: {p[13] or '-'}",
             f"Tipo de egreso: {p[14] or '-'}",
-            f"Motivo de egreso: {p[15] or '-'}",
         ]
         return "\n".join(lineas)
 
