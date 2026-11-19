@@ -277,7 +277,7 @@ def abrir_ventana_cursos():
         horarios = entry_horarios.get().strip()
         docente = entry_docente.get().strip()
         cantidad_de_modulos = entry_cantidad_de_modulos.get().strip()
-        curso_numero = entry_curso_numero.get().strip()
+        curso_numero = int(entry_curso_numero.get().strip())
         cursor.execute("""INSERT INTO cursos(especialidad, fecha_de_iniciacion, lugar_en_el_que_se_dicta, fecha_de_terminacion, dias, horarios, docente, cantidad_de_modulos, curso_numero) 
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""", (especialidad, f_inicio, lugar_en_que_se_dicta, f_final, dias, horarios, docente, cantidad_de_modulos, curso_numero))
         conexion.commit()
@@ -338,7 +338,7 @@ def abrir_ventana_cursos():
         horarios = entry_horarios.get().strip()
         docente = entry_docente.get().strip()
         cantidad_de_modulos = entry_cantidad_de_modulos.get().strip()
-        curso_numero = entry_curso_numero.get().strip()
+        curso_numero = int(entry_curso_numero.get().strip())
         cursor.execute("""UPDATE cursos SET especialidad = ?, fecha_de_iniciacion = ?, lugar_en_el_que_se_dicta = ?, fecha_de_terminacion = ?, dias = ?, horarios = ?, docente = ?, cantidad_de_modulos = ?, curso_numero = ? WHERE id = ?""",
                        (especialidad, f_inicio, lugar_en_que_se_dicta, f_final, dias, horarios, docente, cantidad_de_modulos, curso_numero, id_c))
         conexion.commit()
