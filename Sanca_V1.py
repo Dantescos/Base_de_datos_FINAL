@@ -463,9 +463,7 @@ def refrescar_lista():
     cursor.execute("SELECT nombre, apellido, dni FROM personas ORDER BY apellido, nombre")  # Consulto personas
     for nombre, apellido, dni in cursor.fetchall():
         lista_personas.insert(tk.END, f"{apellido}, {nombre} — DNI {dni}")  # Inserto en la lista
-    cursor.execute("SELECT COUNT(*) FROM personas WHERE LOWER(COALESCE(estado, 'activo')) = 'activo'")  # Cuento activos
-    activos = cursor.fetchone()[0]  # Obtengo el número
-    contador_legajos.config(text=f"Legajos activos: {activos}")  # Actualizo contador
+    #fede estubo aqui :3
 
 def mostrar_foto(dni):
     cursor.execute("SELECT foto FROM personas WHERE dni = ?", (dni,))  # Busco la foto
