@@ -342,21 +342,21 @@ def abrir_ventana_cursos():
                 lista_cursos.insert(tk.END, f"{especialidad} / ID {id}")
 
     botpn_agregar_curso = Button(ventana_cursos, text="Agregar",bg=AMARILLO, fg=BLANCO, activebackground=AZUL_PETROLEO, activeforeground=NEGRO, relief="flat",command=agregar_curso)
-    botpn_agregar_curso.grid(row=20, column=0, padx=5, pady=10)
+    botpn_agregar_curso.grid(row=30, column=0, padx=5, pady=10)
 
     boton_mostrar_edit_carg_id = Button(ventana_cursos, text="Editar cursos", bg=AMARILLO, fg=BLANCO, activebackground=AZUL_PETROLEO, activeforeground=NEGRO, relief="flat", command=grids)     #Abilita las opciones de cargar y editar definitivo
-    boton_mostrar_edit_carg_id.grid(row=20, column=1, padx=5, pady=10)
+    boton_mostrar_edit_carg_id.grid(row=30, column=1, padx=5, pady=10)
     
     boton_cargar_datos = Button(ventana_cursos, text="Cargar datos de curso", bg=AMARILLO, fg=BLANCO, activebackground=AZUL_PETROLEO, activeforeground=NEGRO, relief="flat", command=cargar_datos_curso)
     boton_cargar_datos.grid_remove()
-    boton_cargar_datos.grid(row=20, column=2, padx=5, pady=10)
+    boton_cargar_datos.grid(row=30, column=2, padx=5, pady=10)
     
     boton_para_editar = Button(ventana_cursos, text="EDITAR", bg=AMARILLO, fg=BLANCO, activebackground=AZUL_PETROLEO, activeforeground=NEGRO, relief="flat", command=editar_curso)
     boton_para_editar.grid_remove()
-    boton_para_editar.grid(row=20, column=3, padx=5, pady=10)
+    boton_para_editar.grid(row=30, column=3, padx=5, pady=10)
 
     boton_eliminar = Button(ventana_cursos, text="Eliminar", bg=AMARILLO, fg=BLANCO, activebackground=AZUL_PETROLEO, activeforeground=NEGRO, relief="flat", command=eliminar_curso)
-    boton_eliminar.grid(row=20, column=4, padx=5, pady=10)
+    boton_eliminar.grid(row=30, column=4, padx=5, pady=10)
     refrescar_lista_cursos()
 
 
@@ -694,8 +694,8 @@ def abrir_ventana_perfil():
     Label(frame_izquierdo, text=" Localidad:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=12, column=0, sticky="e", padx=5)
     entry_localidad = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
     entry_localidad.grid(row=12, column=1, padx=5, pady=3)
-
-btn_perfil = Button(frame_btn,text = "Perfil de persona 👤",command= abrir_ventana_perfil)
+    
+btn_perfil = Button(frame_btn,text = "Perfil de persona 👤",bg=AZUL_SERENO, fg=BLANCO, activebackground=AZUL_PETROLEO, activeforeground=NEGRO, relief="flat",command= abrir_ventana_perfil)
 btn_perfil.pack(side="left",padx = 5, pady = 7)
 # BLOQUE 14: MODO OSCURO
 tema_oscuro = False  # Bandera modo oscuro
@@ -704,8 +704,8 @@ _ventana_entrevistas_abierta = None  # Referencia a ventana entrevistas
 
 def actualizar_widget(widget, fondo, panel, texto, acento):
     for hijo in widget.winfo_children(): actualizar_widget(hijo, fondo, panel, texto, acento)
-        widget["menu"].config(bg=panel,fg=texto,activebackground=acento,activeforeground=BLANCO,bd=0,)
-        return
+    widget["menu"].config(bg=panel,fg=texto,activebackground=acento,activeforeground=BLANCO,bd=0,)
+    return
 
 def actualizar_ventanas_secundarias():
     if tema_oscuro:
