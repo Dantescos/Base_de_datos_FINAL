@@ -427,12 +427,6 @@ def al_seleccionar(event=None):
     entry_dni.insert(0, fila[2])  # Cargo DNI
     mostrar_foto(dni)  # Muestro foto
 
-def agregar():
-    #boton_busqueda_definitivo.grid_remove()  # Oculto buscar
-    grids_nom_ape()  # Muestro campos
-    grids_dni()
-    #boton_agregar_definitivo.grid()  # Muestro confirmar agregar
-
 def agregar_definitivo():
     nombre = entry_nombre.get().strip()
     apellido = entry_apellido.get().strip()
@@ -482,12 +476,6 @@ def eliminar():
     visor_foto.image = None
     messagebox.showinfo("OK", "Persona eliminada correctamente.")
 
-def buscar():
-    #boton_agregar_definitivo.grid_remove()  # Oculto agregar
-    grids_remove_nom_ape()  # Oculto nombre y apellido
-    grids_dni()  # Muestro DNI
-   # boton_busqueda_definitivo.grid()  # Muestro confirmar búsqueda
-
 def buscar_definitivo():
     dni_txt = entry_dni.get().strip()
     if not dni_txt:
@@ -518,6 +506,18 @@ def limpiar():
     visor_foto.configure(image="", text="👤\nSin foto")
     visor_foto.image = None
 
+def agregar():
+    btn_agregar_definitivo.grid()
+    btn_buscar_definitivo.grid_remove()
+    grids_nom_ape()  # Muestro campos
+    grids_dni()
+    
+def buscar():
+    btn_agregar_definitivo.grid_remove()
+    btn_buscar_definitivo.grid()
+    grids_remove_nom_ape()  # Oculto nombre y apellido
+    grids_dni()  # Muestro DNI
+
 # BLOQUE 10: FRAME DE BOTONES
 frame_btn = Frame(ventana, bg=GRIS_NIEBLA, height=55)  # Frame de botones
 frame_btn_info = Frame(ventana, bg=GRIS_NIEBLA)  # Frame botón info
@@ -536,14 +536,24 @@ sub_btn.pack(side="left", fill="both", expand=True)
 sub_btn.columnconfigure(0, weight=1)
 sub_btn.columnconfigure(5, weight=1)
 
-btn_agregar = Button(sub_btn,text="Agregar", width=5, height=2)
+btn_agregar = Button(sub_btn,text="Agregar", width=5, height=2, command=agregar)
 btn_agregar.grid(row=0, column=1, padx=5, pady=7)
 
-btn_eliminar = Button(sub_btn,text="Eliminar", width=5, height=2)
+btn_agregar_definitivo = Button(sub_btn,text="Agregar definitivo", width=5, height=2, command=agregar_definitivo)
+btn_agregar_definitivo.grid(row=0, column=10, padx=15, pady=17)
+btn_agregar_definitivo.grid_remove()
+
+btn_eliminar = Button(sub_btn,text="Eliminar", width=5, height=2, command=eliminar)
 btn_eliminar.grid(row=0, column=2, padx=5, pady=7)
-btn_buscar = Button(sub_btn, text="Buscar", width=5, height=2)
+
+btn_buscar = Button(sub_btn, text="Buscar", width=5, height=2, command=buscar)
 btn_buscar.grid(row=0, column=3, padx=5, pady=7)
-btn_limpiar = Button(sub_btn, text="Limpiar", width=5, height=2)
+
+btn_buscar_definitivo = Button(sub_btn, text="Buscar definitivo", width=5, height=2, command=buscar_definitivo)
+btn_buscar_definitivo.grid(row=0, column=12, padx=17, pady=19)
+btn_buscar_definitivo.grid_remove()
+
+btn_limpiar = Button(sub_btn, text="Limpiar", width=5, height=2, command=limpiar)
 btn_limpiar.grid(row=0, column=4, padx=5, pady=7)
 
 # BLOQUE 11: FORMULARIO
@@ -623,6 +633,8 @@ scroll.pack(side="right", fill="y")
 lista_personas = Listbox(caja_lista, yscrollcommand=scroll.set, font=("Segoe UI", 12), bg=BLANCO, fg=GRIS_AZULADO, selectbackground=AZUL_SERENO, selectforeground=BLANCO)
 lista_personas.pack(side="left", fill="both", expand=True)
 scroll.config(command=lista_personas.yview)
+
+refrescar_lista()
 
 # BLOQUE 13: VENTANA DE PERFIL
 def abrir_ventana_perfil():
