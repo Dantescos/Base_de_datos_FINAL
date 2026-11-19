@@ -410,6 +410,7 @@ def mostrar_foto(dni):
 def al_seleccionar(event=None):
     #boton_busqueda_definitivo.grid_remove()  # Oculto botones
     #boton_agregar_definitivo.grid_remove()
+    btn_buscar_definitivo.grid_remove()
     grids_nom_ape()  # Muestro campos
     grids_dni()
     sel = lista_personas.curselection()
