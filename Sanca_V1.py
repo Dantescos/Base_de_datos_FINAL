@@ -458,6 +458,83 @@ def agregar_definitivo():
     refrescar_lista()  # Refresco
     limpiar()  # Limpio
     messagebox.showinfo("OK", "Persona agregada.")
+def refrescar_lista():
+    lista_personas.delete(0, tk.END)  # Borro la lista
+    cursor.execute("SELECT nombre, apellido, dni FROM personas ORDER BY apellido, nombre")  # Consulto personas
+    for nombre, apellido, dni in cursor.fetchall():
+        lista_personas.insert(tk.END, f"{apellido}, {nombre} — DNI {dni}")  # Inserto en la lista
+    cursor.execute("SELECT COUNT(*) FROM personas WHERE LOWER(COALESCE(estado, 'activo')) = 'activo'")  # Cuento activos
+    activos = cursor.fetchone()[0]  # Obtengo el número
+    contador_legajos.config(text=f"Legajos activos: {activos}")  # Actualizo contador
+
+def mostrar_foto(dni):
+    cursor.execute("SELECT foto FROM personas WHERE dni = ?", (dni,))  # Busco la foto
+    fila = cursor.fetchone()
+    if fila and fila[0]:
+        try:
+            img = Image.open(BytesIO(fila[0]))  # Abro la imagen
+            img.thumbnail((300, 300))  # Redimensiono
+            fondo = Image.new("RGB", (300, 300), BLANCO)  # Fondo blanco
+            x = (300 - img.width) // 2
+            y = (300 - img.height) // 2
+            fondo.paste(img, (x, y))  # Pego la imagen
+            foto = ImageTk.PhotoImage(fondo)  # Convierto
+            visor_foto.configure(image=foto, text="")  # Muestro
+            visor_foto.image = foto  # Guardo referencia
+            return
+        except Exception: pass
+    visor_foto.configure(image="", text="👤\nSin foto")  # Placeholder
+    visor_foto.image = None
+
+def al_seleccionar(event=None):
+    #boton_busqueda_definitivo.grid_remove()  # Oculto botones
+    #boton_agregar_definitivo.grid_remove()
+    btn_buscar_definitivo.grid_remove()
+    grids_nom_ape()  # Muestro campos
+    grids_dni()
+    sel = lista_personas.curselection()
+    if not sel: return
+    texto = lista_personas.get(sel[0])
+    dni = int(texto.split("DNI ")[1])  # Extraigo el DNI
+    cursor.execute("SELECT nombre, apellido, dni FROM personas WHERE dni = ?", (dni,))
+    fila = cursor.fetchone()
+    if not fila: return
+    entry_nombre.delete(0, tk.END)
+    entry_nombre.insert(0, fila[0])  # Cargo nombre
+    entry_apellido.delete(0, tk.END)
+    entry_apellido.insert(0, fila[1])  # Cargo apellido
+    entry_dni.delete(0, tk.END)
+    entry_dni.insert(0, fila[2])  # Cargo DNI
+    mostrar_foto(dni)  # Muestro foto
+
+def agregar_definitivo():
+    nombre = entry_nombre.get().strip()
+    apellido = entry_apellido.get().strip()
+    dni_txt = entry_dni.get().strip()
+    if not (nombre and apellido and dni_txt):
+        messagebox.showwarning("Faltan datos", "Completa nombre, apellido y DNI.")  # Aviso
+        return
+    try: dni = int(dni_txt)  # Convierto a entero
+    except ValueError:
+        messagebox.showerror("DNI invalido", "El DNI debe ser numerico.")
+        return
+    ruta = filedialog.askopenfilename(title="Foto (opcional)", filetypes=[("Imagenes", "*.png *.jpg *.jpeg *.webp")])  # Pido foto
+    contenido = None
+    if ruta:
+        with open(ruta, "rb") as f: contenido = sqlite3.Binary(f.read())  # Leo bytes
+    try:
+        cursor.execute("INSERT INTO personas (nombre, apellido, dni, foto) VALUES (?,?,?,?)", (nombre, apellido, dni, contenido))  # Inserto
+        conexion.commit()
+    except sqlite3.IntegrityError:
+        messagebox.showerror("Error", "Ya existe una persona con ese DNI.\nVerifica el numero ingresado.")  # DNI duplicado
+        return
+    except Exception:
+        messagebox.showerror("Error inesperado", 'No se pudo guardar')
+        return
+    refrescar_lista()  # Refresco
+    limpiar()  # Limpio
+    #boton_agregar_definitivo.grid_remove()  # Oculto botón
+    messagebox.showinfo("OK", "Persona agregada.")
 
 def eliminar():
     seleccion = lista_personas.curselection()
@@ -467,6 +544,8 @@ def eliminar():
     texto = lista_personas.get(seleccion[0])
     dni = int(texto.split("DNI ")[1])
     if not messagebox.askyesno("Confirmar eliminación", f"¿Estas seguro de que deseas eliminar a esta persona?\n\n{texto}"): return
+    #boton_busqueda_definitivo.grid_remove()
+    #boton_agregar_definitivo.grid_remove()
     grids_remove_nom_ape()
     grids_remove_dni()
     cursor.execute("DELETE FROM pdf WHERE dni_personas = ?", (dni,))  # Borro pdfs
@@ -476,10 +555,6 @@ def eliminar():
     visor_foto.configure(image="", text="👤\nSin foto")
     visor_foto.image = None
     messagebox.showinfo("OK", "Persona eliminada correctamente.")
-
-def buscar():
-    grids_remove_nom_ape()  # Oculto nombre y apellido
-    grids_dni()  # Muestro DNI
 
 def buscar_definitivo():
     dni_txt = entry_dni.get().strip()
@@ -511,17 +586,29 @@ def limpiar():
     visor_foto.configure(image="", text="👤\nSin foto")
     visor_foto.image = None
 
+def agregar():
+    btn_agregar_definitivo.grid()
+    btn_buscar_definitivo.grid_remove()
+    grids_nom_ape()  # Muestro campos
+    grids_dni()
+    
+def buscar():
+    btn_agregar_definitivo.grid_remove()
+    btn_buscar_definitivo.grid()
+    grids_remove_nom_ape()  # Oculto nombre y apellido
+    grids_dni()  # Muestro DNI
+
 # BLOQUE 10: FRAME DE BOTONES
 frame_btn = Frame(ventana, bg=GRIS_NIEBLA, height=55)  # Frame de botones
 frame_btn_info = Frame(ventana, bg=GRIS_NIEBLA)  # Frame botón info
 frame_btn_info.pack(side="bottom", fill="x", padx=10, pady=15)
 frame_btn.pack(side="top", fill="x", padx=15, pady=10)
 frame_btn.pack_propagate(False)
-btn_tema       = Button(frame_btn, text="☾",bg=NEGRO, fg=BLANCO, activebackground=AZUL_PETROLEO, activeforeground=NEGRO, relief="flat")  # Botón tema
+btn_tema       = Button(frame_btn, text="☾")  # Botón tema
 btn_tema.pack(side="right", padx=5, pady=7)
-btn_cursos     = Button(frame_btn, text="Cursos",bg=AZUL_SERENO, fg=BLANCO, activebackground=AZUL_PETROLEO, activeforeground=NEGRO, relief="flat", command=abrir_ventana_cursos)
+btn_cursos     = Button(frame_btn, text="Cursos", command=abrir_ventana_cursos)
 btn_cursos.pack(side="left", padx=5, pady=7)
-btn_personas   = Button(frame_btn, text="Persona 👤",bg=AZUL_SERENO, fg=BLANCO, activebackground=AZUL_PETROLEO, activeforeground=NEGRO, relief="flat")
+btn_personas   = Button(frame_btn, text="Persona 👤")
 btn_personas.pack(side="left", padx=5, pady=7)
 
 sub_btn = Frame(frame_btn, bg=GRIS_NIEBLA)  # Sub-frame botones para el medio arriba
@@ -529,14 +616,24 @@ sub_btn.pack(side="left", fill="both", expand=True)
 sub_btn.columnconfigure(0, weight=1)
 sub_btn.columnconfigure(5, weight=1)
 
-btn_agregar = Button(sub_btn,text="Agregar",bg=AZUL_SERENO, fg=BLANCO, activebackground=AZUL_PETROLEO, activeforeground=NEGRO, relief="flat", width=5, height=2)
+btn_agregar = Button(sub_btn,text="Agregar", width=5, height=2, command=agregar)
 btn_agregar.grid(row=0, column=1, padx=5, pady=7)
 
-btn_eliminar = Button(sub_btn,text="Eliminar",bg=AZUL_SERENO, fg=BLANCO, activebackground=AZUL_PETROLEO, activeforeground=NEGRO, relief="flat", width=5, height=2)
+btn_agregar_definitivo = Button(sub_btn,text="Agregar definitivo", width=5, height=2, command=agregar_definitivo)
+btn_agregar_definitivo.grid(row=0, column=10, padx=15, pady=17)
+btn_agregar_definitivo.grid_remove()
+
+btn_eliminar = Button(sub_btn,text="Eliminar", width=5, height=2, command=eliminar)
 btn_eliminar.grid(row=0, column=2, padx=5, pady=7)
-btn_buscar = Button(sub_btn, text="Buscar",bg=AZUL_SERENO, fg=BLANCO, activebackground=AZUL_PETROLEO, activeforeground=NEGRO, relief="flat", width=5, height=2)
+
+btn_buscar = Button(sub_btn, text="Buscar", width=5, height=2, command=buscar)
 btn_buscar.grid(row=0, column=3, padx=5, pady=7)
-btn_limpiar = Button(sub_btn, text="Limpiar",bg=AZUL_SERENO, fg=BLANCO, activebackground=AZUL_PETROLEO, activeforeground=NEGRO, relief="flat", width=5, height=2)
+
+btn_buscar_definitivo = Button(sub_btn, text="Buscar definitivo", width=5, height=2, command=buscar_definitivo)
+btn_buscar_definitivo.grid(row=0, column=12, padx=17, pady=19)
+btn_buscar_definitivo.grid_remove()
+
+btn_limpiar = Button(sub_btn, text="Limpiar", width=5, height=2, command=limpiar)
 btn_limpiar.grid(row=0, column=4, padx=5, pady=7)
 
 # BLOQUE 11: FORMULARIO
@@ -616,6 +713,9 @@ scroll.pack(side="right", fill="y")
 lista_personas = Listbox(caja_lista, yscrollcommand=scroll.set, font=("Segoe UI", 12), bg=BLANCO, fg=GRIS_AZULADO, selectbackground=AZUL_SERENO, selectforeground=BLANCO)
 lista_personas.pack(side="left", fill="both", expand=True)
 scroll.config(command=lista_personas.yview)
+
+refrescar_lista()
+
 
 # BLOQUE 13: VENTANA DE PERFIL
 def abrir_ventana_perfil():
