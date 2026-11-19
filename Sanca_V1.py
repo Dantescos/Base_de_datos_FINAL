@@ -624,14 +624,83 @@ lista_personas = Listbox(caja_lista, yscrollcommand=scroll.set, font=("Segoe UI"
 lista_personas.pack(side="left", fill="both", expand=True)
 scroll.config(command=lista_personas.yview)
 
-# BLOQUE 13: BOTONES DEFINITIVOS
-#boton_agregar_definitivo = RoundedButton(frame_form, 350, 40, 20, VERDE_AZULADO, BLANCO, text="Confirmar agregar", command=agregar_definitivo)
-#boton_agregar_definitivo.grid(row=1, column=0, columnspan=8,sticky="ew", padx=5, pady=(5, 0))
-#boton_agregar_definitivo.grid_remove()
+# BLOQUE 13: VENTANA DE PERFIL
+def abrir_ventana_perfil():
+    global entry_dni_perfil_ref
+    ventana_perfil = Toplevel(ventana)
+    ventana_perfil.title("PERFIL DE ALUMNO")
+    ventana_perfil.geometry("1500x800")
+    ventana_perfil.config(bg=GRIS_NIEBLA)
+    def al_cerrar_perfil():
+        global entry_dni_perfil_ref
+        entry_dni_perfil_ref = None
+        ventana_perfil.destroy()
 
-#boton_busqueda_definitivo = RoundedButton(frame_form, 350, 40, 20, VERDE_AZULADO, BLANCO,text="Confirmar busqueda", command=buscar_definitivo)
-#boton_busqueda_definitivo.grid(row=1, column=0, columnspan=8,sticky="ew", padx=5, pady=(5, 0))
-#boton_busqueda_definitivo.grid_remove()
+    ventana_perfil.protocol("WM_DELETE_WINDOW", al_cerrar_perfil)
+
+    foto_pendiente = {"bytes": None}
+    dni_original = {"valor": entry_dni.get().strip()}
+
+    frame_izquierdo = Frame(ventana_perfil, bg=GRIS_NIEBLA)
+    frame_izquierdo.pack(side="left", fill="y", padx=15, pady=15)
+
+    Label(frame_izquierdo, text=" Nombre:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=0, column=0, sticky="e", padx=5)
+    entry_nombre_perfil = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
+    entry_nombre_perfil.grid(row=0, column=1, padx=5, pady=3)
+    entry_nombre_perfil.insert(0, entry_nombre.get())
+
+    Label(frame_izquierdo, text=" Apellido:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=1, column=0, sticky="e", padx=5)
+    entry_apellido_perfil = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
+    entry_apellido_perfil.grid(row=1, column=1, padx=5, pady=3)
+    entry_apellido_perfil.insert(0, entry_apellido.get())
+
+    Label(frame_izquierdo, text="Edad:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=2, column=0, sticky="e", padx=5)
+    entry_edad_perfil = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
+    entry_edad_perfil.grid(row=2, column=1, padx=5, pady=3)
+    entry_edad_perfil.insert(0, entry_nombre.get())
+
+
+    Label(frame_izquierdo, text=" DNI:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=3, column=0, sticky="e", padx=5)
+    entry_dni_perfil = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
+    entry_dni_perfil.grid(row=3, column=1, padx=5, pady=3)
+    entry_dni_perfil.insert(0, entry_dni.get())
+    entry_dni_perfil_ref = entry_dni_perfil
+
+    Label(frame_izquierdo, text=" Domicilio:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=4, column=0, sticky="e", padx=5)
+    entry_direccion_perfil = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
+    entry_direccion_perfil.grid(row=4, column=1, padx=5, pady=3)
+
+    Label(frame_izquierdo, text=" Fecha de nacimiento:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=5, column=0, sticky="e", padx=5)
+    entry_f_nacimiento_perfil = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
+    entry_f_nacimiento_perfil.grid(row=5, column=1, padx=5, pady=3)
+
+    Label(frame_izquierdo, text=" Fecha de ingreso al instituto:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=6, column=0, sticky="e", padx=5)
+    entry_f_ingreso_perfil = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
+    entry_f_ingreso_perfil.grid(row=6, column=1, padx=5, pady=3)
+
+    Label(frame_izquierdo, text="Telefono:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=7, column=0, sticky="e", padx=5)
+    entry_telefono_perfil = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
+    entry_telefono_perfil.grid(row=7, column=1, padx=5, pady=3)
+
+    Label(frame_izquierdo, text="Nombre del contacto de emergencia:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=8, column=0, sticky="e", padx=5)
+    entry_contacto_emergencia_perfil = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
+    entry_contacto_emergencia_perfil.grid(row=8, column=1, padx=5, pady=3)
+
+    Label(frame_izquierdo, text="Telefono del contacto de emergencia:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=9, column=0, sticky="e", padx=5)
+    entry_tel_emergencia_perfil = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
+    entry_tel_emergencia_perfil.grid(row=9, column=1, padx=5, pady=3)
+
+    Label(frame_izquierdo, text="Obra social:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=10, column=0, sticky="e", padx=5)
+    entry_obra_social_perfil = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
+    entry_obra_social_perfil.grid(row=10, column=1, padx=5, pady=3)
+
+    Label(frame_izquierdo, text="Nacionalidad:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=11, column=0, sticky="e", padx=5)
+    entry_nacionalidad = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
+    entry_nacionalidad.grid(row=11, column=1, padx=5, pady=3)
+    
+    Label(frame_izquierdo, text=" Localidad:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=12, column=0, sticky="e", padx=5)
+    entry_localidad = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
+    entry_localidad.grid(row=12, column=1, padx=5, pady=3)
 
 # BLOQUE 14: MODO OSCURO
 tema_oscuro = False  # Bandera modo oscuro
