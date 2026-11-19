@@ -722,27 +722,6 @@ def aplicar_tema():
 
 #    actualizar_ventanas_secundarias()
 
-# BLOQUE 15: AUXILIARES
-#def normalizar_fecha(texto):
-#    texto = texto.strip()
-#    for i in string.punctuation:
-#        if i in (":", "/"): continue
-#        texto = texto.replace(i, "/")
-#    return texto
-
-#def separar_fecha_hora(texto):
-#    texto = normalizar_fecha(texto)
-#    match = re.search(r"\s+(\d{1,2}:\d{2}(?::\d{2})?)\s*$", texto)
-#    if match:
-#        hora = match.group(1)
-#        fecha = texto[:match.start()].strip()
-#        return fecha, hora
-#    return texto, ""
-
-#def comprobar_fecha(entry_fecha):
-#    fecha, _ = separar_fecha_hora(entry_fecha.get())
-#    return fecha
-
 # BLOQUE 18: VENTANA DE PERFIL
 #def abrir_ventana_perfil():
 #    global entry_dni_perfil_ref
