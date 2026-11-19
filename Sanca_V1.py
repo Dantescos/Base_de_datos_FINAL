@@ -31,26 +31,18 @@ lugar_en_el_que_se_dicta TEXT,
 fecha_de_terminacion TEXT,
 dias TEXT,
 horarios TEXT,
-docente TEXT,
-cantidad_de_modulos TEXT,
 curso_numero INTEGER)""")  
 
 # Creo tabla personas
 cursor.execute("""CREATE TABLE IF NOT EXISTS personas(
 nombres TEXT,
 apellido TEXT,
-nacionalidad TEXT,
-fecha_de_nacimiento TEXT,
-documento_de_identidad TEXT,
-direccion_domicilio TEXT,
-localidad_TEXT,
 dni INTEGER UNIQUE NOT NULL, 
 edad INTEGER, 
 fecha_ingreso TEXT,
 telefono TEXT, 
 contacto_emergencia TEXT, 
 telefono_emergencia TEXT,
-obra_social TEXT,
 foto BLOB)""")
 
 cursor.execute("""CREATE TABLE IF NOT EXISTS pdf (
@@ -68,7 +60,7 @@ cursor.execute("""CREATE TABLE IF NOT EXISTS recursos(
 cursor.execute("PRAGMA table_info(personas)")  # Obtengo info de las columnas
 _columnas_personas = {fila[1] for fila in cursor.fetchall()}  # Guardo los nombres de las columnas
 
-for _col, _tipo in (("fecha_egreso", "TEXT"), ("tipo_egreso", "TEXT"), ("motivo_egreso", "TEXT")):
+for _col, _tipo in (("tipo_egreso", "TEXT"), ("motivo_ingreso", "TEXT")):
     if _col not in _columnas_personas: cursor.execute(f"ALTER TABLE personas ADD COLUMN {_col} {_tipo}")  # Agrego columnas si no existen
 
 conexion.commit()  # Confirmo los cambios
