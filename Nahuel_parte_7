@@ -21,19 +21,21 @@ SANCA_BASE64 = "/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAMCAgoKCAgICAgKCAgICAgICAgICAgI
 entry_dni_perfil_ref = None  # Variable global que apunta al tk.Entry del DNI en la ventana de perfil
 
 # BLOQUE 3: BASE DE DATOS
-conexion = sqlite3.connect("Centro de Formación Profesional 401  Escuela de oficios SANCA.db")  # Abro o creo la base de datos
+conexion = sqlite3.connect("Centro de Formación Profesional 401  Escuela de oficios.db")  # Abro o creo la base de datos
 cursor = conexion.cursor()  # Creo el cursor
 
 # Base de datos para los cursos
-cursor.execute("""CREATE TABLE IF NOT EXISTS cursos(id INTEGER PRIMARY KEY AUTOINCREMENT,
+cursor.execute("""CREATE TABLE IF NOT EXISTS cursos(
+id INTEGER PRIMARY KEY AUTOINCREMENT,
+docente TEXT,
 especialidad TEXT,
 fecha_de_iniciacion TEXT,
 lugar_en_el_que_se_dicta TEXT,
 fecha_de_terminacion TEXT,
 dias TEXT,
 horarios TEXT,
+cantidad_de_modulo INTEGER,
 curso_numero INTEGER)""")  
-
 # Creo tabla personas
 cursor.execute("""CREATE TABLE IF NOT EXISTS personas(
 nombres TEXT,
@@ -85,7 +87,6 @@ COLOR_ACENTO_TEXTO = "#2E2E2E"  # letra sobre ámbar
 COLOR_EXITO        = "#5E8C6A"  # mensajes OK
 COLOR_ERROR        = "#C0392B"  # errores / eliminar
 # Viejo colores
-# BLOQUE 5: PALETA DE COLORES
 ROJO = "#E3000F"  # Rojo fuerte
 AMARILLO = "#FCAF17"  # Amarillo
 NEGRO = "#0a0a0a"  # Casi negro
@@ -681,7 +682,7 @@ lista_personas.bind("<<ListboxSelect>>", al_seleccionar)
 def abrir_ventana_perfil(event=None):
     global entry_dni_perfil_ref
     ventana_perfil = Toplevel(ventana)
-    ventana_perfil.title("PERFIL")
+    ventana_perfil.title("Gestor de datos de estudiante")
     ventana_perfil.geometry("1500x800")
     ventana_perfil.config(bg=GRIS_NIEBLA)
 
@@ -986,8 +987,11 @@ def abrir_ventana_perfil(event=None):
         if not dni_txt:
             messagebox.showwarning("Atencion", "No hay una persona registrada aun.")
             return None
-        cursor.execute("""SELECT nombres, apellido, dni,edad, domicilio, fecha_nacimiento,fecha_ingreso, telefono, contacto_emergencia , telefono_emergencia , obra_social,
-        localidad,nacionalidad  FROM personas WHERE dni = ?""", (dni_txt,))
+
+        
+        cursor.execute("""SELECT nombres, apellido, dni,edad, domicilio, fecha_ingreso,telefono,mail,
+        fecha_nacimiento,contacto_emergencia,telefono_emergencia,obra_social,nacionalidad,localidad       
+       FROM personas WHERE dni = ?""", (dni_txt,))
         p = cursor.fetchone()
         if not p:
             messagebox.showinfo("Sin resultados", "No existe ese DNI.")
@@ -996,26 +1000,26 @@ def abrir_ventana_perfil(event=None):
         # El ## es para el título, el # para los subtítulos
 
         lineas = [f"## {nombre_completo}",
-            f"DNI: {p[2] or '-'}  |  Edad: {p[3] or '-'}",
+            f"DNI: {p[3] or '-'}  |  Edad: {p[4] or '-'}",
             "",
             "# DATOS PERSONALES",
             f"Nombre: {p[0] or '-'}",
             f"Apellido: {p[1] or '-'}",
-            f"DNI: {p[2] or '-'}",
-            f"Edad: {p[3] or '-'}",
-            f"Fecha de nacimiento: {p[5] or '-'}",
+            f"DNI: {p[3] or '-'}",
+            f"Edad: {p[4] or '-'}",
+            f"Fecha de nacimiento: {p[8] or '-'}",
             "",
             "# CONTACTO",
-            f"Telefono: {p[7] or '-'}",
+            f"Telefono: {p[6] or '-'}",
             f"Domicilio: {p[4] or '-'}",
-            f"Contacto de emergencia: {p[8] or '-'}",
-            f"Telefono de emergencia: {p[9] or '-'}",
+            f"Contacto de emergencia: {p[9] or '-'}",
+            f"Telefono de emergencia: {p[10] or '-'}",
             "",
             "# SALUD",
-            f"Obra social: {p[10] or '-'}",
+            f"Obra social: {p[11] or '-'}",
             "",
-            "#INSTITUTO",
-            f"Fecha de ingreso: {p[6] or '-'}" ]
+            "# INSTITUTO",
+            f"Fecha de ingreso al instituto: {p[5] or '-'}" ]
         return "\n".join(lineas)
 
     def exportar_pdf_persona():
@@ -1041,17 +1045,15 @@ def abrir_ventana_perfil(event=None):
         ruta = filedialog.asksaveasfilename(title="Guardar perfil como Word", defaultextension=".rtf",
             initialfile=f"perfil_{entry_dni_perfil.get().strip()}.rtf", filetypes=[("Word (RTF)", "*.rtf")])
         if not ruta: return
-        
-        # --- NUEVO: Obtener la foto ---
+        # --- Esto sirve para obtener la foto ---
         dni = entry_dni_perfil.get().strip()
         cursor.execute("SELECT foto FROM personas WHERE dni = ?", (dni,))
         fila = cursor.fetchone()
         foto_bytes = fila[0] if fila and fila[0] else None
         # ------------------------------
-
         try:
-            # --- NUEVO: Pasar la foto ---
-            #crear_word_de_texto(ruta, texto, foto_bytes)
+            # --- Con eso se pasa la foto ---
+            crear_word_de_texto(ruta, texto, foto_bytes)
             # -----------------------------
             messagebox.showinfo("OK", f"Perfil guardado en:\n{ruta}")
         except Exception:
@@ -1093,6 +1095,7 @@ def abrir_ventana_perfil(event=None):
     lista_fotos_galeria.bind("<<ListboxSelect>>", asignar_foto_galeria)
     frame_lista_perfil = Frame(frame_derecha, bg=GRIS_AZULADO, relief="solid", bd=1)
     frame_lista_perfil.pack(side="top", fill="both", expand=True, pady=(0, 20))
+    # Ver como se puede reciclar esto 
     Label(frame_lista_perfil, text="Entrevistas del paciente", bg=GRIS_AZULADO, fg=BLANCO, font=("Segoe UI", 15, "bold")).pack(side="top", padx=10, pady=10)
     scroll_perfil = tk.Scrollbar(frame_lista_perfil, orient="vertical")
     scroll_perfil.pack(side="right", fill="y")
@@ -1103,8 +1106,8 @@ def abrir_ventana_perfil(event=None):
     #agregar_boton_luna(ventana_perfil)
     cargar_perfil()
 
+# Aca con esto se abre el gestor de datos de persona con hacer UN solo click en la lista principal
 lista_personas.bind("<Double-Button-1>", abrir_ventana_perfil)
-
 
 def abrir_ventana_editor_fotos():
     ventana_editor_fotos = tk.Toplevel(ventana)
@@ -1141,7 +1144,7 @@ def abrir_ventana_editor_fotos():
         if not dni_actual:
             label_contador.config(text="Imagenes cargadas: 0")
             return
-        cursor.execute("SELECT id, nombres FROM pdf WHERE dni_personas = ? ORDER BY id", (dni_actual,))
+        cursor.execute("SELECT id, nombre FROM pdf WHERE dni_personas = ? ORDER BY id", (dni_actual,))
         filas = cursor.fetchall()
         for id_img, nombre in filas:
             lista_imagenes.insert(tk.END, nombre)
@@ -1254,7 +1257,7 @@ def crear_pdf(ruta,perfil):
         (nombre_persona, apellido_persona, id,dni_persona, fecha_nacimiento_persona, fecha_ingreso, telefono_persona, direccion_persona,mail_persona,
          nombre_contacto_emergencia, telefono_emergencia, nombre_obra_social,nacionalidad_persona,localidad_persona) = datos
         agregar_linea(f"Id ficha de estudiante {id}", negrita=True, tamano=12)
-        agregar_linea(f"DNI de estudiantee: {dni_persona}")
+        agregar_linea(f"DNI de estudiante: {dni_persona}")
         estudiante = " ".join(parte for parte in (nombre_persona, apellido_persona) if parte) or "No registrado"
         agregar_linea(f"Estudiante: {estudiante}")
         agregar_linea("--- Datos del estudiante ---", negrita=True)
@@ -1506,14 +1509,14 @@ def crear_pdf_de_texto(ruta, texto, foto_bytes=None):
     with open(ruta, "wb") as archivo: archivo.write(salida)
 
 # BLOQUE 15: EXPORTAR
-def exportar_entrevistas_word(dni_paciente=None):
+def exportar_persona_word(dni_persona=None):
     try:
-        query = """SELECT p.nombres, p.apellido, e.id, p.fecha_nacimiento, p.fecha_ingreso, p.telefono, p.domicilio, p.contacto_emergencia,
-                   p.telefono_emergencia, p.obra_social, p.estado, p.consentimiento, e.nombre_profecional, e.apellido_profecional, e.dni_profecional,
-                   e.matricula, e.especialidad, e.telefono_profecional, e.email_profecional, e.activo_profecional, e.entrevista, e.dni_paciente,
-                   e.fecha_entrevista, e.hora_entrevista, e.tipo_entrevista, e.proxima_sesion_entrevista FROM entrevistas AS e LEFT JOIN personas AS p ON p.dni = e.dni_paciente"""
-        if dni_paciente: cursor.execute(query + " WHERE e.dni_paciente = ? ORDER BY e.id", (dni_paciente,))
-        else: cursor.execute(query + " ORDER BY e.id")
+        query = """SELECT p.id ,p.nombres, p.apellido,p.dni,p.domicilio,p.fecha_ingreso,p.telefono,p.mail,p.fecha_nacimiento,p.contacto_emergecia,p.telefono_emergencia,
+        p.obra_social,p.nacionalidad,p.localidad personas AS p ON p.dni"""  
+        
+        
+        if dni_persona: cursor.execute(query + " WHERE p.dni = ? ORDER BY p.id", (dni_persona,))
+        else: cursor.execute(query + " ORDER BY p.id")
         entrevistas = cursor.fetchall()
     except sqlite3.Error:
         messagebox.showerror("Error al consultar", 'No se pudieron leer las entrevistas')
@@ -1524,8 +1527,8 @@ def exportar_entrevistas_word(dni_paciente=None):
 
     # --- NUEVO: Obtener la foto ---
     foto_bytes = None
-    if dni_paciente:
-        cursor.execute("SELECT foto FROM personas WHERE dni = ?", (dni_paciente,))
+    if dni_persona:
+        cursor.execute("SELECT foto FROM personas WHERE dni = ?", (dni_persona,))
         fila_foto = cursor.fetchone()
         if fila_foto and fila_foto[0]:
             foto_bytes = fila_foto[0]
@@ -1533,39 +1536,27 @@ def exportar_entrevistas_word(dni_paciente=None):
 
     lineas = ["Centro de Formación Profesional 401  Escuela de oficios SANCA | Ficha de perfil alumno", ""]
     for datos in entrevistas:
-        (nombre_paciente, apellido_paciente, id_entrevista, fecha_nacimiento_paciente, fecha_ingreso, telefono_paciente, direccion_paciente,
-         nombre_contacto_emergencia, telefono_emergencia, nombre_obra_social, estado_paciente, consentimiento, nombre_profecional, apellido_profecional,
-         dni_profesional, matricula, especialidad, telefono_profecional, email_profecional, activo_profecional, entrevista, Dni_paciente, fecha_entrevista,
-         hora_entrevista, tipo_entrevista, proxima_sesion) = datos
-        paciente = " ".join(p for p in (nombre_paciente, apellido_paciente) if p) or "No registrado"
-        
+        (nombre_persona, apellido_persona,dni_persona,edad_persona,domicilio_persona,fecha_ingreso_persona,telefono_persona,mail_persona,
+         fecha_nacimiento_persona,contacto_emergencia,telefono_emergencia,obra_social,nacionalidad_persona,localidad_persona,id_ficha_persona)=datos
+        persona = " ".join(p for p in (nombre_persona, apellido_persona) if p) or "No registrado"
         # Usamos los marcadores # para que la nueva función los formatee bonito
-        lineas.append(f"# Entrevista {id_entrevista}")
-        lineas.append(f"Fecha: {fecha_entrevista}  Hora: {hora_entrevista or '-'}  DNI paciente: {Dni_paciente}")
-        lineas.append(f"Paciente: {paciente}")
+        lineas.append(f"## Numero de ficha de alumno {id_ficha_persona}")
+        lineas.append(f"## {persona}") # Doble # para que resalte más
+        lineas.append(f" DNI: {dni_persona} | Edad: {edad_persona or '-'} | Nacionalidad: {nacionalidad_persona} or '-' ")
+        lineas.append(f"Fecha nacimiento: {fecha_nacimiento_persona or '-'} | Fecha ingreso al instituto: {fecha_ingreso_persona or '-'}")
+        lineas.append(f"Telefono: {telefono_persona or '-'} | Email: {mail_persona or '-'}")
+        lineas.append(f"Domicilio: {domicilio_persona or '-'} | Localidad: {localidad_persona}")
+        lineas.append(f"Contacto emergencia: {contacto_emergencia or '-'}  Tel: {telefono_emergencia or '-'}")
+        lineas.append(f"Obra social: {obra_social or '-'}")
         lineas.append("")
-        lineas.append("## Datos del profesional") # Doble # para que resalte más
-        lineas.append(f"Nombre: {nombre_profecional or '-'}  Apellido: {apellido_profecional or '-'}")
-        lineas.append(f"DNI: {dni_profesional or '-'}  Matricula: {matricula or '-'}")
-        lineas.append(f"Especialidad: {especialidad or '-'}  Estado: {activo_profecional or '-'}")
-        lineas.append(f"Telefono: {telefono_profecional or '-'}  Email: {email_profecional or '-'}")
-        lineas.append(f"Tipo: {tipo_entrevista or '-'}  Proxima sesion: {proxima_sesion or '-'}")
-        lineas.append("")
-        lineas.append("## Datos del paciente")
-        lineas.append(f"Fecha nacimiento: {fecha_nacimiento_paciente or '-'}  Fecha ingreso: {fecha_ingreso or '-'}")
-        lineas.append(f"Telefono: {telefono_paciente or '-'}  Domicilio: {direccion_paciente or '-'}")
-        lineas.append(f"Contacto emergencia: {nombre_contacto_emergencia or '-'}  Tel: {telefono_emergencia or '-'}")
-        lineas.append(f"Obra social: {nombre_obra_social or '-'}  Estado: {estado_paciente or '-'}  Consentimiento: {consentimiento or '-'}")
-        lineas.append("")
-        lineas.append("## Anotaciones")
-        for parrafo in (entrevista or "").splitlines() or ["Sin anotaciones"]: 
+        for parrafo in (entrevistas or "").splitlines() or ["Sin anotaciones"]: 
             lineas.append(parrafo)
         lineas.append("")
         lineas.append("__________________________________________________")
         lineas.append("")
     
     texto = "\n".join(lineas)
-    nombre_archivo = f"entrevistas_{dni_paciente}.rtf" if dni_paciente else "Archivo_perfil.rtf"
+    nombre_archivo = f"Perfil_alumno_{dni_persona}.rtf" if dni_persona else "Archivo_perfil.rtf"
     ruta = filedialog.asksaveasfilename(title="Guardar entrevistas como Word", defaultextension=".rtf", initialfile=nombre_archivo, filetypes=[("Documento Word (RTF)", "*.rtf")])
     if not ruta: return
     
@@ -1577,12 +1568,11 @@ def exportar_entrevistas_word(dni_paciente=None):
         messagebox.showerror("Error al exportar", 'No se pudo crear el Word')
         return
     messagebox.showinfo("Word creado", f"Entrevistas guardadas en:\n{ruta}")
+
 def exportar_entrevistas_pdf(dni=None):
     try:
-        query = """SELECT p.nombres, p.apellido, e.id, p.fecha_nacimiento, p.fecha_ingreso, p.telefono, p.domicilio, p.contacto_emergencia,
-                   p.telefono_emergencia, p.obra_social, p.estado, p.consentimiento, e.nombre_profecional, e.apellido_profecional, e.dni_profecional,
-                   e.matricula, e.especialidad, e.telefono_profecional, e.email_profecional, e.activo_profecional, e.entrevista, e.dni_paciente,
-                   e.fecha_entrevista, e.hora_entrevista, e.tipo_entrevista, e.proxima_sesion_entrevista FROM entrevistas AS e LEFT JOIN personas AS p ON p.dni = e.dni_paciente"""
+        query = """SELECT p.nombres, p.apellido,p.dni,p.edad,p.domicilio,p.fecha_ingreso,p.telefono,p.mail,p.fecha_nacimiento,p.contacto_emergencia,
+        p.telefono_emergencia,p.obra_social,p.nacionalidad,p.localidad FROM personas AS p ON p.dni"""
         if dni: cursor.execute(query + " WHERE e.dni_paciente = ? ORDER BY e.id", (dni,))
         else: cursor.execute(query + " ORDER BY e.id")
         entrevistas = cursor.fetchall()
@@ -1632,7 +1622,8 @@ def abrir_ventana_ver_documento(dni_persona=None):
         if not dni:
             messagebox.showwarning("Atención", "Escribí un DNI primero.")
             return
-        cursor.execute("""SELECT id, fecha_entrevista, hora_entrevista, nombre_profecional, apellido_profecional, entrevista FROM entrevistas WHERE dni_paciente = ? ORDER BY id""", (dni,))
+        cursor.execute("""SELECT id, 
+        fecha_entrevista, hora_entrevista, nombre_profecional, apellido_profecional, entrevista FROM entrevistas WHERE dni_paciente = ? ORDER BY id""", (dni,))
         filas = cursor.fetchall()
         if not filas:
             text_doc.insert("1.0", "No hay entrevistas para ese DNI.")
@@ -1713,6 +1704,8 @@ def abrir_ventana_ver_documento(dni_persona=None):
     Button(frame_btn, bg = VERDE_AZULADO, fg = BLANCO, text="Importar PDF/Word", command=importar_documento).pack(side="left", padx=5)
     if dni_persona: cargar_documento()
     #agregar_boton_luna(ventana_doc)
+
+
 # BLOQUE 17: CERRAR APLICACION
 def al_cerrar_app():
     try: conexion.close()
