@@ -193,7 +193,6 @@ VERDE_AZULADO = "#26A69A"  # Verde azulado para botones
 #Verde salvia	#5E8C6A	            Mensajes de éxito ("Curso guardado", "Persona registrada"). También para el estado "Activo".
 #Rojo ladrillo	#C0392B	            Errores, alertas, botón Eliminar. Solo para cosas que el usuario tiene que frenar y leer.
 # BLOQUE 6: MODO OSCURO ARREGLADO
-# BLOQUE 5 BIS: MODO CLARO Y MODO OSCURO
 MODO_OSCURO = False  # La aplicación comienza con la paleta clara de SANCA
 
 # Colores del modo oscuro.
@@ -577,9 +576,438 @@ def abrir_ventana_cursos():
     boton_eliminar = Button(ventana_cursos, text="Eliminar", bg=AMARILLO, fg=BLANCO, activebackground=AZUL_PETROLEO, activeforeground=NEGRO, relief="flat", command=eliminar_curso)
     boton_eliminar.grid(row=30, column=4, padx=5, pady=10)
     refrescar_lista_cursos()
+# BLOQUE 9: VENTANA GRILLA 
+    # Abro la nueva ficha organizada en grilla, con los datos del docente
+    # a la izquierda y la ficha del curso a la derecha.
+    boton_ficha_grilla = Button(
+        ventana_cursos,
+        text="Nueva ficha en grilla",
+        bg=COLOR_BOTON,
+        fg=COLOR_BOTON_TEXTO,
+        activebackground=AZUL_PETROLEO,
+        activeforeground=BLANCO,
+        relief="flat",
+        command=lambda: abrir_ficha_curso_grilla(refrescar_lista_cursos)
+    )
+    boton_ficha_grilla.grid(row=31, column=0, columnspan=2, padx=5, pady=10, sticky="w")
+
+    refrescar_lista_cursos()
+    aplicar_tema(ventana_cursos)  # Si el modo oscuro está activo, lo aplico a cursos
 
 
-# BLOQUE 9: BANNER
+def abrir_ficha_curso_grilla(al_guardar=None):
+    """Abre una ficha de curso con dos paneles organizados como una grilla."""
+
+    # Creo una ventana secundaria que depende de la ventana principal.
+    ventana_ficha = tk.Toplevel(ventana)
+    ventana_ficha.title("SANCA - Ficha de inscripción del curso")
+    ventana_ficha.geometry("1250x760")
+    ventana_ficha.minsize(1050, 680)
+    ventana_ficha.configure(bg=COLOR_FONDO)
+
+    # Permito que las columnas y filas crezcan cuando se agranda la ventana.
+    ventana_ficha.columnconfigure(0, weight=1)
+    ventana_ficha.rowconfigure(1, weight=1)
+
+    # Diccionario donde guardo las cajas de texto y variables de selección.
+    campos = {}
+    variables = {}
+    menus_opcion = []
+
+    # -----------------------------------------------------------------
+    # ENCABEZADO
+    # -----------------------------------------------------------------
+    encabezado = tk.Frame(
+        ventana_ficha,
+        bg=COLOR_NAVBAR,
+        bd=1,
+        relief="solid"
+    )
+    encabezado.grid(row=0, column=0, sticky="ew", padx=15, pady=(15, 10))
+    encabezado.columnconfigure(0, weight=1)
+
+    tk.Label(
+        encabezado,
+        text="SANCA CFP 401 - FICHA DE CURSO",
+        bg=COLOR_NAVBAR,
+        fg=COLOR_TEXTO_NAVBAR,
+        font=("Segoe UI", 17, "bold"),
+        pady=12
+    ).grid(row=0, column=0, sticky="ew")
+
+    # -----------------------------------------------------------------
+    # CUERPO: DOS PANELES LADO A LADO
+    # -----------------------------------------------------------------
+    cuerpo = tk.Frame(ventana_ficha, bg=COLOR_FONDO)
+    cuerpo.grid(row=1, column=0, sticky="nsew", padx=15, pady=5)
+    cuerpo.columnconfigure(0, weight=1, uniform="paneles")
+    cuerpo.columnconfigure(1, weight=1, uniform="paneles")
+    cuerpo.rowconfigure(0, weight=1)
+
+    panel_docente = tk.Frame(
+        cuerpo,
+        bg=COLOR_PANEL,
+        bd=1,
+        relief="solid",
+        padx=10,
+        pady=10
+    )
+    panel_docente.grid(row=0, column=0, sticky="nsew", padx=(0, 8))
+    panel_docente.columnconfigure(1, weight=1)
+
+    panel_curso = tk.Frame(
+        cuerpo,
+        bg=COLOR_PANEL,
+        bd=1,
+        relief="solid",
+        padx=10,
+        pady=10
+    )
+    panel_curso.grid(row=0, column=1, sticky="nsew", padx=(8, 0))
+    panel_curso.columnconfigure(1, weight=1)
+
+    # Título de cada tabla.
+    tk.Label(
+        panel_docente,
+        text="DATOS DEL DOCENTE",
+        bg=COLOR_NAVBAR,
+        fg=BLANCO,
+        font=("Segoe UI", 12, "bold"),
+        anchor="center",
+        pady=9
+    ).grid(row=0, column=0, columnspan=2, sticky="ew", pady=(0, 10))
+
+    tk.Label(
+        panel_curso,
+        text="FICHA DEL CURSO",
+        bg=COLOR_NAVBAR,
+        fg=BLANCO,
+        font=("Segoe UI", 12, "bold"),
+        anchor="center",
+        pady=9
+    ).grid(row=0, column=0, columnspan=2, sticky="ew", pady=(0, 10))
+
+    # -----------------------------------------------------------------
+    # FUNCIÓN PARA CREAR UNA FILA DE LA GRILLA
+    # -----------------------------------------------------------------
+    def crear_campo(panel, fila, etiqueta, clave, opciones=None):
+        """Crea una celda de título y otra celda editable, como una planilla."""
+
+        # Primera celda: nombre del dato.
+        tk.Label(
+            panel,
+            text=etiqueta,
+            bg=COLOR_FONDO,
+            fg=COLOR_LABEL,
+            font=("Segoe UI", 10, "bold"),
+            anchor="w",
+            padx=8,
+            pady=7,
+            bd=1,
+            relief="solid"
+        ).grid(row=fila, column=0, sticky="nsew")
+
+        # Segunda celda: control donde el usuario escribe o selecciona.
+        if opciones:
+            variable = tk.StringVar(ventana_ficha, value=opciones[0])
+            control = tk.OptionMenu(panel, variable, *opciones)
+            control.configure(
+                bg=BLANCO,
+                fg=COLOR_TITULO,
+                activebackground=COLOR_ACENTO,
+                activeforeground=COLOR_TITULO,
+                relief="solid",
+                bd=1,
+                highlightthickness=0,
+                anchor="w"
+            )
+            control.grid(row=fila, column=1, sticky="ew", ipady=2)
+            variables[clave] = variable
+            menus_opcion.append(control)
+        else:
+            control = tk.Entry(
+                panel,
+                font=("Segoe UI", 10),
+                bg=BLANCO,
+                fg=COLOR_TITULO,
+                insertbackground=COLOR_TITULO,
+                relief="solid",
+                bd=1
+            )
+            control.grid(row=fila, column=1, sticky="ew", ipady=6)
+            campos[clave] = control
+
+        # Permito que cada fila ocupe todo el ancho de su panel.
+        panel.rowconfigure(fila, weight=0)
+
+    # -----------------------------------------------------------------
+    # PANEL IZQUIERDO: DATOS DEL DOCENTE
+    # -----------------------------------------------------------------
+    campos_docente = [
+        ("Nombre del docente", "docente_nombres"),
+        ("Apellido del docente", "docente_apellido"),
+        ("Especialidad del docente", "docente_especialidad"),
+        ("Tipo de documento", "tipo_documento", ("DNI", "CI", "CC", "TI")),
+        ("Número de documento", "numero_documento"),
+        ("Nacionalidad", "nacionalidad_docente"),
+        ("Domicilio / barrio", "domicilio_docente"),
+        ("Calle y número", "calle_numero_docente")
+    ]
+
+    for numero_fila, datos_campo in enumerate(campos_docente, start=1):
+        if len(datos_campo) == 3:
+            etiqueta, clave, opciones = datos_campo
+            crear_campo(panel_docente, numero_fila, etiqueta, clave, opciones)
+        else:
+            etiqueta, clave = datos_campo
+            crear_campo(panel_docente, numero_fila, etiqueta, clave)
+
+    # -----------------------------------------------------------------
+    # PANEL DERECHO: FICHA DEL CURSO
+    # -----------------------------------------------------------------
+    campos_curso = [
+        ("Nombre del curso / especialidad", "especialidad"),
+        ("Días de cursada", "dias"),
+        ("Horarios", "horarios"),
+        ("Duración", "duracion"),
+        ("Establecimiento", "establecimiento"),
+        ("Fecha de iniciación", "fecha_de_iniciacion"),
+        ("Lugar en el que se dicta", "lugar_en_el_que_se_dicta"),
+        ("Localidad", "localidad")
+    ]
+
+    for numero_fila, (etiqueta, clave) in enumerate(campos_curso, start=1):
+        crear_campo(panel_curso, numero_fila, etiqueta, clave)
+
+    # -----------------------------------------------------------------
+    # FUNCIONES DE LOS BOTONES
+    # -----------------------------------------------------------------
+    def obtener_valor(clave):
+        """Devuelve el texto escrito o la opción seleccionada."""
+        if clave in variables:
+            return variables[clave].get().strip()
+        return campos[clave].get().strip()
+
+    def limpiar_grilla():
+        """Vacía las celdas para poder cargar otro curso."""
+        for control in campos.values():
+            control.delete(0, tk.END)
+
+        # Restablezco el tipo de documento a DNI.
+        if "tipo_documento" in variables:
+            variables["tipo_documento"].set("DNI")
+
+        # Devuelvo el cursor al primer campo.
+        campos["docente_nombres"].focus_set()
+
+    def guardar_ficha_curso():
+        """Guarda la ficha completa en la tabla cursos de SQLite."""
+
+        # Recupero todos los valores de la grilla.
+        docente_nombres = obtener_valor("docente_nombres")
+        docente_apellido = obtener_valor("docente_apellido")
+        docente_especialidad = obtener_valor("docente_especialidad")
+        tipo_documento = obtener_valor("tipo_documento")
+        numero_documento = obtener_valor("numero_documento")
+        nacionalidad_docente = obtener_valor("nacionalidad_docente")
+        domicilio_docente = obtener_valor("domicilio_docente")
+        calle_numero_docente = obtener_valor("calle_numero_docente")
+
+        especialidad = obtener_valor("especialidad")
+        dias = obtener_valor("dias")
+        horarios = obtener_valor("horarios")
+        duracion = obtener_valor("duracion")
+        establecimiento = obtener_valor("establecimiento")
+        fecha_de_iniciacion = obtener_valor("fecha_de_iniciacion")
+        lugar_en_el_que_se_dicta = obtener_valor("lugar_en_el_que_se_dicta")
+        localidad = obtener_valor("localidad")
+
+        # Compruebo que estén los datos básicos para identificar la ficha.
+        if not docente_nombres or not docente_apellido:
+            messagebox.showwarning(
+                "Datos incompletos",
+                "Completá el nombre y el apellido del docente.",
+                parent=ventana_ficha
+            )
+            return
+
+        if not numero_documento:
+            messagebox.showwarning(
+                "Falta el documento",
+                "Ingresá el número del documento del docente.",
+                parent=ventana_ficha
+            )
+            return
+
+        if not especialidad:
+            messagebox.showwarning(
+                "Falta el curso",
+                "Ingresá el nombre o especialidad del curso.",
+                parent=ventana_ficha
+            )
+            return
+
+        # Mantengo el campo antiguo 'docente' para que sigan funcionando
+        # las consultas y pantallas anteriores de tu programa SANCA.
+        docente_completo = f"{docente_nombres} {docente_apellido}".strip()
+
+        try:
+            # Guardo los datos en la tabla cursos usando parámetros ?.
+            # Esto evita errores al escribir apóstrofes y otros caracteres.
+            cursor.execute("""
+                INSERT INTO cursos (
+                    docente,
+                    docente_nombres,
+                    docente_apellido,
+                    docente_especialidad,
+                    tipo_documento,
+                    numero_documento,
+                    nacionalidad_docente,
+                    domicilio_docente,
+                    calle_numero_docente,
+                    especialidad,
+                    fecha_de_iniciacion,
+                    lugar_en_el_que_se_dicta,
+                    dias,
+                    horarios,
+                    duracion,
+                    establecimiento,
+                    localidad
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (
+                docente_completo,
+                docente_nombres,
+                docente_apellido,
+                docente_especialidad,
+                tipo_documento,
+                numero_documento,
+                nacionalidad_docente,
+                domicilio_docente,
+                calle_numero_docente,
+                especialidad,
+                fecha_de_iniciacion,
+                lugar_en_el_que_se_dicta,
+                dias,
+                horarios,
+                duracion,
+                establecimiento,
+                localidad
+            ))
+
+            # Confirmo la operación para que quede guardada en el archivo .db.
+            conexion.commit()
+
+            # Si la ficha se abrió desde la ventana vieja de cursos,
+            # actualizo también su Listbox sin tener que cerrarla.
+            if callable(al_guardar):
+                try:
+                    al_guardar()
+                except Exception as error_lista:
+                    print(f"No se pudo actualizar la lista de cursos: {error_lista}")
+
+            messagebox.showinfo(
+                "Ficha guardada",
+                "Los datos del docente y del curso se guardaron correctamente.",
+                parent=ventana_ficha
+            )
+
+            # Dejo la grilla lista para registrar el siguiente curso.
+            limpiar_grilla()
+
+        except sqlite3.Error as error:
+            # Si ocurre un error, deshago la operación pendiente.
+            conexion.rollback()
+            messagebox.showerror(
+                "Error al guardar",
+                f"No se pudo guardar la ficha del curso:\n{error}",
+                parent=ventana_ficha
+            )
+
+    # -----------------------------------------------------------------
+    # BOTONERA INFERIOR
+    # -----------------------------------------------------------------
+    panel_botones = tk.Frame(ventana_ficha, bg=COLOR_FONDO)
+    panel_botones.grid(row=2, column=0, sticky="ew", padx=15, pady=15)
+    panel_botones.columnconfigure(0, weight=1)
+
+    tk.Button(
+        panel_botones,
+        text="GUARDAR FICHA",
+        bg=COLOR_BOTON,
+        fg=COLOR_BOTON_TEXTO,
+        activebackground=AZUL_PETROLEO,
+        activeforeground=BLANCO,
+        relief="flat",
+        font=("Segoe UI", 10, "bold"),
+        padx=18,
+        pady=9,
+        command=guardar_ficha_curso
+    ).grid(row=0, column=0, padx=5, pady=5, sticky="e")
+
+    tk.Button(
+        panel_botones,
+        text="LIMPIAR",
+        bg=COLOR_ACENTO,
+        fg=COLOR_ACENTO_TEXTO,
+        activebackground=AMARILLO,
+        activeforeground=NEGRO,
+        relief="flat",
+        font=("Segoe UI", 10, "bold"),
+        padx=18,
+        pady=9,
+        command=limpiar_grilla
+    ).grid(row=0, column=1, padx=5, pady=5)
+
+    tk.Button(
+        panel_botones,
+        text="CERRAR",
+        bg=COLOR_ERROR,
+        fg=BLANCO,
+        activebackground=ROJO,
+        activeforeground=BLANCO,
+        relief="flat",
+        font=("Segoe UI", 10, "bold"),
+        padx=18,
+        pady=9,
+        command=ventana_ficha.destroy
+    ).grid(row=0, column=2, padx=5, pady=5)
+
+    # Aplico el tema SANCA que esté activo en ese momento.
+    aplicar_tema(ventana_ficha)
+
+    # El OptionMenu usa la clase Menubutton; le aplico sus colores también.
+    for menu in menus_opcion:
+        if MODO_OSCURO:
+            menu.configure(
+                bg=ENTRADA_OSCURA,
+                fg=TEXTO_OSCURO,
+                activebackground=SELECCION_OSCURA,
+                activeforeground=TEXTO_OSCURO
+            )
+            menu["menu"].configure(
+                bg=ENTRADA_OSCURA,
+                fg=TEXTO_OSCURO,
+                activebackground=SELECCION_OSCURA,
+                activeforeground=TEXTO_OSCURO
+            )
+        else:
+            menu.configure(
+                bg=BLANCO,
+                fg=COLOR_TITULO,
+                activebackground=COLOR_ACENTO,
+                activeforeground=COLOR_TITULO
+            )
+            menu["menu"].configure(
+                bg=BLANCO,
+                fg=COLOR_TITULO,
+                activebackground=COLOR_ACENTO,
+                activeforeground=COLOR_TITULO
+            )
+
+    # Al abrir la ventana, dejo activo el primer campo.
+    campos["docente_nombres"].focus_set()
+# BLOQUE 10: BANNER
 banner = tk.Frame(ventana, bg=COLOR_NAVBAR, height=150)  # Frame del banner
 banner.pack(side="top", fill="x")  # Empaquetado arriba
 banner.pack_propagate(False)  # Evito que se achique
@@ -597,7 +1025,7 @@ try:
 except Exception:
     print('Error')  # Si falla, no rompo la app
 
-# BLOQUE 10: FUNCIONES PARA LA PANTALLA PRINCIPAL
+# BLOQUE 11: FUNCIONES PARA LA PANTALLA PRINCIPAL
 def refrescar_lista():
     # Vacío la lista antes de volver a cargarla.
     lista_personas.delete(0, tk.END)
@@ -805,7 +1233,7 @@ def buscar_definitivo():
             lista_personas.see(i)
             break
 
-# BLOQUE 10: FRAME DE BOTONES
+# BLOQUE 12: FRAME DE BOTONES
 frame_btn = Frame(ventana, bg=GRIS_NIEBLA, height=55)  # Frame de botones
 frame_btn_info = Frame(ventana, bg=GRIS_NIEBLA)  # Frame botón info
 frame_btn_info.pack(side="bottom", fill="x", padx=10, pady=15)
@@ -834,7 +1262,7 @@ btn_buscar_definitivo.grid(row=0, column=3, padx=17, pady=19)
 btn_limpiar = Button(sub_btn, text="Limpiar", width=5, height=2, command=limpiar)
 btn_limpiar.grid(row=0, column=4, padx=5, pady=7)
 
-# BLOQUE 11: FORMULARIO
+# BLOQUE 13: FORMULARIO
 frame_form = Frame(ventana, bg=GRIS_NIEBLA)  # Frame formulario
 frame_form.pack(side="top", fill="x", padx=15, pady=10)
 
@@ -853,8 +1281,7 @@ label_dni.grid(row=0, column=6, sticky="e", padx=5)
 entry_dni = Entry(frame_form, width=15, font=("Segoe UI", 12))
 entry_dni.grid(row=0, column=7, padx=5, pady=3)
 
-
-# BLOQUE 12: CUERPO PARA LA VENTANA PRINCIPAL (PARTE VISUAL)
+# BLOQUE 14: CUERPO PARA LA VENTANA PRINCIPAL (PARTE VISUAL)
 cuerpo = Frame(ventana, bg=GRIS_NIEBLA)  # Frame cuerpo
 cuerpo.pack(fill="both", expand=True, padx=40, pady=10)
 cuerpo.columnconfigure(0, weight=0)
@@ -891,7 +1318,7 @@ lista_personas.pack(side="left", fill="both", expand=True)
 scroll.config(command=lista_personas.yview)
 lista_personas.bind("<<ListboxSelect>>", al_seleccionar)
 
-# BLOQUE 13: VENTANA DE PERFIL (PARTE VISUAL)
+# BLOQUE 15: VENTANA DE PERFIL (PARTE VISUAL)
 def abrir_ventana_perfil(event=None):
     global entry_dni_perfil_ref
     ventana_perfil = Toplevel(ventana)
@@ -1441,7 +1868,7 @@ def abrir_ventana_editor_fotos():
     #agregar_boton_luna(ventana_editor_fotos)
     refrescar_lista_imagenes()
 # ===========================================================================================================================
-# BLOQUE 14: GENERAR PDF
+# BLOQUE 16: GENERAR PDF
 def crear_pdf(ruta,perfil):
     paginas = []
     lineas_pagina = []
@@ -1722,7 +2149,7 @@ def crear_pdf_de_texto(ruta, texto, foto_bytes=None):
     salida.extend(f"trailer\n<< /Size {len(objetos)+1} /Root 1 0 R >>\nstartxref\n{pos}\n%%EOF\n".encode("ascii"))
     with open(ruta, "wb") as archivo: archivo.write(salida)
 
-# BLOQUE 15: EXPORTAR
+# BLOQUE 17: EXPORTAR
 def exportar_persona_word(dni_persona=None):
     try:
         query = """SELECT p.id ,p.nombres, p.apellido,p.dni,p.domicilio,p.fecha_ingreso,p.telefono,p.mail,p.fecha_nacimiento,p.contacto_emergecia,p.telefono_emergencia,
@@ -1808,7 +2235,7 @@ def exportar_archivo_pdf(dni=None):
         return
     messagebox.showinfo("PDF creado", f"Archivo guardadas en:\n{ruta}")
 
-# BLOQUE 16 VENTANA DE DOCUMENTOS
+# BLOQUE 18: VENTANA DE DOCUMENTOS
 def abrir_ventana_ver_documento(dni_persona=None):
     ventana_doc = Toplevel(ventana)
     ventana_doc.title("Ver / Editar documento")
@@ -1925,7 +2352,7 @@ def abrir_ventana_ver_documento(dni_persona=None):
     aplicar_tema(ventana_doc)  # Aplico el tema actual a la ventana de documentos
 
 
-# BLOQUE 17: CERRAR APLICACION
+# BLOQUE 19: CERRAR APLICACION
 def al_cerrar_app():
     try: conexion.close()
     except Exception: pass
