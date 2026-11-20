@@ -1387,4 +1387,5 @@ def al_cerrar_app():
     ventana.destroy()
 
 ventana.protocol("WM_DELETE_WINDOW", al_cerrar_app)
+refrescar_lista()
 ventana.mainloop()
