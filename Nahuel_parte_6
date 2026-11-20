@@ -449,12 +449,7 @@ def al_seleccionar(event=None):
     # Extraigo el DNI del texto seleccionado.
     texto = lista_personas.get(seleccion[0])
     dni = texto.split("DNI ")[1].strip()
-
-    # Busco los datos usando "nombres", que es el nombre real de la columna.
-    cursor.execute(
-        "SELECT nombres, apellido, dni FROM personas WHERE dni = ?",
-        (dni,)
-    )
+    cursor.execute("SELECT nombres, apellido, dni FROM personas WHERE dni = ?",(dni,))
     fila = cursor.fetchone()
 
     if not fila:
@@ -506,17 +501,10 @@ def agregar_definitivo():
     dni = int(dni_txt)
 
     # Selecciono una fotografía. Cancelar permite guardar sin foto.
-    ruta_foto = filedialog.askopenfilename(
-        title="Seleccionar fotografía (opcional)",
-        filetypes=[
-            ("Imágenes", "*.png *.jpg *.jpeg *.bmp *.webp"),
-            ("Todos los archivos", "*.*")
-        ]
-    )
-
+    ruta_foto = filedialog.askopenfilename(title="Seleccionar fotografía (opcional)",
+        filetypes=[("Imágenes", "*.png *.jpg *.jpeg *.bmp *.webp"),("Todos los archivos", "*.*") ])
     # Por defecto, la persona se guarda sin fotografía.
     foto = None
-
     # Si se eligió una imagen, compruebo que Pillow pueda abrirla.
     if ruta_foto:
         try:
@@ -687,10 +675,10 @@ scroll.pack(side="right", fill="y")
 lista_personas = Listbox(caja_lista, yscrollcommand=scroll.set, font=("Segoe UI", 12), bg=BLANCO, fg=GRIS_AZULADO, selectbackground=AZUL_SERENO, selectforeground=BLANCO)
 lista_personas.pack(side="left", fill="both", expand=True)
 scroll.config(command=lista_personas.yview)
-
+lista_personas.bind("<<ListboxSelect>>", al_seleccionar)
 
 # BLOQUE 13: VENTANA DE PERFIL (PARTE VISUAL)
-def abrir_ventana_perfil():
+def abrir_ventana_perfil(event=None):
     global entry_dni_perfil_ref
     ventana_perfil = Toplevel(ventana)
     ventana_perfil.title("PERFIL")
@@ -1115,12 +1103,8 @@ def abrir_ventana_perfil():
     #agregar_boton_luna(ventana_perfil)
     cargar_perfil()
 
-lista_personas.bind("<Double-Button-1>",abrir_ventana_perfil )
+lista_personas.bind("<Double-Button-1>", abrir_ventana_perfil)
 
-# Boton de perfil , despues se puede borrar , todavia no porque no se sino como hago las cosas
-btn_perfil = Button(frame_btn,text = "Perfil de persona 👤",bg=AZUL_SERENO, fg=BLANCO, activebackground=AZUL_PETROLEO, activeforeground=NEGRO,
- relief="flat",command= abrir_ventana_perfil)
-btn_perfil.pack(side="left",padx = 5, pady = 7)
 
 def abrir_ventana_editor_fotos():
     ventana_editor_fotos = tk.Toplevel(ventana)
@@ -1737,4 +1721,5 @@ def al_cerrar_app():
 
 ventana.protocol("WM_DELETE_WINDOW", al_cerrar_app)
 refrescar_lista()
+
 ventana.mainloop()
