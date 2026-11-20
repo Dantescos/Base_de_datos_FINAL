@@ -39,10 +39,16 @@ nombres TEXT,
 apellido TEXT,
 dni INTEGER UNIQUE NOT NULL, 
 edad INTEGER, 
+domicilio TEXT,
 fecha_ingreso TEXT,
 telefono TEXT, 
+mail TEXT,
+fecha_nacimiento TEXT,
 contacto_emergencia TEXT, 
 telefono_emergencia TEXT,
+obra_social TEXT,
+nacionalidad TEXT,
+localidad TEXT,
 foto BLOB)""")
 
 cursor.execute("""CREATE TABLE IF NOT EXISTS pdf (
