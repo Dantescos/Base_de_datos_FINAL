@@ -1,5 +1,6 @@
 # BLOQUE 1: IMPORTACIONES
 import zipfile
+import html  # Para interpretar caracteres especiales de documentos DOCX
 import traceback
 import sqlite3  # Importo sqlite3 para trabajar con la base de datos
 import tkinter as tk  # Importo tkinter para la interfaz gráfica
@@ -21,7 +22,7 @@ SANCA_BASE64 = "/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAMCAgoKCAgICAgKCAgICAgICAgICAgI
 entry_dni_perfil_ref = None  # Variable global que apunta al tk.Entry del DNI en la ventana de perfil
 
 # BLOQUE 3: BASE DE DATOS
-conexion = sqlite3.connect("Centro de Formación Profesional 401  Escuela de oficios.db")  # Abro o creo la base de datos
+conexion = sqlite3.connect("Centro de Formación Profesional 401  Escuela de oficios SANCA.db")  # Abro o creo la base de datos
 cursor = conexion.cursor()  # Creo el cursor
 
 # Base de datos para los cursos
@@ -36,23 +37,25 @@ dias TEXT,
 horarios TEXT,
 cantidad_de_modulo INTEGER,
 curso_numero INTEGER)""")  
+
 # Creo tabla personas
 cursor.execute("""CREATE TABLE IF NOT EXISTS personas(
-nombres TEXT,
-apellido TEXT,
-dni INTEGER UNIQUE NOT NULL, 
-edad INTEGER, 
-domicilio TEXT,
-fecha_ingreso TEXT,
-telefono TEXT, 
-mail TEXT,
-fecha_nacimiento TEXT,
-contacto_emergencia TEXT, 
-telefono_emergencia TEXT,
-obra_social TEXT,
-nacionalidad TEXT,
-localidad TEXT,
-foto BLOB)""")
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    nombres TEXT,
+    apellido TEXT,
+    dni INTEGER UNIQUE NOT NULL, 
+    edad INTEGER, 
+    domicilio TEXT,
+    fecha_ingreso TEXT,
+    telefono TEXT, 
+    mail TEXT,
+    fecha_nacimiento TEXT,
+    contacto_emergencia TEXT, 
+    telefono_emergencia TEXT,
+    obra_social TEXT,
+    nacionalidad TEXT,
+    localidad TEXT,
+    foto BLOB)""")
 
 cursor.execute("""CREATE TABLE IF NOT EXISTS pdf (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -69,10 +72,72 @@ cursor.execute("""CREATE TABLE IF NOT EXISTS recursos(
 cursor.execute("PRAGMA table_info(personas)")  # Obtengo info de las columnas
 _columnas_personas = {fila[1] for fila in cursor.fetchall()}  # Guardo los nombres de las columnas
 
+# BLOQUE 4: NAVAJA SUIZA, aca lo hice es una funcion que ayude a las consultas a la base de datos , por si se llega a consultar mal a la base de datos o no lo encuentra 
+def agregar_columna_si_falta(tabla, columna, tipo):
+    cursor.execute(f"PRAGMA table_info({tabla})")
+    columnas = {fila[1] for fila in cursor.fetchall()}
+
+    if columna not in columnas:
+        cursor.execute(f"ALTER TABLE {tabla} ADD COLUMN {columna} {tipo}")
+        print(f"Columna agregada: {tabla}.{columna}")
+
+# Guardo primero las columnas originales para poder recuperar datos de nombres viejos.
+cursor.execute("PRAGMA table_info(personas)")
+_columnas_originales_personas = {fila[1] for fila in cursor.fetchall()}
+
+# Campos que necesita el programa para trabajar con personas.
+_columnas_necesarias_personas = {
+    "nombres": "TEXT",
+    "apellido": "TEXT",
+    "dni": "INTEGER",
+    "edad": "INTEGER",
+    "domicilio": "TEXT",
+    "fecha_ingreso": "TEXT",
+    "telefono": "TEXT",
+    "mail": "TEXT",
+    "fecha_nacimiento": "TEXT",
+    "contacto_emergencia": "TEXT",
+    "telefono_emergencia": "TEXT",
+    "obra_social": "TEXT",
+    "nacionalidad": "TEXT",
+    "localidad": "TEXT",
+    "foto": "BLOB"
+}
+
+for nombre_columna, tipo_columna in _columnas_necesarias_personas.items():
+    agregar_columna_si_falta("personas", nombre_columna, tipo_columna)
+
+# Si una versión anterior usaba otros nombres, copio esos valores al nombre actual.
+cursor.execute("PRAGMA table_info(personas)")
+_columnas_personas = {fila[1] for fila in cursor.fetchall()}
+
+if "nombre" in _columnas_personas:
+    cursor.execute("UPDATE personas SET nombres = nombre WHERE (nombres IS NULL OR nombres = '') AND nombre IS NOT NULL")
+if "direccion" in _columnas_personas:
+    cursor.execute("UPDATE personas SET domicilio = direccion WHERE (domicilio IS NULL OR domicilio = '') AND direccion IS NOT NULL")
+if "contacto_emergecia" in _columnas_personas:
+    cursor.execute("UPDATE personas SET contacto_emergencia = contacto_emergecia WHERE (contacto_emergencia IS NULL OR contacto_emergencia = '') AND contacto_emergecia IS NOT NULL")
+
+# Corrijo también el nombre de la columna de cantidad de módulos en bases viejas.
+cursor.execute("PRAGMA table_info(cursos)")
+_columnas_cursos = {fila[1] for fila in cursor.fetchall()}
+if "cantidad_de_modulos" not in _columnas_cursos:
+    cursor.execute("ALTER TABLE cursos ADD COLUMN cantidad_de_modulos INTEGER")
+    if "cantidad_de_modulo" in _columnas_cursos:
+        cursor.execute("UPDATE cursos SET cantidad_de_modulos = cantidad_de_modulo WHERE cantidad_de_modulos IS NULL")
+
+# Me aseguro de que las columnas de la galería de archivos estén disponibles.
+for nombre_columna, tipo_columna in {
+    "nombre": "TEXT",
+    "formato": "TEXT",
+    "contenido": "BLOB",
+    "dni_personas": "INTEGER"
+}.items():
+    agregar_columna_si_falta("pdf", nombre_columna, tipo_columna)
 
 conexion.commit()  # Confirmo los cambios
 
-# BLOQUE 4: PALETA DE COLORES
+# BLOQUE 5: PALETA DE COLORES
 # PALETA SANCA CFP 401
 COLOR_FONDO        = "#FBFAF7"  # fondo general ventana
 COLOR_NAVBAR       = "#1B3A6B"  # barra superior
@@ -127,8 +192,120 @@ VERDE_AZULADO = "#26A69A"  # Verde azulado para botones
 #Blanco	        #FFFFFF             Letras sobre fondo azul oscuro (navbar, botones azules). Para que se lea bien.
 #Verde salvia	#5E8C6A	            Mensajes de éxito ("Curso guardado", "Persona registrada"). También para el estado "Activo".
 #Rojo ladrillo	#C0392B	            Errores, alertas, botón Eliminar. Solo para cosas que el usuario tiene que frenar y leer.
+# BLOQUE 6: MODO OSCURO ARREGLADO
+# BLOQUE 5 BIS: MODO CLARO Y MODO OSCURO
+MODO_OSCURO = False  # La aplicación comienza con la paleta clara de SANCA
 
-# BLOQUE 6: VENTANA PRINCIPAL
+# Colores del modo oscuro.
+FONDO_OSCURO = "#171D27"
+PANEL_OSCURO = "#222C39"
+PANEL_AZUL_OSCURO = "#172B43"
+ENTRADA_OSCURA = "#2C3949"
+TEXTO_OSCURO = "#F1F4F8"
+TEXTO_SECUNDARIO_OSCURO = "#B8C3D1"
+SELECCION_OSCURA = "#3E6FA8"
+
+
+def _guardar_colores_originales(widget):
+    # Guardo una sola vez los colores con los que fue creado cada widget.
+    # Así puedo volver exactamente al modo claro al apretar nuevamente la luna.
+    if hasattr(widget, "_sanca_colores_originales"):
+        return
+
+    colores = {}
+    propiedades = (
+        "bg", "fg", "activebackground", "activeforeground",
+        "insertbackground", "selectbackground", "selectforeground",
+        "highlightbackground", "troughcolor"
+    )
+
+    for propiedad in propiedades:
+        try:
+            colores[propiedad] = widget.cget(propiedad)
+        except (tk.TclError, TypeError):
+            # Algunos controles no tienen todas las opciones de color.
+            continue
+
+    widget._sanca_colores_originales = colores
+
+
+def aplicar_tema(widget=None):
+    # Si no recibo una ventana específica, aplico el tema desde la principal.
+    if widget is None:
+        widget = ventana
+
+    _guardar_colores_originales(widget)
+    colores_originales = widget._sanca_colores_originales
+    clase = widget.winfo_class()
+
+    if MODO_OSCURO:
+        fondo_original = str(colores_originales.get("bg", "")).lower()
+        texto_original = str(colores_originales.get("fg", "")).lower()
+
+        # Conservo los colores institucionales, pero en una versión oscura.
+        if fondo_original in (COLOR_NAVBAR.lower(), GRIS_AZULADO.lower(), AZUL_PETROLEO.lower()):
+            fondo_widget = PANEL_AZUL_OSCURO
+        elif fondo_original in (VERDE_AZULADO.lower(), COLOR_BOTON.lower()):
+            fondo_widget = "#285D66"
+        elif fondo_original in (COLOR_ERROR.lower(), ROJO.lower()):
+            fondo_widget = "#873A3A"
+        elif fondo_original in (COLOR_ACENTO.lower(), AMARILLO.lower()):
+            fondo_widget = "#8A642B"
+        else:
+            fondo_widget = PANEL_OSCURO
+
+        if clase in ("Tk", "Toplevel"):
+            widget.configure(bg=FONDO_OSCURO)
+        elif clase == "Frame":
+            widget.configure(bg=FONDO_OSCURO if widget is ventana else fondo_widget)
+        elif clase == "Label":
+            color_texto = TEXTO_SECUNDARIO_OSCURO if texto_original in (GRIS_MEDIO.lower(), COLOR_LABEL.lower()) else TEXTO_OSCURO
+            widget.configure(bg=fondo_widget, fg=color_texto)
+        elif clase == "Button":
+            if fondo_original in (COLOR_ERROR.lower(), ROJO.lower()):
+                widget.configure(bg="#873A3A", fg=TEXTO_OSCURO, activebackground="#A94A4A", activeforeground=TEXTO_OSCURO)
+            elif fondo_original in (COLOR_ACENTO.lower(), AMARILLO.lower()):
+                widget.configure(bg="#A97930", fg="#171D27", activebackground="#C58B35", activeforeground="#171D27")
+            elif fondo_original in (VERDE_AZULADO.lower(), COLOR_BOTON.lower(), COLOR_NAVBAR.lower()):
+                widget.configure(bg="#285D78", fg=TEXTO_OSCURO, activebackground="#347694", activeforeground=TEXTO_OSCURO)
+            else:
+                widget.configure(bg=PANEL_OSCURO, fg=TEXTO_OSCURO, activebackground=SELECCION_OSCURA, activeforeground=TEXTO_OSCURO)
+        elif clase == "Entry":
+            widget.configure(bg=ENTRADA_OSCURA, fg=TEXTO_OSCURO, insertbackground=TEXTO_OSCURO,
+                             selectbackground=SELECCION_OSCURA, selectforeground=TEXTO_OSCURO)
+        elif clase == "Listbox":
+            widget.configure(bg=ENTRADA_OSCURA, fg=TEXTO_OSCURO, selectbackground=SELECCION_OSCURA,
+                             selectforeground=TEXTO_OSCURO, highlightbackground=PANEL_OSCURO)
+        elif clase == "Text":
+            widget.configure(bg=ENTRADA_OSCURA, fg=TEXTO_OSCURO, insertbackground=TEXTO_OSCURO,
+                             selectbackground=SELECCION_OSCURA, selectforeground=TEXTO_OSCURO)
+        elif clase == "Scrollbar":
+            widget.configure(bg=PANEL_OSCURO, troughcolor=FONDO_OSCURO, activebackground=SELECCION_OSCURA)
+
+    else:
+        # Restauro exactamente los colores originales del diseño SANCA.
+        try:
+            if colores_originales:
+                widget.configure(**colores_originales)
+        except tk.TclError:
+            pass
+
+    # Recorro los elementos que están dentro del widget (Frames, Labels, botones, etc.).
+    try:
+        for hijo in widget.winfo_children():
+            aplicar_tema(hijo)
+    except tk.TclError:
+        pass
+
+
+def alternar_modo_oscuro():
+    # Cada vez que se presiona el botón, cambio entre claro y oscuro.
+    global MODO_OSCURO
+    MODO_OSCURO = not MODO_OSCURO
+    aplicar_tema(ventana)
+    btn_tema.configure(text="☀" if MODO_OSCURO else "☾")
+
+# BLOQUE 7: VENTANA PRINCIPAL
 ventana = tk.Tk()  # Creo la ventana principal
 ventana.title("Centro de Formación Profesional 401  Escuela de oficios SANCA")  # Título de la ventana
 ventana.config(bg=COLOR_FONDO)  # Fondo
@@ -142,7 +319,7 @@ _y = (alto_pantalla - alto_ventana) // 2  # Centrado vertical
 ventana.geometry(f"{ancho_ventana}x{alto_ventana}+{_x}+{_y}")  # Aplico geometría
 ventana.minsize(900, 550)  # Tamaño mínimo
 
-# BLOQUE 7: AUXILIARES
+# BLOQUE 8: FUNCIONES AUXILIARES
 def normalizar_fecha(texto):
     texto = texto.strip()
     for i in string.punctuation:
@@ -230,6 +407,11 @@ def abrir_ventana_cursos():
         cursor.execute("""SELECT especialidad, fecha_de_iniciacion, lugar_en_el_que_se_dicta, fecha_de_terminacion, dias, horarios, docente, cantidad_de_modulos, curso_numero FROM cursos WHERE id = ?""", (id_c,))
         fila = cursor.fetchone()
 
+        # Puede ocurrir que el curso se haya eliminado desde otra ventana.
+        if not fila:
+            messagebox.showinfo("Sin resultados", "No se encontró ese curso.")
+            return
+        
         ventana_detalle = Toplevel()
         ventana_detalle.title(f"Detalle del curso #{id_c}")
         ventana_detalle.geometry("600x550")
@@ -237,7 +419,7 @@ def abrir_ventana_cursos():
         info = [("ID", id_c), ("Curso", fila[0] or "-"), ("Docente", fila[6] or "-"), ("Fecha de inicio", fila[1] or "-"), ("Fecha de terminacion", fila[3] or "-"), ("Dias", fila[4] or "-"), 
                 ("Horarios", fila[5] or "-"), ("cantidad de modulos", fila[7] or "-"), ("Numero del curso", fila[8] or "-"), ("Lugar en el que se dicta", fila[2] or "-")]
         for etiqueta, valor in info:
-            Label(ventana_detalle, text=f"{etiqueta}:   {valor}").grid()
+            Label(ventana_detalle, text=f"{etiqueta}:   {valor}", bg=COLOR_FONDO, fg=COLOR_TITULO).grid(sticky="w", padx=12, pady=5)
 
     lista_cursos = Listbox(ventana_cursos)
     lista_cursos.grid()
@@ -272,10 +454,29 @@ def abrir_ventana_cursos():
         docente = entry_docente.get().strip()
         cantidad_de_modulos = entry_cantidad_de_modulos.get().strip()
         curso_numero = int(entry_curso_numero.get().strip())
-        cursor.execute("""INSERT INTO cursos(especialidad, fecha_de_iniciacion, lugar_en_el_que_se_dicta, fecha_de_terminacion, dias, horarios, docente, cantidad_de_modulos, curso_numero) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""", (especialidad, f_inicio, lugar_en_que_se_dicta, f_final, dias, horarios, docente, cantidad_de_modulos, curso_numero))
-        conexion.commit()
-        refrescar_lista_cursos()
+
+        if not especialidad:
+            messagebox.showwarning("Faltan datos", "Escribí el nombre del curso.")
+            return
+        if not curso_numero.isdigit():
+            messagebox.showwarning("Dato inválido", "El número del curso debe ser numérico.")
+            return
+        if cantidad_de_modulos and not cantidad_de_modulos.isdigit():
+            messagebox.showwarning("Dato inválido", "La cantidad de módulos debe ser numérica.")
+            return
+
+        cantidad_de_modulos = int(cantidad_de_modulos) if cantidad_de_modulos else None
+        curso_numero = int(curso_numero)
+        try:
+            cursor.execute("""INSERT INTO cursos(especialidad, fecha_de_iniciacion, lugar_en_el_que_se_dicta, fecha_de_terminacion, dias, horarios, docente, cantidad_de_modulos, curso_numero)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                (especialidad, f_inicio, lugar_en_que_se_dicta, f_final, dias, horarios, docente, cantidad_de_modulos, curso_numero))
+            conexion.commit()
+            refrescar_lista_cursos()
+            messagebox.showinfo("Curso guardado", "El curso se agregó correctamente.")
+        except sqlite3.Error as error:
+            conexion.rollback()
+            messagebox.showerror("Error al guardar", f"No se pudo guardar el curso:\n{error}")
 
     def eliminar_curso():
         grids_remove()
@@ -333,10 +534,25 @@ def abrir_ventana_cursos():
         docente = entry_docente.get().strip()
         cantidad_de_modulos = entry_cantidad_de_modulos.get().strip()
         curso_numero = int(entry_curso_numero.get().strip())
-        cursor.execute("""UPDATE cursos SET especialidad = ?, fecha_de_iniciacion = ?, lugar_en_el_que_se_dicta = ?, fecha_de_terminacion = ?, dias = ?, horarios = ?, docente = ?, cantidad_de_modulos = ?, curso_numero = ? WHERE id = ?""",
-                       (especialidad, f_inicio, lugar_en_que_se_dicta, f_final, dias, horarios, docente, cantidad_de_modulos, curso_numero, id_c))
-        conexion.commit()
-        refrescar_lista_cursos()
+
+        if not especialidad or not curso_numero.isdigit():
+            messagebox.showwarning("Faltan datos", "Completá el nombre y el número del curso.")
+            return
+        if cantidad_de_modulos and not cantidad_de_modulos.isdigit():
+            messagebox.showwarning("Dato inválido", "La cantidad de módulos debe ser numérica.")
+            return
+
+        cantidad_de_modulos = int(cantidad_de_modulos) if cantidad_de_modulos else None
+        curso_numero = int(curso_numero)
+        try:
+            cursor.execute("""UPDATE cursos SET especialidad = ?, fecha_de_iniciacion = ?, lugar_en_el_que_se_dicta = ?, fecha_de_terminacion = ?, dias = ?, horarios = ?, docente = ?, cantidad_de_modulos = ?, curso_numero = ? WHERE id = ?""",
+                (especialidad, f_inicio, lugar_en_que_se_dicta, f_final, dias, horarios, docente, cantidad_de_modulos, curso_numero, id_c))
+            conexion.commit()
+            refrescar_lista_cursos()
+            messagebox.showinfo("Curso actualizado", "Los datos del curso se actualizaron correctamente.")
+        except sqlite3.Error as error:
+            conexion.rollback()
+            messagebox.showerror("Error al editar", f"No se pudo modificar el curso:\n{error}")
 
     def refrescar_lista_cursos():
         lista_cursos.delete(0, tk.END)
@@ -525,10 +741,7 @@ def agregar_definitivo():
 
     # Guardo la persona. La columna se llama "nombres", no "nombre".
     try:
-        cursor.execute(
-            "INSERT INTO personas (nombres, apellido, dni, foto) VALUES (?, ?, ?, ?)",
-            (nombre, apellido, dni, foto)
-        )
+        cursor.execute("INSERT INTO personas (nombres, apellido, dni, foto) VALUES (?, ?, ?, ?)",(nombre, apellido, dni, foto))
         conexion.commit()
 
     except sqlite3.IntegrityError:
@@ -598,7 +811,7 @@ frame_btn_info = Frame(ventana, bg=GRIS_NIEBLA)  # Frame botón info
 frame_btn_info.pack(side="bottom", fill="x", padx=10, pady=15)
 frame_btn.pack(side="top", fill="x", padx=15, pady=10)
 frame_btn.pack_propagate(False)
-btn_tema       = Button(frame_btn, text="☾")  # Botón tema
+btn_tema       = Button(frame_btn, text="☾", command = alternar_modo_oscuro)  # Botón tema
 btn_tema.pack(side="right", padx=5, pady=7)
 btn_cursos     = Button(frame_btn, text="Cursos", command=abrir_ventana_cursos)
 btn_cursos.pack(side="left", padx=5, pady=7)
@@ -755,7 +968,12 @@ def abrir_ventana_perfil(event=None):
     Label(frame_izquierdo, text=" Localidad:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=12, column=0, sticky="e", padx=5)
     entry_localidad = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
     entry_localidad.grid(row=12, column=1, padx=5, pady=3)
-    # Funciones
+
+    Label(frame_izquierdo, text="Mail: ", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=13, column=0, sticky="e", padx=5)
+    entry_mail_perfil= Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
+    entry_mail_perfil.grid(row=13, column=1, padx=5, pady=3)
+
+    # Funciones para galeria de fotos 
     def mostrar_foto_en_perfil():
         dni_txt = entry_dni_perfil.get().strip()
         if dni_txt:
@@ -850,7 +1068,7 @@ def abrir_ventana_perfil(event=None):
         obra_social = entry_obra_social_perfil.get().strip()
         nacionalidad = entry_nacionalidad.get().strip()
         localidad = entry_localidad.get().strip()
-
+        mail = entry_mail_perfil.get().strip()
         # Si bytes es None, no se modifica la foto existente.
         # Si bytes es b"", se elimina la foto.
         # Si contiene datos, se guarda la nueva fotografía.
@@ -869,49 +1087,39 @@ def abrir_ventana_perfil(event=None):
                     return
 
                 # Actualizo todos los datos en una sola consulta.
-                cursor.execute("""
-                    UPDATE personas
+                # Actualizo todos los campos del registro existente.
+                cursor.execute("""UPDATE personas
                     SET nombres = ?, apellido = ?, dni = ?, edad = ?, domicilio = ?,
-                        fecha_nacimiento = ?, fecha_ingreso = ?, telefono = ?,
-                        contacto_emergencia = ?, telefono_emergencia = ?,
-                        obra_social = ?, localidad = ?, nacionalidad = ?
-                    WHERE dni = ?
-                """, (
+                        fecha_nacimiento = ?, fecha_ingreso = ?, telefono = ?, mail = ?,
+                        contacto_emergencia = ?, telefono_emergencia = ?, obra_social = ?,
+                        localidad = ?, nacionalidad = ?
+                    WHERE dni = ?""", (
                     nombre, apellido, dni, edad, domicilio,
-                    fecha_nacimiento, fecha_ingreso, telefono,
-                    contacto_emergencia, telefono_emergencia,
-                    obra_social, localidad, nacionalidad, dni_anterior
+                    fecha_nacimiento, fecha_ingreso, telefono, mail,
+                    contacto_emergencia, telefono_emergencia, obra_social,
+                    localidad, nacionalidad, dni_anterior
                 ))
 
-                # Actualizo la fotografía solamente si el usuario hizo un cambio.
+                # Actualizo la fotografía solamente si se hizo un cambio.
                 if foto == b"":
                     cursor.execute("UPDATE personas SET foto = NULL WHERE dni = ?", (dni,))
                 elif foto is not None:
-                    cursor.execute(
-                        "UPDATE personas SET foto = ? WHERE dni = ?",
-                        (sqlite3.Binary(foto), dni)
-                    )
+                    cursor.execute("UPDATE personas SET foto = ? WHERE dni = ?", (sqlite3.Binary(foto), dni))
 
             else:
-                # Si el perfil no corresponde todavía a una persona, la creo.
-                cursor.execute("""
-                    INSERT INTO personas (
-                        nombres, apellido, dni, edad, domicilio,
-                        fecha_nacimiento, fecha_ingreso, telefono,
-                        contacto_emergencia, telefono_emergencia,
-                        obra_social, localidad, nacionalidad, foto
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """, (
-                    nombre, apellido, dni, edad, domicilio,
-                    fecha_nacimiento, fecha_ingreso, telefono,
-                    contacto_emergencia, telefono_emergencia,
-                    obra_social, localidad, nacionalidad,
+                # Si el perfil todavía no pertenece a una persona, creo el registro.
+                cursor.execute("""INSERT INTO personas (
+                    nombres, apellido, dni, edad, domicilio, fecha_nacimiento,
+                    fecha_ingreso, telefono, mail, contacto_emergencia,
+                    telefono_emergencia, obra_social, localidad, nacionalidad, foto
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""", (
+                    nombre, apellido, dni, edad, domicilio, fecha_nacimiento,
+                    fecha_ingreso, telefono, mail, contacto_emergencia,
+                    telefono_emergencia, obra_social, localidad, nacionalidad,
                     sqlite3.Binary(foto) if foto else None
                 ))
 
-            # Confirmo todos los cambios en la base de datos.
-            conexion.commit()
-
+            conexion.commit() 
         except sqlite3.IntegrityError:
             conexion.rollback()
             messagebox.showerror("DNI duplicado", "Ya existe una persona con ese DNI.")
@@ -940,9 +1148,7 @@ def abrir_ventana_perfil(event=None):
         dni_txt = entry_dni.get().strip()
         lista_personas_perfil.delete(0, tk.END)
         foto_pendiente["bytes"] = None
-        cursor.execute("""SELECT nombres, apellido, edad, domicilio, fecha_nacimiento,
-                                fecha_ingreso, telefono, contacto_emergencia , telefono_emergencia , obra_social,
-                                localidad,nacionalidad FROM personas WHERE dni = ?""", (dni_txt,))
+        cursor.execute("""SELECT nombres, apellido, edad, domicilio, fecha_nacimiento,fecha_ingreso, telefono, contacto_emergencia , telefono_emergencia , obra_social,localidad,nacionalidad FROM personas WHERE dni = ?""", (dni_txt,))
         fila = cursor.fetchone()
         if fila:
             entry_nombre_perfil.delete(0, tk.END)
@@ -972,46 +1178,53 @@ def abrir_ventana_perfil(event=None):
             dni_original["valor"] = dni_txt
             mostrar_foto_en_perfil()
             try:
-                cursor.execute(
-                    "SELECT id, fecha_entrevista, hora_entrevista FROM entrevistas WHERE dni_paciente = ? ORDER BY id",
-                    (dni_txt,)
-                )
+                # falta cambiar aca estoid INTEGER PRIMARY KEY AUTOINCREMENT
+                cursor.execute("SELECT id,nombres,apellido,dni,edad,domicilio,fecha_ingreso,telefono,mail,fecha_nacimiento,contacto_emergencia,telefono_emergencia,obra_social,nacionalidad,localidad FROM personas WHERE dni_paciente = ? ORDER BY id",
+                    (dni_txt,))
                 for e in cursor.fetchall():
                     lista_personas_perfil.insert(tk.END, f"Entrevista {e[0]} — {e[1]} {e[2] or ''}")
             except sqlite3.Error:
-                lista_personas_perfil.insert(tk.END, "Todavía no hay una tabla de entrevistas disponible.")
+                lista_personas_perfil.insert(tk.END, "Todavía no hay alumnos registrados.")
         else: messagebox.showinfo("Error", "No existe ese DNI.")
 
     def _texto_ficha_persona():
+        """Construye el texto de la ficha usando las columnas reales de personas."""
         dni_txt = entry_dni_perfil.get().strip()
         if not dni_txt:
-            messagebox.showwarning("Atencion", "No hay una persona registrada aun.")
+            messagebox.showwarning("Atención", "No hay una persona seleccionada.")
             return None
 
-        
-        cursor.execute("""SELECT nombres, apellido, dni,edad, domicilio, fecha_ingreso,telefono,mail,
-        fecha_nacimiento,contacto_emergencia,telefono_emergencia,obra_social,nacionalidad,localidad       
-       FROM personas WHERE dni = ?""", (dni_txt,))
+        # El orden de los campos de esta consulta coincide con los índices de abajo.
+        cursor.execute("""SELECT nombres, apellido, dni, edad, domicilio, fecha_ingreso,
+            telefono, mail, fecha_nacimiento, contacto_emergencia, telefono_emergencia,
+            obra_social, nacionalidad, localidad
+            FROM personas WHERE dni = ?""", (dni_txt,))
         p = cursor.fetchone()
+
         if not p:
             messagebox.showinfo("Sin resultados", "No existe ese DNI.")
             return None
-        nombre_completo = f"{p[0] or ''} {p[1] or ''}".strip()
-        # El ## es para el título, el # para los subtítulos
 
-        lineas = [f"## {nombre_completo}",
-            f"DNI: {p[3] or '-'}  |  Edad: {p[4] or '-'}",
+        nombre_completo = f"{p[0] or ''} {p[1] or ''}".strip()
+
+        # El ## es para el título, el # para los subtítulos.
+        lineas = [
+            f"## {nombre_completo}",
+            f"DNI: {p[2] or '-'}  |  Edad: {p[3] or '-'}",
             "",
             "# DATOS PERSONALES",
             f"Nombre: {p[0] or '-'}",
             f"Apellido: {p[1] or '-'}",
-            f"DNI: {p[3] or '-'}",
-            f"Edad: {p[4] or '-'}",
+            f"DNI: {p[2] or '-'}",
+            f"Edad: {p[3] or '-'}",
             f"Fecha de nacimiento: {p[8] or '-'}",
+            f"Nacionalidad: {p[12] or '-'}",
             "",
             "# CONTACTO",
             f"Telefono: {p[6] or '-'}",
+            f"Correo electrónico: {p[7] or '-'}",
             f"Domicilio: {p[4] or '-'}",
+            f"Localidad: {p[13] or '-'}",
             f"Contacto de emergencia: {p[9] or '-'}",
             f"Telefono de emergencia: {p[10] or '-'}",
             "",
@@ -1019,7 +1232,8 @@ def abrir_ventana_perfil(event=None):
             f"Obra social: {p[11] or '-'}",
             "",
             "# INSTITUTO",
-            f"Fecha de ingreso al instituto: {p[5] or '-'}" ]
+            f"Fecha de ingreso al instituto: {p[5] or '-'}"
+        ]
         return "\n".join(lineas)
 
     def exportar_pdf_persona():
@@ -1064,9 +1278,9 @@ def abrir_ventana_perfil(event=None):
     boton_guardar_perfil.grid(row=16, column=0, padx=10, pady=5, sticky="ew")
     boton_editor_fotos = Button(frame_izquierdo,text="Editar fotos",bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12),command=abrir_ventana_editor_fotos)
     boton_editor_fotos.grid(row=16, column=1, padx=10, sticky="ew")
-    boton_pdf_paciente = Button(frame_izquierdo,text="PDF de este paciente",bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12),command=exportar_pdf_persona)
+    boton_pdf_paciente = Button(frame_izquierdo,text=" Generar PDF de este alumno",bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12),command=exportar_pdf_persona)
     boton_pdf_paciente.grid(row=17, column=0, padx=10, sticky="ew")
-    boton_word_paciente = Button(frame_izquierdo,text="Word de este estudiante",bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12),command=exportar_word_persona)
+    boton_word_paciente = Button(frame_izquierdo,text=" Generar Word de este estudiante",bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12),command=exportar_word_persona)
     boton_word_paciente.grid(row=17, column=1, padx=10, sticky="ew")
     boton_ver_doc = Button(frame_izquierdo,text="Ver/Editar documento",bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12),command=lambda: abrir_ventana_ver_documento(entry_dni_perfil.get().strip()))
     boton_ver_doc.grid(row=17, column=2, columnspan=2, padx=10, pady=5, sticky="ew")
@@ -1083,7 +1297,7 @@ def abrir_ventana_perfil(event=None):
     boton_quitar_foto.pack(side="top", padx=10, pady=5)
     frame_galeria = Frame(frame_derecha, bg=GRIS_NIEBLA)
     frame_galeria.pack(side="top", fill="x", pady=(0, 10))
-    Label(frame_galeria, text="Fotos del editor:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 10, "bold")).pack(anchor="w")
+    Label(frame_galeria, text="Fotos del alumno:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 10, "bold")).pack(anchor="w")
     frame_galeria_inner = Frame(frame_galeria, bg=GRIS_NIEBLA, height=120)
     frame_galeria_inner.pack(fill="x")
     frame_galeria_inner.pack_propagate(False)
@@ -1096,7 +1310,7 @@ def abrir_ventana_perfil(event=None):
     frame_lista_perfil = Frame(frame_derecha, bg=GRIS_AZULADO, relief="solid", bd=1)
     frame_lista_perfil.pack(side="top", fill="both", expand=True, pady=(0, 20))
     # Ver como se puede reciclar esto 
-    Label(frame_lista_perfil, text="Entrevistas del paciente", bg=GRIS_AZULADO, fg=BLANCO, font=("Segoe UI", 15, "bold")).pack(side="top", padx=10, pady=10)
+    Label(frame_lista_perfil, text="Documentos del estudiante", bg=GRIS_AZULADO, fg=BLANCO, font=("Segoe UI", 15, "bold")).pack(side="top", padx=10, pady=10)
     scroll_perfil = tk.Scrollbar(frame_lista_perfil, orient="vertical")
     scroll_perfil.pack(side="right", fill="y")
     lista_personas_perfil = Listbox(frame_lista_perfil, yscrollcommand=scroll_perfil.set, font=("Segoe UI", 12), bg=BLANCO, fg=GRIS_AZULADO, selectbackground=AZUL_SERENO, selectforeground=BLANCO)
@@ -1240,9 +1454,9 @@ def crear_pdf(ruta,perfil):
         lineas_pagina = []
         rectangulos_pagina = []
         y = 790
-        lineas_pagina.append((" | Archivo de perfil", "F2", 16, 50, y))
+        lineas_pagina.append((" Centro de Formacion Profecion 401 Escuela de Oficios Sanca", "F2", 16, 50, y))
         y -= 25
-        lineas_pagina.append(("Historial completo de entrevistas", "F1", 10, 50, y))
+        lineas_pagina.append(("Archivo de alumno", "F1", 10, 50, y))
         y -= 30
 
     def agregar_linea(texto, negrita=False, tamano=10, sangria=0):
@@ -1517,12 +1731,12 @@ def exportar_persona_word(dni_persona=None):
         
         if dni_persona: cursor.execute(query + " WHERE p.dni = ? ORDER BY p.id", (dni_persona,))
         else: cursor.execute(query + " ORDER BY p.id")
-        entrevistas = cursor.fetchall()
+        persona = cursor.fetchall()
     except sqlite3.Error:
-        messagebox.showerror("Error al consultar", 'No se pudieron leer las entrevistas')
+        messagebox.showerror("Error al consultar", 'No se pudieron leer los expedientes de los alumnos')
         return
-    if not entrevistas:
-        messagebox.showinfo("Sin entrevistas","No hay entrevistas para exportar.")
+    if not persona:
+        messagebox.showinfo("Sin archivos","No hay archivo de alumno para exportar.")
         return
 
     # --- NUEVO: Obtener la foto ---
@@ -1535,7 +1749,7 @@ def exportar_persona_word(dni_persona=None):
     # ------------------------------
 
     lineas = ["Centro de Formación Profesional 401  Escuela de oficios SANCA | Ficha de perfil alumno", ""]
-    for datos in entrevistas:
+    for datos in persona:
         (nombre_persona, apellido_persona,dni_persona,edad_persona,domicilio_persona,fecha_ingreso_persona,telefono_persona,mail_persona,
          fecha_nacimiento_persona,contacto_emergencia,telefono_emergencia,obra_social,nacionalidad_persona,localidad_persona,id_ficha_persona)=datos
         persona = " ".join(p for p in (nombre_persona, apellido_persona) if p) or "No registrado"
@@ -1549,7 +1763,7 @@ def exportar_persona_word(dni_persona=None):
         lineas.append(f"Contacto emergencia: {contacto_emergencia or '-'}  Tel: {telefono_emergencia or '-'}")
         lineas.append(f"Obra social: {obra_social or '-'}")
         lineas.append("")
-        for parrafo in (entrevistas or "").splitlines() or ["Sin anotaciones"]: 
+        for parrafo in (persona or "").splitlines() or ["Sin anotaciones"]: 
             lineas.append(parrafo)
         lineas.append("")
         lineas.append("__________________________________________________")
@@ -1557,7 +1771,7 @@ def exportar_persona_word(dni_persona=None):
     
     texto = "\n".join(lineas)
     nombre_archivo = f"Perfil_alumno_{dni_persona}.rtf" if dni_persona else "Archivo_perfil.rtf"
-    ruta = filedialog.asksaveasfilename(title="Guardar entrevistas como Word", defaultextension=".rtf", initialfile=nombre_archivo, filetypes=[("Documento Word (RTF)", "*.rtf")])
+    ruta = filedialog.asksaveasfilename(title="Guardar como Word", defaultextension=".rtf", initialfile=nombre_archivo, filetypes=[("Documento Word (RTF)", "*.rtf")])
     if not ruta: return
     
     try:
@@ -1567,32 +1781,32 @@ def exportar_persona_word(dni_persona=None):
     except OSError:
         messagebox.showerror("Error al exportar", 'No se pudo crear el Word')
         return
-    messagebox.showinfo("Word creado", f"Entrevistas guardadas en:\n{ruta}")
+    messagebox.showinfo("Word creado", f"Archivo de alumno guardado en:\n{ruta}")
 
-def exportar_entrevistas_pdf(dni=None):
+def exportar_archivo_pdf(dni=None):
     try:
         query = """SELECT p.nombres, p.apellido,p.dni,p.edad,p.domicilio,p.fecha_ingreso,p.telefono,p.mail,p.fecha_nacimiento,p.contacto_emergencia,
         p.telefono_emergencia,p.obra_social,p.nacionalidad,p.localidad FROM personas AS p ON p.dni"""
         if dni: cursor.execute(query + " WHERE e.dni_paciente = ? ORDER BY e.id", (dni,))
         else: cursor.execute(query + " ORDER BY e.id")
-        entrevistas = cursor.fetchall()
+        persona = cursor.fetchall()
     except sqlite3.Error:
-        messagebox.showerror("Error al consultar", 'No se pudieron leer las entrevistas')
+        messagebox.showerror("Error al consultar", 'No se pudieron leer los archivos de los alumnos')
         return
-    if not entrevistas:
-        messagebox.showinfo("Sin entrevistas","No hay entrevistas para exportar.")
+    if not persona:
+        messagebox.showinfo("Sin PDFs de alumnos","No hay archivos para exportar.")
         return
-    nombre_archivo = f"entrevistas_{dni}.pdf" if dni else "Archivo_perfil.pdf"
-    ruta = filedialog.asksaveasfilename(title="Guardar entrevistas como PDF", defaultextension=".pdf", initialfile=nombre_archivo, filetypes=[("Documento PDF", "*.pdf")])
+    nombre_archivo = f"Alumno_{dni}.pdf" if dni else "Archivo_perfil.pdf"
+    ruta = filedialog.asksaveasfilename(title="Guardar como PDF", defaultextension=".pdf", initialfile=nombre_archivo, filetypes=[("Documento PDF", "*.pdf")])
     if not ruta: return
-    try: crear_pdf(ruta,perfil)
+    try: crear_pdf(ruta,persona)
     except OSError as error:
         messagebox.showerror("Error al exportar", f"No se pudo crear el PDF: {error}")
         return
     except UnicodeEncodeError:
         messagebox.showerror("Error al exportar", "El texto contiene caracteres no compatibles con la fuente PDF.")
         return
-    messagebox.showinfo("PDF creado", f"Entrevistas guardadas en:\n{ruta}")
+    messagebox.showinfo("PDF creado", f"Archivo guardadas en:\n{ruta}")
 
 # BLOQUE 16 VENTANA DE DOCUMENTOS
 def abrir_ventana_ver_documento(dni_persona=None):
@@ -1622,17 +1836,16 @@ def abrir_ventana_ver_documento(dni_persona=None):
         if not dni:
             messagebox.showwarning("Atención", "Escribí un DNI primero.")
             return
-        cursor.execute("""SELECT id, 
-        fecha_entrevista, hora_entrevista, nombre_profecional, apellido_profecional, entrevista FROM entrevistas WHERE dni_paciente = ? ORDER BY id""", (dni,))
+        cursor.execute("""SELECT id,nombre,apellido,dni,edad,domicilio,fecha_ingreso,telefono,mail,fecha_nacimiento,contacto_emergencia,telefono_emergencia,obra_social,nacionalidad,localidad FROM personas WHERE dni = ? ORDER BY id""", (dni,))
         filas = cursor.fetchall()
         if not filas:
-            text_doc.insert("1.0", "No hay entrevistas para ese DNI.")
+            text_doc.insert("1.0", "No hay archivos para ese DNI.")
             return
         for f in filas:
-            text_doc.insert(tk.END, f"=== Entrevista {f[0]} ===\n")
-            text_doc.insert(tk.END, f"Fecha: {f[1]} {f[2] or ''}\n")
-            text_doc.insert(tk.END, f"Profesional: {f[3]} {f[4] or ''}\n\n")
-            text_doc.insert(tk.END, f"{f[5] or ''}\n\n")
+            text_doc.insert(tk.END, f"=== Numero de ficha de alumno {f[0]} ===\n")
+            text_doc.insert(tk.END, f"Nombre y apellido: {f[1]} {f[2] or ''}\n")
+            text_doc.insert(tk.END, f"DNI: {f[3]} {f[4] or ''}\n\n")
+            text_doc.insert(tk.END, f"{f[6] or ''}\n\n")
 
     def guardar_pdf():
         texto = text_doc.get("1.0", tk.END).strip()
@@ -1676,15 +1889,20 @@ def abrir_ventana_ver_documento(dni_persona=None):
             if extension == ".pdf":
                 with open(ruta, "rb") as archivo:
                     lector = PyPDF2.PdfReader(archivo)
-                    for pagina in lector.pages: texto += pagina.extract_text() + "\n"
-            elif extension in (".doc", ".docx", ".txt"):
-                try:
-                    with open(ruta, "r", encoding="utf-8") as archivo: contenido = archivo.read()
-                    if "<p>" in contenido: contenido = re.sub(r"<[^>]+>", "", contenido)
-                    texto = contenido
-                except UnicodeDecodeError:
-                    messagebox.showerror("Error", "No se pudo leer el archivo (codificación no soportada).")
-                    return
+                    for pagina in lector.pages:
+                        texto += (pagina.extract_text() or "") + "\n"
+            elif extension == ".docx":
+                # Un DOCX es un ZIP que contiene el XML del documento.
+                with zipfile.ZipFile(ruta, "r") as documento:
+                    contenido_xml = documento.read("word/document.xml").decode("utf-8")
+                contenido_xml = re.sub(r"</w:p>", "\n", contenido_xml)
+                texto = html.unescape(re.sub(r"<[^>]+>", "", contenido_xml))
+            elif extension == ".txt":
+                with open(ruta, "r", encoding="utf-8") as archivo:
+                    texto = archivo.read()
+            elif extension == ".doc":
+                messagebox.showwarning("Formato no compatible", "El formato .doc antiguo no se puede leer directamente. Guardalo como .docx o PDF y volvé a importarlo.")
+                return
             else:
                 messagebox.showwarning("Formato", "Formato no soportado. Usá PDF, DOC, DOCX o TXT.")
                 return
@@ -1702,8 +1920,9 @@ def abrir_ventana_ver_documento(dni_persona=None):
     Button(frame_btn, bg = VERDE_AZULADO, fg = BLANCO, text="Guardar Word", command=guardar_word).pack(side="left", padx=5)
     Button(frame_btn, bg = VERDE_AZULADO, fg = BLANCO, text="Eliminar archivo", command=eliminar_archivo).pack(side="left", padx=5)
     Button(frame_btn, bg = VERDE_AZULADO, fg = BLANCO, text="Importar PDF/Word", command=importar_documento).pack(side="left", padx=5)
-    if dni_persona: cargar_documento()
-    #agregar_boton_luna(ventana_doc)
+    if dni_persona:
+        cargar_documento()
+    aplicar_tema(ventana_doc)  # Aplico el tema actual a la ventana de documentos
 
 
 # BLOQUE 17: CERRAR APLICACION
