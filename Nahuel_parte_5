@@ -382,13 +382,20 @@ except Exception:
 
 # BLOQUE 10: FUNCIONES PARA LA PANTALLA PRINCIPAL
 def refrescar_lista():
-    lista_personas.delete(0, tk.END)  # Borro la lista
-    cursor.execute("SELECT nombres, apellido, dni FROM personas ORDER BY apellido, nombres")  # Consulto personas
+    # Vacío la lista antes de volver a cargarla.
+    lista_personas.delete(0, tk.END)
+
+    # La columna correcta de la tabla se llama "nombres".
+    cursor.execute("SELECT nombres, apellido, dni FROM personas ORDER BY apellido, nombres")
+
+    # Recorro las personas y las muestro en la lista.
     for nombre, apellido, dni in cursor.fetchall():
-        lista_personas.insert(tk.END, f"{apellido}, {nombre} — DNI {dni}")  # Inserto en la lista
-    cursor.execute("SELECT COUNT(*) FROM personas WHERE LOWER(COALESCE(estado, 'activo')) = 'activo'")  # Cuento activos
-    activos = cursor.fetchone()[0]  # Obtengo el número
-    contador_legajos.config(text=f"Legajos activos: {activos}")  # Actualizo contador
+        lista_personas.insert(tk.END, f"{apellido}, {nombre} — DNI {dni}")
+
+    # Actualizo el contador sin consultar una columna "estado" que no existe.
+    cursor.execute("SELECT COUNT(*) FROM personas")
+    cantidad = cursor.fetchone()[0]
+    contador_legajos.config(text=f"Legajos registrados: {cantidad}")
 
 def mostrar_foto(dni):
     cursor.execute("SELECT foto FROM personas WHERE dni = ?", (dni,))  # Busco la foto
@@ -430,57 +437,130 @@ def grids_remove_dni():
     entry_dni.grid_remove()
 
 def al_seleccionar(event=None):
-    grids_nom_ape()  # Muestro campos
+    # Muestro los campos del formulario.
+    grids_nom_ape()
     grids_dni()
-    sel = lista_personas.curselection()
-    if not sel: return
-    texto = lista_personas.get(sel[0])
-    dni = int(texto.split("DNI ")[1])  # Extraigo el DNI
-    cursor.execute("SELECT nombre, apellido, dni FROM personas WHERE dni = ?", (dni,))
+
+    # Compruebo que se haya seleccionado una persona.
+    seleccion = lista_personas.curselection()
+    if not seleccion:
+        return
+
+    # Extraigo el DNI del texto seleccionado.
+    texto = lista_personas.get(seleccion[0])
+    dni = texto.split("DNI ")[1].strip()
+
+    # Busco los datos usando "nombres", que es el nombre real de la columna.
+    cursor.execute(
+        "SELECT nombres, apellido, dni FROM personas WHERE dni = ?",
+        (dni,)
+    )
     fila = cursor.fetchone()
-    if not fila: return
+
+    if not fila:
+        return
+
+    # Cargo el nombre.
     entry_nombre.delete(0, tk.END)
-    entry_nombre.insert(0, fila[0])  # Cargo nombre
+    entry_nombre.insert(0, fila[0])
+
+    # Cargo el apellido.
     entry_apellido.delete(0, tk.END)
-    entry_apellido.insert(0, fila[1])  # Cargo apellido
+    entry_apellido.insert(0, fila[1])
+
+    # Cargo el DNI.
     entry_dni.delete(0, tk.END)
-    entry_dni.insert(0, fila[2])  # Cargo DNI
-    mostrar_foto(dni)  # Muestro foto
-    
+    entry_dni.insert(0, fila[2])
+
+    # Muestro la fotografía guardada.
+    mostrar_foto(dni)
+
+
 def limpiar():
+    # Borro los campos de texto.
     entry_nombre.delete(0, tk.END)
     entry_apellido.delete(0, tk.END)
     entry_dni.delete(0, tk.END)
-    visor_foto.configure(image="", text="👤\nSin foto")
+
+    # Restablezco el visor de fotografía.
+    visor_foto.configure(image="", text="👤\\nSin foto")
     visor_foto.image = None
-    
+
+
 def agregar_definitivo():
+    # Obtengo los datos escritos por el usuario.
     nombre = entry_nombre.get().strip()
     apellido = entry_apellido.get().strip()
     dni_txt = entry_dni.get().strip()
-    if not (nombre and apellido and dni_txt):
-        messagebox.showwarning("Faltan datos", "Completa nombre, apellido y DNI.")  # Aviso
+
+    # Verifico que no falte ningún dato obligatorio.
+    if not nombre or not apellido or not dni_txt:
+        messagebox.showwarning("Faltan datos", "Completa nombre, apellido y DNI.")
         return
-    try: dni = int(dni_txt)  # Convierto a entero
-    except ValueError:
-        messagebox.showerror("DNI invalido", "El DNI debe ser numerico.")
+
+    # Compruebo que el DNI contenga solamente números.
+    if not dni_txt.isdigit():
+        messagebox.showerror("DNI inválido", "El DNI debe contener solamente números.")
         return
-    ruta = filedialog.askopenfilename(title="Foto (opcional)", filetypes=[("Imagenes","*.png *.jpg *.jpeg *.webp")])  # Pido foto
-    contenido = None
-    if ruta:
-        with open(ruta, "rb") as f: contenido = sqlite3.Binary(f.read())  # Leo bytes
+
+    dni = int(dni_txt)
+
+    # Selecciono una fotografía. Cancelar permite guardar sin foto.
+    ruta_foto = filedialog.askopenfilename(
+        title="Seleccionar fotografía (opcional)",
+        filetypes=[
+            ("Imágenes", "*.png *.jpg *.jpeg *.bmp *.webp"),
+            ("Todos los archivos", "*.*")
+        ]
+    )
+
+    # Por defecto, la persona se guarda sin fotografía.
+    foto = None
+
+    # Si se eligió una imagen, compruebo que Pillow pueda abrirla.
+    if ruta_foto:
+        try:
+            with Image.open(ruta_foto) as imagen:
+                imagen.verify()
+
+            # Leo el archivo en formato binario para guardarlo en SQLite.
+            with open(ruta_foto, "rb") as archivo:
+                foto = sqlite3.Binary(archivo.read())
+
+        except Exception as error:
+            messagebox.showerror(
+                "Fotografía inválida",
+                f"No se pudo abrir la imagen.\\n\\nDetalle: {error}"
+            )
+            return
+
+    # Guardo la persona. La columna se llama "nombres", no "nombre".
     try:
-        cursor.execute("INSERT INTO personas (nombres, apellido, dni, foto) VALUES (?,?,?,?)", (nombre, apellido, dni, contenido))  # Inserto
+        cursor.execute(
+            "INSERT INTO personas (nombres, apellido, dni, foto) VALUES (?, ?, ?, ?)",
+            (nombre, apellido, dni, foto)
+        )
         conexion.commit()
+
     except sqlite3.IntegrityError:
-        messagebox.showerror("Error", "Ya existe una persona con ese DNI.\nVerifica el numero ingresado.")  # DNI duplicado
+        messagebox.showerror(
+            "DNI duplicado",
+            "Ya existe una persona con ese DNI."
+        )
         return
-    except Exception:
-        messagebox.showerror("Error inesperado", 'No se pudo guardar')
+
+    except sqlite3.Error as error:
+        conexion.rollback()
+        messagebox.showerror(
+            "Error al guardar",
+            f"No se pudo guardar la persona.\\n\\nDetalle: {error}"
+        )
         return
-    refrescar_lista()  # Refresco
-    limpiar()  # Limpio
-    messagebox.showinfo("OK", "Persona agregada.")
+
+    # Actualizo la lista, limpio el formulario y aviso que terminó.
+    refrescar_lista()
+    limpiar()
+    messagebox.showinfo("Persona agregada", "La persona se guardó correctamente.")
 
 def eliminar_definitivo():
     seleccion = lista_personas.curselection()
@@ -505,7 +585,7 @@ def buscar_definitivo():
     if not dni_txt:
         messagebox.showwarning("Atencion", "Escribi de forma numerica un DNI para buscar.")
         return
-    cursor.execute("SELECT nombre, apellido, dni FROM personas WHERE dni = ?", (dni_txt,))
+    cursor.execute("SELECT nombres, apellido, dni FROM personas WHERE dni = ?", (dni_txt,))
     fila = cursor.fetchone()
     if not fila:
         messagebox.showinfo("Sin resultados", "No existe esa persona.")
@@ -643,7 +723,7 @@ def abrir_ventana_perfil():
     Label(frame_izquierdo, text="Edad:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=2, column=0, sticky="e", padx=5)
     entry_edad_perfil = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
     entry_edad_perfil.grid(row=2, column=1, padx=5, pady=3)
-    entry_edad_perfil.insert(0, entry_nombre.get())
+    entry_edad_perfil.insert(0, "")
 
     Label(frame_izquierdo, text=" DNI:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=3, column=0, sticky="e", padx=5)
     entry_dni_perfil = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
@@ -728,15 +808,15 @@ def abrir_ventana_perfil():
         visor_foto_perfil.image = None
 
     def subir_foto_perfil(event=None):
-        et = entry_dni_perfil_ref.get()
         ruta = filedialog.askopenfilename(title="Seleccionar foto", filetypes=[("Imagenes", "*.png *.jpg *.jpeg *.bmp *.webp")])
         if not ruta: return
         try:
             with open(ruta, "rb") as f: foto_pendiente["bytes"] = f.read()
             mostrar_foto_en_perfil()
-        except Exception: messagebox.showerror("Error", 'No se pudo cargar la foto')
-        os.makedirs(str(et), exist_ok=True)
-        shutil.move(ruta, str(et))
+        except Exception as error:
+            messagebox.showerror("Error", f"No se pudo cargar la foto: {error}")
+            foto_pendiente["bytes"] = None
+            return
 
     def asignar_foto_galeria(event=None):
         sel = lista_fotos_galeria.curselection()
@@ -754,81 +834,118 @@ def abrir_ventana_perfil():
         mostrar_foto_en_perfil()
 
     def guardar_cambios_perfil():
+        # Leo y valido los datos principales.
         nombre = entry_nombre_perfil.get().strip()
         apellido = entry_apellido_perfil.get().strip()
         dni_txt = entry_dni_perfil.get().strip()
-        if not (nombre and apellido and dni_txt):
+
+        if not nombre or not apellido or not dni_txt:
             messagebox.showwarning("Faltan datos", "Completa nombre, apellido y DNI.")
             return
-        try: dni = int(dni_txt)
-        except ValueError:
-            messagebox.showerror("Error", "El DNI debe ser numerico.")
+
+        if not dni_txt.isdigit():
+            messagebox.showerror("DNI inválido", "El DNI debe contener solamente números.")
             return
+
+        dni = int(dni_txt)
+
+        # Leo los demás campos del perfil.
         edad_txt = entry_edad_perfil.get().strip()
         edad = int(edad_txt) if edad_txt.isdigit() else None
         domicilio = entry_direccion_perfil.get().strip()
-        f_nacimiento = entry_f_nacimiento_perfil.get().strip()
-        f_ingreso = entry_fecha_ingreso_perfil.get().strip()
+        fecha_nacimiento = entry_f_nacimiento_perfil.get().strip()
+        fecha_ingreso = entry_fecha_ingreso_perfil.get().strip()
         telefono = entry_telefono_perfil.get().strip()
         contacto_emergencia = entry_contacto_emergencia_perfil.get().strip()
-        tel_emergencia = entry_tel_emergencia_perfil.get().strip()
+        telefono_emergencia = entry_tel_emergencia_perfil.get().strip()
         obra_social = entry_obra_social_perfil.get().strip()
-        fecha_ingreso = comprobar_fecha(entry_fecha_ingreso_perfil)
-        nacionalidad = entry_nacionalidad.get()
-        localidad = entry_localidad().get()
+        nacionalidad = entry_nacionalidad.get().strip()
+        localidad = entry_localidad.get().strip()
 
-        if foto_pendiente["bytes"] == b"":
-            foto_contenido = None
-            borrar_foto = True
-        elif foto_pendiente["bytes"] is not None:
-            foto_contenido = sqlite3.Binary(foto_pendiente["bytes"])
-            borrar_foto = False
-        else:
-            foto_contenido = None
-            borrar_foto = False
-        dni_cargado = dni_original["valor"]
-        if dni_cargado:
-            if str(dni) != str(dni_cargado):
-                cursor.execute("SELECT id FROM personas WHERE dni = ?", (dni,))
+        # Si bytes es None, no se modifica la foto existente.
+        # Si bytes es b"", se elimina la foto.
+        # Si contiene datos, se guarda la nueva fotografía.
+        foto = foto_pendiente["bytes"]
+        dni_anterior = dni_original["valor"]
+
+        try:
+            if dni_anterior:
+                # Compruebo que el DNI nuevo no pertenezca a otra persona.
+                cursor.execute(
+                    "SELECT dni FROM personas WHERE dni = ? AND dni <> ?",
+                    (dni, dni_anterior)
+                )
                 if cursor.fetchone():
-                    messagebox.showerror("Error", "Ya existe otra persona con ese DNI.")
+                    messagebox.showerror("DNI duplicado", "Otra persona ya utiliza ese DNI.")
                     return
-                
-                cursor.execute("UPDATE personas SET dni = ? WHERE dni = ?", (dni, dni_cargado))
-                cursor.execute("""UPDATE personas SET nombres = ?, apellido = ?, edad = ?, domicilio = ?, fecha_nacimiento = ?,
-                                fecha_ingreso = ?, telefono = ?, contacto_emergencia = ?, telefono_emergencia = ?, obra_social = ?,
-                                localidad = ?,  nacionalidad = ? WHERE dni = ?""",
-                                (nombre, apellido, edad, domicilio, f_nacimiento, f_ingreso, telefono, contacto_emergencia, tel_emergencia, obra_social,
-                                localidad,nacionalidad,dni))
-                dni_original["valor"] = str(dni)
-                entry_dni_perfil.delete(0, tk.END)
-                entry_dni_perfil.insert(0, dni)
-                if borrar_foto: cursor.execute("UPDATE personas SET foto = NULL WHERE dni = ?", (dni,))
-                elif foto_contenido is not None: cursor.execute("UPDATE personas SET foto = ? WHERE dni = ?", (foto_contenido, dni))
+
+                # Actualizo todos los datos en una sola consulta.
+                cursor.execute("""
+                    UPDATE personas
+                    SET nombres = ?, apellido = ?, dni = ?, edad = ?, domicilio = ?,
+                        fecha_nacimiento = ?, fecha_ingreso = ?, telefono = ?,
+                        contacto_emergencia = ?, telefono_emergencia = ?,
+                        obra_social = ?, localidad = ?, nacionalidad = ?
+                    WHERE dni = ?
+                """, (
+                    nombre, apellido, dni, edad, domicilio,
+                    fecha_nacimiento, fecha_ingreso, telefono,
+                    contacto_emergencia, telefono_emergencia,
+                    obra_social, localidad, nacionalidad, dni_anterior
+                ))
+
+                # Actualizo la fotografía solamente si el usuario hizo un cambio.
+                if foto == b"":
+                    cursor.execute("UPDATE personas SET foto = NULL WHERE dni = ?", (dni,))
+                elif foto is not None:
+                    cursor.execute(
+                        "UPDATE personas SET foto = ? WHERE dni = ?",
+                        (sqlite3.Binary(foto), dni)
+                    )
+
             else:
-                cursor.execute("""UPDATE personas SET dni = ?,  nombres = ?, apellido = ?, edad = ?, domicilio = ?, fecha_nacimiento = ?,
-                                fecha_ingreso = ?, telefono = ?, contacto_emergencia = ?, telefono_emergencia = ?, obra_social = ?,
-                                localidad = ?,  nacionalidad = ?  WHERE dni = ?""",
-                                (dni, nombre, apellido, edad, domicilio, f_nacimiento, f_ingreso, telefono, contacto_emergencia, tel_emergencia, obra_social,
-                                 fecha_ingreso, dni_cargado))
-                if borrar_foto: cursor.execute("UPDATE personas SET foto = NULL WHERE dni = ?", (dni,))
-                elif foto_contenido is not None: cursor.execute("UPDATE personas SET foto = ? WHERE dni = ?", (foto_contenido, dni))
-        else:
-            try:
-                cursor.execute("""INSERT INTO personas( nombres, apellido, edad, domicilio, fecha_nacimiento,
-                                fecha_ingreso, telefono, contacto_emergencia , telefono_emergencia , obra_social,
-                                localidad,nacionalidad, foto)
-                                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?))""",
-                                (nombre, apellido, dni, edad, domicilio, f_nacimiento, f_ingreso, telefono, contacto_emergencia, tel_emergencia, obra_social,
-                                fecha_ingreso,nacionalidad,localidad, foto_contenido))
-            except sqlite3.IntegrityError:
-                messagebox.showerror("Error", "Ya existe una persona con ese DNI.")
-                return
-            dni_original["valor"] = str(dni)
-        conexion.commit()
+                # Si el perfil no corresponde todavía a una persona, la creo.
+                cursor.execute("""
+                    INSERT INTO personas (
+                        nombres, apellido, dni, edad, domicilio,
+                        fecha_nacimiento, fecha_ingreso, telefono,
+                        contacto_emergencia, telefono_emergencia,
+                        obra_social, localidad, nacionalidad, foto
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """, (
+                    nombre, apellido, dni, edad, domicilio,
+                    fecha_nacimiento, fecha_ingreso, telefono,
+                    contacto_emergencia, telefono_emergencia,
+                    obra_social, localidad, nacionalidad,
+                    sqlite3.Binary(foto) if foto else None
+                ))
+
+            # Confirmo todos los cambios en la base de datos.
+            conexion.commit()
+
+        except sqlite3.IntegrityError:
+            conexion.rollback()
+            messagebox.showerror("DNI duplicado", "Ya existe una persona con ese DNI.")
+            return
+
+        except sqlite3.Error as error:
+            conexion.rollback()
+            messagebox.showerror("Error al guardar", f"No se pudieron guardar los datos:\\n{error}")
+            return
+
+        # Actualizo el DNI original y la lista principal.
+        dni_original["valor"] = str(dni)
+        entry_dni_perfil.delete(0, tk.END)
+        entry_dni_perfil.insert(0, str(dni))
+        entry_dni.delete(0, tk.END)
+        entry_dni.insert(0, str(dni))
         refrescar_lista()
+
+        # La foto ya quedó guardada; limpio el cambio pendiente.
         foto_pendiente["bytes"] = None
-        messagebox.showinfo("OK", "Datos guardados.")
+        mostrar_foto_en_perfil()
+        mostrar_foto(dni)
+        messagebox.showinfo("Datos guardados", "Los datos de la persona se guardaron correctamente.")
 
     def cargar_perfil():
         dni_txt = entry_dni.get().strip()
@@ -865,7 +982,15 @@ def abrir_ventana_perfil():
             entry_localidad.insert(0,fila[10] or "")
             dni_original["valor"] = dni_txt
             mostrar_foto_en_perfil()
-            for e in cursor.fetchall(): lista_personas_perfil.insert(tk.END, f"ID {e[0]} — {e[1]} — {e[2]} {e[3] or ''}")
+            try:
+                cursor.execute(
+                    "SELECT id, fecha_entrevista, hora_entrevista FROM entrevistas WHERE dni_paciente = ? ORDER BY id",
+                    (dni_txt,)
+                )
+                for e in cursor.fetchall():
+                    lista_personas_perfil.insert(tk.END, f"Entrevista {e[0]} — {e[1]} {e[2] or ''}")
+            except sqlite3.Error:
+                lista_personas_perfil.insert(tk.END, "Todavía no hay una tabla de entrevistas disponible.")
         else: messagebox.showinfo("Error", "No existe ese DNI.")
 
     def _texto_ficha_persona():
@@ -964,7 +1089,7 @@ def abrir_ventana_perfil():
     visor_foto_perfil = tk.Label(frame_foto_perfil,text="👤\nClic para subir foto",bg=BLANCO, fg=GRIS_MEDIO,font=("Segoe UI", 20), cursor="hand2")
     visor_foto_perfil.pack(fill="both", expand=True, padx=10, pady=10)
     visor_foto_perfil.bind("<Button-1>", subir_foto_perfil)
-    boton_quitar_foto = Button(frame_derecha, 100, 40, 20,VERDE_AZULADO, BLANCO,text="Quitar foto",command=quitar_foto_perfil)
+    boton_quitar_foto = Button(frame_derecha, bg = VERDE_AZULADO, fg =BLANCO,text="Quitar foto",command=quitar_foto_perfil)
     boton_quitar_foto.pack(side="top", padx=10, pady=5)
     frame_galeria = Frame(frame_derecha, bg=GRIS_NIEBLA)
     frame_galeria.pack(side="top", fill="x", pady=(0, 10))
@@ -990,6 +1115,7 @@ def abrir_ventana_perfil():
     #agregar_boton_luna(ventana_perfil)
     cargar_perfil()
 
+lista_personas.bind("<Double-Button-1>",abrir_ventana_perfil )
 
 # Boton de perfil , despues se puede borrar , todavia no porque no se sino como hago las cosas
 btn_perfil = Button(frame_btn,text = "Perfil de persona 👤",bg=AZUL_SERENO, fg=BLANCO, activebackground=AZUL_PETROLEO, activeforeground=NEGRO,
@@ -1398,7 +1524,7 @@ def crear_pdf_de_texto(ruta, texto, foto_bytes=None):
 # BLOQUE 15: EXPORTAR
 def exportar_entrevistas_word(dni_paciente=None):
     try:
-        query = """SELECT p.nombre, p.apellido, e.id, p.fecha_nacimiento, p.fecha_ingreso, p.telefono, p.direccion, p.contacto_emergencia,
+        query = """SELECT p.nombres, p.apellido, e.id, p.fecha_nacimiento, p.fecha_ingreso, p.telefono, p.domicilio, p.contacto_emergencia,
                    p.telefono_emergencia, p.obra_social, p.estado, p.consentimiento, e.nombre_profecional, e.apellido_profecional, e.dni_profecional,
                    e.matricula, e.especialidad, e.telefono_profecional, e.email_profecional, e.activo_profecional, e.entrevista, e.dni_paciente,
                    e.fecha_entrevista, e.hora_entrevista, e.tipo_entrevista, e.proxima_sesion_entrevista FROM entrevistas AS e LEFT JOIN personas AS p ON p.dni = e.dni_paciente"""
@@ -1469,7 +1595,7 @@ def exportar_entrevistas_word(dni_paciente=None):
     messagebox.showinfo("Word creado", f"Entrevistas guardadas en:\n{ruta}")
 def exportar_entrevistas_pdf(dni=None):
     try:
-        query = """SELECT p.nombre, p.apellido, e.id, p.fecha_nacimiento, p.fecha_ingreso, p.telefono, p.direccion, p.contacto_emergencia,
+        query = """SELECT p.nombres, p.apellido, e.id, p.fecha_nacimiento, p.fecha_ingreso, p.telefono, p.domicilio, p.contacto_emergencia,
                    p.telefono_emergencia, p.obra_social, p.estado, p.consentimiento, e.nombre_profecional, e.apellido_profecional, e.dni_profecional,
                    e.matricula, e.especialidad, e.telefono_profecional, e.email_profecional, e.activo_profecional, e.entrevista, e.dni_paciente,
                    e.fecha_entrevista, e.hora_entrevista, e.tipo_entrevista, e.proxima_sesion_entrevista FROM entrevistas AS e LEFT JOIN personas AS p ON p.dni = e.dni_paciente"""
