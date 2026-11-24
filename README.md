@@ -31,14 +31,6 @@ Permite dar de alta estudiantes, organizar cursos y adjuntar documentación resp
 
 El proyecto nació con el objetivo de reemplazar planillas sueltas y carpetas físicas por un registro único, ordenado y fácil de consultar por parte del personal administrativo.
 
-## 📸 Capturas
-
-<!-- Reemplazá estas rutas por capturas reales dentro de la carpeta docs/ -->
-
-| Pantalla principal | Alta de estudiante |
-|--------------------|--------------------|
-| ![Pantalla principal](docs/captura-principal.png) | ![Alta estudiante](docs/captura-alta.png) |
-
 ## ✨ Características
 
 - 🗂️ **Gestión de estudiantes:** alta, baja, modificación y consulta de legajos.
