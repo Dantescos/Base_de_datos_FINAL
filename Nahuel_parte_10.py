@@ -505,18 +505,23 @@ def comprobar_fecha(entry_fecha):
     fecha, _ = separar_fecha_hora(entry_fecha.get())
     return fecha
 
-# BLOQUE 8: VENTANA DE CURSOS
+# BLOQUE 9: VENTANA DE CURSOS Y GRILLA
 ventana_cursos = None  # Variable global para controlar la instancia
 entry_cursos_ref = None
 
 def abrir_ventana_cursos():
     global ventana_cursos, entry_cursos_ref
+    # Evita abrir ventanas duplicadas si ya está activa
+    if ventana_cursos is not None and ventana_cursos.winfo_exists():
+        ventana_cursos.lift()
+        ventana_cursos.focus_force()
+        return
 
-    ventana_cursos = Toplevel(ventana)  # Creo la ventana de cursos
-    ventana_cursos.title("CURSOS")  # Título de la ventana
-    ventana_cursos.geometry("900x750")  # Aplico geometría
-    ventana_cursos.minsize(700, 550)  # Tamaño mínimo
-    ventana_cursos.config(bg=COLOR_FONDO)  # Fondo
+    ventana_cursos = Toplevel(ventana)
+    ventana_cursos.title("CURSOS")
+    ventana_cursos.geometry("1280x800")
+    ventana_cursos.minsize(900, 620)
+    ventana_cursos.config(bg=COLOR_FONDO)
 
     def al_cerrar_cursos():
         global ventana_cursos, entry_cursos_ref
@@ -524,289 +529,95 @@ def abrir_ventana_cursos():
         if ventana_cursos is not None and ventana_cursos.winfo_exists():
             ventana_cursos.destroy()
         ventana_cursos = None
-
-    ventana_cursos.protocol("WM_DELETE_WINDOW", al_cerrar_cursos)
-    label_especialidad = Label(ventana_cursos, text="Nombre del curso", bg=COLOR_FONDO)
-    label_especialidad.grid(row=7, column=0, sticky="e", padx=5)
-    entry_especialidad = Entry(ventana_cursos)
-    entry_especialidad.grid(row=7, column=1, padx=5, pady=3)
-    label_f_inicio = Label(ventana_cursos, text="Fecha de inicio:", bg=COLOR_FONDO)
-    label_f_inicio.grid(row=9, column=0, sticky="e", padx=5)
-    entry_f_inicio = Entry(ventana_cursos)
-    entry_f_inicio.grid(row=9, column=1, padx=5, pady=3)
-    label_lugar_en_que_se_dicta = Label(ventana_cursos, text="Lugar en el que se dicta:", bg=COLOR_FONDO)
-    label_lugar_en_que_se_dicta.grid(row=11, column=0, sticky="e", padx=5)
-    entry_lugar_en_que_se_dicta = Entry(ventana_cursos)
-    entry_lugar_en_que_se_dicta.grid(row=11, column=1, padx=5, pady=3)
-    label__f_final = Label(ventana_cursos, text="Fecha de finalizacion:", bg=COLOR_FONDO)
-    label__f_final.grid(row=13, column=0, sticky="e", padx=5)
-    entry_f_final = Entry(ventana_cursos)
-    entry_f_final.grid(row=13, column=1, padx=5, pady=3)
-    label_dia = Label(ventana_cursos, text="Dias:", bg=COLOR_FONDO)
-    label_dia.grid(row=15, column=0, sticky="e", padx=5)
-    entry_dias = Entry(ventana_cursos)
-    entry_dias.grid(row=15, column=1, padx=5, pady=3)
-    label_horarios = Label(ventana_cursos, text="Horarios:", bg=COLOR_FONDO)
-    label_horarios.grid(row=17, column=0, sticky="e", padx=5)
-    entry_horarios = Entry(ventana_cursos)
-    entry_horarios.grid(row=17, column=1, padx=5, pady=3)
-    label_docente = Label(ventana_cursos, text="Docente", bg=COLOR_FONDO)
-    label_docente.grid(row=19, column=0, sticky="e", padx=5)
-    entry_docente = Entry(ventana_cursos)
-    entry_docente.grid(row=19, column=1, padx=5, pady=3)
-    label_cantidad_de_modulos = Label(ventana_cursos, text="Cantidad de modulos", bg=COLOR_FONDO)
-    label_cantidad_de_modulos.grid(row=21, column=0, sticky="e", padx=5)
-    entry_cantidad_de_modulos = Entry(ventana_cursos)
-    entry_cantidad_de_modulos.grid(row=21, column=1, padx=5, pady=3)
-    label_curso_numero = Label(ventana_cursos, text="Numero del curso:", bg=COLOR_FONDO)
-    label_curso_numero.grid(row=23, column=0, sticky="e", padx=5)
-    entry_curso_numero = Entry(ventana_cursos)
-    entry_curso_numero.grid(row=23, column=1, padx=5, pady=3)
-
-    def detalles_curso(event=None):
-        seleccion = lista_cursos.curselection()
-        if not seleccion: return
-        dato = lista_cursos.get(seleccion[0])
-        id_c = int(dato.split("ID ")[1])
-
-        cursor.execute("""SELECT especialidad, fecha_de_iniciacion, lugar_en_el_que_se_dicta, fecha_de_terminacion, dias, horarios, docente, cantidad_de_modulos, curso_numero FROM cursos WHERE id = ?""", (id_c,))
-        fila = cursor.fetchone()
-
-        # Puede ocurrir que el curso se haya eliminado desde otra ventana.
-        if not fila:
-            messagebox.showinfo("Sin resultados", "No se encontró ese curso.")
-            return
         
-        ventana_detalle = Toplevel()
-        ventana_detalle.title(f"Detalle del curso #{id_c}")
-        ventana_detalle.geometry("600x550")
+    # Layout principal de ventana_cursos:
+    # Fila 0: Barra superior (lista de cursos + carga rápida)
+    # Fila 1: Formulario clásico / edición por ID
+    # Fila 2: Cuerpo con dos paneles (Datos del docente | Ficha del curso)
+    # Fila 3: Botonera inferior unificada
+    ventana_cursos.columnconfigure(0, weight=1)
+    ventana_cursos.rowconfigure(2, weight=1)
 
-        info = [("ID", id_c), ("Curso", fila[0] or "-"), ("Docente", fila[6] or "-"), ("Fecha de inicio", fila[1] or "-"), ("Fecha de terminacion", fila[3] or "-"), ("Dias", fila[4] or "-"), 
-                ("Horarios", fila[5] or "-"), ("cantidad de modulos", fila[7] or "-"), ("Numero del curso", fila[8] or "-"), ("Lugar en el que se dicta", fila[2] or "-")]
-        for etiqueta, valor in info:
-            Label(ventana_detalle, text=f"{etiqueta}:   {valor}", bg=COLOR_FONDO, fg=COLOR_TITULO).grid(sticky="w", padx=12, pady=5)
-
-    lista_cursos = Listbox(ventana_cursos)
-    lista_cursos.grid()
-    lista_cursos.bind("<Double-Button-1>", detalles_curso)
-    
-    label_id = Label(ventana_cursos, text="ID para editar:")
-    label_id.grid_remove()
-    entry_id = Entry(ventana_cursos)
-    entry_id.grid_remove()
-    
-    def grids():
-        label_id.grid()
-        entry_id.grid()
-        boton_cargar_datos.grid()
-        boton_para_editar.grid()
-    
-    def grids_remove():
-        label_id.grid_remove()
-        entry_id.delete(0, tk.END)
-        entry_id.grid_remove()
-        boton_cargar_datos.grid_remove()
-        boton_para_editar.grid_remove()
-
-    def agregar_curso():
-        grids_remove()
-        especialidad = entry_especialidad.get().strip()
-        f_inicio = comprobar_fecha(entry_f_inicio)
-        lugar_en_que_se_dicta = entry_lugar_en_que_se_dicta.get().strip()
-        f_final = comprobar_fecha(entry_f_final)
-        dias = entry_dias.get().strip()
-        horarios = entry_horarios.get().strip()
-        docente = entry_docente.get().strip()
-        cantidad_de_modulos = entry_cantidad_de_modulos.get().strip()
-        curso_numero = int(entry_curso_numero.get().strip())
-
-        if not especialidad:
-            messagebox.showwarning("Faltan datos", "Escribí el nombre del curso.")
-            return
-        if not curso_numero.isdigit():
-            messagebox.showwarning("Dato inválido", "El número del curso debe ser numérico.")
-            return
-        if cantidad_de_modulos and not cantidad_de_modulos.isdigit():
-            messagebox.showwarning("Dato inválido", "La cantidad de módulos debe ser numérica.")
-            return
-
-        cantidad_de_modulos = int(cantidad_de_modulos) if cantidad_de_modulos else None
-        curso_numero = int(curso_numero)
-        try:
-            cursor.execute("""INSERT INTO cursos(especialidad, fecha_de_iniciacion, lugar_en_el_que_se_dicta, fecha_de_terminacion, dias, horarios, docente, cantidad_de_modulos, curso_numero)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-                (especialidad, f_inicio, lugar_en_que_se_dicta, f_final, dias, horarios, docente, cantidad_de_modulos, curso_numero))
-            conexion.commit()
-            refrescar_lista_cursos()
-            messagebox.showinfo("Curso guardado", "El curso se agregó correctamente.")
-        except sqlite3.Error as error:
-            conexion.rollback()
-            messagebox.showerror("Error al guardar", f"No se pudo guardar el curso:\n{error}")
-
-    def eliminar_curso():
-        grids_remove()
-        seleccion = lista_cursos.curselection()
-        if not seleccion:
-            messagebox.showwarning("Atencion", "Selecciona un cursos de la lista para eliminar.")
-            return
-        texto = lista_cursos.get(seleccion[0])
-        id_c = int(texto.split("ID ")[1])
-        cursor.execute("DELETE FROM cursos WHERE id = ?", (id_c,))
-        conexion.commit()
-        refrescar_lista_cursos()
-
-    def cargar_datos_curso():
-        id_c = int(entry_id.get().strip())
-        cursor.execute("""SELECT especialidad, fecha_de_iniciacion, lugar_en_el_que_se_dicta, fecha_de_terminacion, dias, horarios, docente, cantidad_de_modulos, curso_numero FROM cursos WHERE id = ?""", (id_c,))
-        fila = cursor.fetchone()
-        if fila:
-            entry_especialidad.delete(0, tk.END)
-            entry_especialidad.insert(0, fila[0])
-            
-            entry_f_inicio.delete(0, tk.END)
-            entry_f_inicio.insert(0, fila[1])
-            
-            entry_lugar_en_que_se_dicta.delete(0, tk.END)
-            entry_lugar_en_que_se_dicta.insert(0, fila[2])
-            
-            entry_f_final.delete(0, tk.END)
-            entry_f_final.insert(0, fila[3])
-            
-            entry_dias.delete(0, tk.END)
-            entry_dias.insert(0, fila[4])
-            
-            entry_horarios.delete(0, tk.END)
-            entry_horarios.insert(0, fila[5])
-
-            entry_docente.delete(0, tk.END)
-            entry_docente.insert(0, fila[6])
-
-            entry_cantidad_de_modulos.delete(0, tk.END)
-            entry_cantidad_de_modulos.insert(0, fila[7])
-            
-            entry_curso_numero.delete(0, tk.END)
-            entry_curso_numero.insert(0, fila[8])
-
-    def editar_curso():
-        id_c = int(entry_id.get().strip())
-
-        especialidad = entry_especialidad.get().strip()
-        f_inicio = comprobar_fecha(entry_f_inicio)
-        lugar_en_que_se_dicta = entry_lugar_en_que_se_dicta.get().strip()
-        f_final = comprobar_fecha(entry_f_final)
-        dias = entry_dias.get().strip()
-        horarios = entry_horarios.get().strip()
-        docente = entry_docente.get().strip()
-        cantidad_de_modulos = entry_cantidad_de_modulos.get().strip()
-        curso_numero = int(entry_curso_numero.get().strip())
-
-        if not especialidad or not curso_numero.isdigit():
-            messagebox.showwarning("Faltan datos", "Completá el nombre y el número del curso.")
-            return
-        if cantidad_de_modulos and not cantidad_de_modulos.isdigit():
-            messagebox.showwarning("Dato inválido", "La cantidad de módulos debe ser numérica.")
-            return
-
-        cantidad_de_modulos = int(cantidad_de_modulos) if cantidad_de_modulos else None
-        curso_numero = int(curso_numero)
-        try:
-            cursor.execute("""UPDATE cursos SET especialidad = ?, fecha_de_iniciacion = ?, lugar_en_el_que_se_dicta = ?, fecha_de_terminacion = ?, dias = ?, horarios = ?, docente = ?, cantidad_de_modulos = ?, curso_numero = ? WHERE id = ?""",
-                (especialidad, f_inicio, lugar_en_que_se_dicta, f_final, dias, horarios, docente, cantidad_de_modulos, curso_numero, id_c))
-            conexion.commit()
-            refrescar_lista_cursos()
-            messagebox.showinfo("Curso actualizado", "Los datos del curso se actualizaron correctamente.")
-        except sqlite3.Error as error:
-            conexion.rollback()
-            messagebox.showerror("Error al editar", f"No se pudo modificar el curso:\n{error}")
-
-    def refrescar_lista_cursos():
-        lista_cursos.delete(0, tk.END)
-        cursor.execute("SELECT id, especialidad FROM cursos ORDER BY id, especialidad")
-        for id, especialidad in cursor.fetchall():
-                lista_cursos.insert(tk.END, f"{especialidad} / ID {id}")
-
-    botpn_agregar_curso = Button(ventana_cursos, text="Agregar",bg=AMARILLO, fg=BLANCO, activebackground=AZUL_PETROLEO, activeforeground=NEGRO, relief="flat",command=agregar_curso)
-    botpn_agregar_curso.grid(row=30, column=0, padx=5, pady=10)
-
-    boton_mostrar_edit_carg_id = Button(ventana_cursos, text="Editar cursos", bg=AMARILLO, fg=BLANCO, activebackground=AZUL_PETROLEO, activeforeground=NEGRO, relief="flat", command=grids)     #Abilita las opciones de cargar y editar definitivo
-    boton_mostrar_edit_carg_id.grid(row=30, column=1, padx=5, pady=10)
-    
-    boton_cargar_datos = Button(ventana_cursos, text="Cargar datos de curso", bg=AMARILLO, fg=BLANCO, activebackground=AZUL_PETROLEO, activeforeground=NEGRO, relief="flat", command=cargar_datos_curso)
-    boton_cargar_datos.grid_remove()
-    boton_cargar_datos.grid(row=30, column=2, padx=5, pady=10)
-    
-    boton_para_editar = Button(ventana_cursos, text="EDITAR", bg=AMARILLO, fg=BLANCO, activebackground=AZUL_PETROLEO, activeforeground=NEGRO, relief="flat", command=editar_curso)
-    boton_para_editar.grid_remove()
-    boton_para_editar.grid(row=30, column=3, padx=5, pady=10)
-
-    boton_eliminar = Button(ventana_cursos, text="Eliminar", bg=AMARILLO, fg=BLANCO, activebackground=AZUL_PETROLEO, activeforeground=NEGRO, relief="flat", command=eliminar_curso)
-    boton_eliminar.grid(row=30, column=4, padx=5, pady=10)
-    refrescar_lista_cursos()
-
-# BLOQUE 9: VENTANA GRILLA 
-    # Abro la nueva ficha organizada en grilla, con los datos del docente
-    # a la izquierda y la ficha del curso a la derecha.
-    boton_ficha_grilla = Button(
+    # -----------------------------------------------------------------
+    # 1. ENCABEZADO + LISTADO DE CURSOS
+    # -----------------------------------------------------------------
+    encabezado = tk.Frame(
         ventana_cursos,
-        text="Nueva ficha en grilla",
-        bg=COLOR_BOTON,
-        fg=COLOR_BOTON_TEXTO,
-        activebackground=AZUL_PETROLEO,
-        activeforeground=BLANCO,
-        relief="flat",
-        command=lambda: abrir_ficha_curso_grilla(refrescar_lista_cursos)
+        bg=COLOR_NAVBAR,
+        bd=1,
+        relief="solid",
+        padx=10,
+        pady=8
     )
-    boton_ficha_grilla.grid(row=31, column=0, columnspan=2, padx=5, pady=10, sticky="w")
+    encabezado.grid(row=0, column=0, sticky="ew", padx=15, pady=(12, 6))
+    encabezado.columnconfigure(1, weight=1)
 
-    refrescar_lista_cursos()
-    aplicar_tema(ventana_cursos)  # Si el modo oscuro está activo, lo aplico a cursos
+    tk.Label(
+        encabezado,
+        text="CURSOS REGISTRADOS (doble clic para ver detalle)",
+        bg=COLOR_NAVBAR,
+        fg=BLANCO,
+        font=("Segoe UI", 10, "bold")
+    ).grid(row=0, column=0, sticky="w", padx=(0, 10))
 
+    lista_cursos = Listbox(encabezado, height=4, font=("Segoe UI", 9))
+    lista_cursos.grid(row=0, column=1, sticky="ew")
 
-def abrir_ficha_curso_grilla(al_guardar=None):
-    """Abre una ficha de curso con dos paneles organizados como una grilla."""
+    # -----------------------------------------------------------------
+    # 2. FORMULARIO RÁPIDO / EDICIÓN POR ID
+    # -----------------------------------------------------------------
+    frame_form = tk.LabelFrame(
+        ventana_cursos,
+        text="Carga rápida / Edición por ID",
+        bg=COLOR_PANEL,
+        fg=COLOR_TITULO,
+        font=("Segoe UI", 9, "bold"),
+        padx=10,
+        pady=8
+    )
+    frame_form.grid(row=1, column=0, sticky="ew", padx=15, pady=6)
+    for col in range(6):
+        frame_form.columnconfigure(col, weight=1 if col % 2 == 1 else 0)
 
-    # Creo una ventana secundaria que depende de la ventana principal.
-    ventana_ficha = tk.Toplevel(ventana)
-    ventana_ficha.title("SANCA - Ficha de inscripción del curso")
-    ventana_ficha.geometry("1250x760")
-    ventana_ficha.minsize(1050, 680)
-    ventana_ficha.configure(bg=COLOR_FONDO)
+    def crear_par_entry(parent, texto, fila, col_base):
+        tk.Label(parent, text=texto, bg=COLOR_PANEL, fg=COLOR_LABEL).grid(
+            row=fila, column=col_base, sticky="e", padx=(6, 3), pady=3
+        )
+        ent = tk.Entry(parent)
+        ent.grid(row=fila, column=col_base + 1, sticky="ew", padx=(0, 8), pady=3)
+        return ent
 
-    # Permito que las columnas y filas crezcan cuando se agranda la ventana.
-    ventana_ficha.columnconfigure(0, weight=1)
-    ventana_ficha.rowconfigure(1, weight=1)
+    entry_especialidad = crear_par_entry(frame_form, "Nombre del curso:", 0, 0)
+    entry_docente = crear_par_entry(frame_form, "Docente:", 0, 2)
+    entry_curso_numero = crear_par_entry(frame_form, "Número del curso:", 0, 4)
 
-    # Diccionario donde guardo las cajas de texto y variables de selección.
+    entry_f_inicio = crear_par_entry(frame_form, "Fecha de inicio:", 1, 0)
+    entry_f_final = crear_par_entry(frame_form, "Fecha de finalización:", 1, 2)
+    entry_cantidad_de_modulos = crear_par_entry(frame_form, "Cantidad de módulos:", 1, 4)
+
+    entry_dias = crear_par_entry(frame_form, "Días:", 2, 0)
+    entry_horarios = crear_par_entry(frame_form, "Horarios:", 2, 2)
+    entry_lugar_en_que_se_dicta = crear_par_entry(frame_form, "Lugar en que se dicta:", 2, 4)
+
+    entry_cursos_ref = entry_especialidad
+
+    label_id = tk.Label(frame_form, text="ID para editar:", bg=COLOR_PANEL, fg=COLOR_LABEL)
+    label_id.grid(row=3, column=0, sticky="e", padx=(6, 3), pady=4)
+    label_id.grid_remove()
+
+    entry_id = tk.Entry(frame_form, width=10)
+    entry_id.grid(row=3, column=1, sticky="w", padx=(0, 8), pady=4)
+    entry_id.grid_remove()
+
+    # -----------------------------------------------------------------
+    # 3. CUERPO: DOS PANELES LADO A LADO (GRILLA DOCENTE Y CURSO)
+    # -----------------------------------------------------------------
     campos = {}
     variables = {}
     menus_opcion = []
 
-    # -----------------------------------------------------------------
-    # ENCABEZADO
-    # -----------------------------------------------------------------
-    encabezado = tk.Frame(
-        ventana_ficha,
-        bg=COLOR_NAVBAR,
-        bd=1,
-        relief="solid"
-    )
-    encabezado.grid(row=0, column=0, sticky="ew", padx=15, pady=(15, 10))
-    encabezado.columnconfigure(0, weight=1)
-
-    tk.Label(
-        encabezado,
-        text="SANCA CFP 401 - FICHA DE CURSO",
-        bg=COLOR_NAVBAR,
-        fg=COLOR_TEXTO_NAVBAR,
-        font=("Segoe UI", 17, "bold"),
-        pady=12
-    ).grid(row=0, column=0, sticky="ew")
-
-    # -----------------------------------------------------------------
-    # CUERPO: DOS PANELES LADO A LADO
-    # -----------------------------------------------------------------
-    cuerpo = tk.Frame(ventana_ficha, bg=COLOR_FONDO)
-    cuerpo.grid(row=1, column=0, sticky="nsew", padx=15, pady=5)
+    cuerpo = tk.Frame(ventana_cursos, bg=COLOR_FONDO)
+    cuerpo.grid(row=2, column=0, sticky="nsew", padx=15, pady=6)
     cuerpo.columnconfigure(0, weight=1, uniform="paneles")
     cuerpo.columnconfigure(1, weight=1, uniform="paneles")
     cuerpo.rowconfigure(0, weight=1)
@@ -817,9 +628,9 @@ def abrir_ficha_curso_grilla(al_guardar=None):
         bd=1,
         relief="solid",
         padx=10,
-        pady=10
+        pady=8
     )
-    panel_docente.grid(row=0, column=0, sticky="nsew", padx=(0, 8))
+    panel_docente.grid(row=0, column=0, sticky="nsew", padx=(0, 6))
     panel_docente.columnconfigure(1, weight=1)
 
     panel_curso = tk.Frame(
@@ -828,55 +639,47 @@ def abrir_ficha_curso_grilla(al_guardar=None):
         bd=1,
         relief="solid",
         padx=10,
-        pady=10
+        pady=8
     )
-    panel_curso.grid(row=0, column=1, sticky="nsew", padx=(8, 0))
+    panel_curso.grid(row=0, column=1, sticky="nsew", padx=(6, 0))
     panel_curso.columnconfigure(1, weight=1)
 
-    # Título de cada tabla.
     tk.Label(
         panel_docente,
         text="DATOS DEL DOCENTE",
         bg=COLOR_NAVBAR,
         fg=BLANCO,
-        font=("Segoe UI", 12, "bold"),
+        font=("Segoe UI", 11, "bold"),
         anchor="center",
-        pady=9
-    ).grid(row=0, column=0, columnspan=2, sticky="ew", pady=(0, 10))
+        pady=6
+    ).grid(row=0, column=0, columnspan=2, sticky="ew", pady=(0, 8))
 
     tk.Label(
         panel_curso,
         text="FICHA DEL CURSO",
         bg=COLOR_NAVBAR,
         fg=BLANCO,
-        font=("Segoe UI", 12, "bold"),
+        font=("Segoe UI", 11, "bold"),
         anchor="center",
-        pady=9
-    ).grid(row=0, column=0, columnspan=2, sticky="ew", pady=(0, 10))
+        pady=6
+    ).grid(row=0, column=0, columnspan=2, sticky="ew", pady=(0, 8))
 
-    # -----------------------------------------------------------------
-    # FUNCIÓN PARA CREAR UNA FILA DE LA GRILLA
-    # -----------------------------------------------------------------
     def crear_campo(panel, fila, etiqueta, clave, opciones=None):
-        """Crea una celda de título y otra celda editable, como una planilla."""
-
-        # Primera celda: nombre del dato.
         tk.Label(
             panel,
             text=etiqueta,
             bg=COLOR_FONDO,
             fg=COLOR_LABEL,
-            font=("Segoe UI", 10, "bold"),
+            font=("Segoe UI", 9, "bold"),
             anchor="w",
             padx=8,
-            pady=7,
+            pady=5,
             bd=1,
             relief="solid"
         ).grid(row=fila, column=0, sticky="nsew")
 
-        # Segunda celda: control donde el usuario escribe o selecciona.
         if opciones:
-            variable = tk.StringVar(ventana_ficha, value=opciones[0])
+            variable = tk.StringVar(ventana_cursos, value=opciones[0])
             control = tk.OptionMenu(panel, variable, *opciones)
             control.configure(
                 bg=BLANCO,
@@ -888,28 +691,22 @@ def abrir_ficha_curso_grilla(al_guardar=None):
                 highlightthickness=0,
                 anchor="w"
             )
-            control.grid(row=fila, column=1, sticky="ew", ipady=2)
+            control.grid(row=fila, column=1, sticky="ew", ipady=1)
             variables[clave] = variable
             menus_opcion.append(control)
         else:
             control = tk.Entry(
                 panel,
-                font=("Segoe UI", 10),
+                font=("Segoe UI", 9),
                 bg=BLANCO,
                 fg=COLOR_TITULO,
                 insertbackground=COLOR_TITULO,
                 relief="solid",
                 bd=1
             )
-            control.grid(row=fila, column=1, sticky="ew", ipady=6)
+            control.grid(row=fila, column=1, sticky="ew", ipady=4)
             campos[clave] = control
 
-        # Permito que cada fila ocupe todo el ancho de su panel.
-        panel.rowconfigure(fila, weight=0)
-
-    # -----------------------------------------------------------------
-    # PANEL IZQUIERDO: DATOS DEL DOCENTE
-    # -----------------------------------------------------------------
     campos_docente = [
         ("Nombre del docente", "docente_nombres"),
         ("Apellido del docente", "docente_apellido"),
@@ -918,7 +715,7 @@ def abrir_ficha_curso_grilla(al_guardar=None):
         ("Número de documento", "numero_documento"),
         ("Nacionalidad", "nacionalidad_docente"),
         ("Domicilio / barrio", "domicilio_docente"),
-        ("Calle y número", "calle_numero_docente")
+        ("Calle y número", "calle_numero_docente"),
     ]
 
     for numero_fila, datos_campo in enumerate(campos_docente, start=1):
@@ -929,26 +726,236 @@ def abrir_ficha_curso_grilla(al_guardar=None):
             etiqueta, clave = datos_campo
             crear_campo(panel_docente, numero_fila, etiqueta, clave)
 
-    # -----------------------------------------------------------------
-    # PANEL DERECHO: FICHA DEL CURSO
-    # -----------------------------------------------------------------
+    # Claves prefijadas con "grilla_" para no pisar el formulario superior
     campos_curso = [
-        ("Nombre del curso / especialidad", "especialidad"),
-        ("Días de cursada", "dias"),
-        ("Horarios", "horarios"),
-        ("Duración", "duracion"),
-        ("Establecimiento", "establecimiento"),
-        ("Fecha de iniciación", "fecha_de_iniciacion"),
-        ("Lugar en el que se dicta", "lugar_en_el_que_se_dicta"),
-        ("Localidad", "localidad")
+        ("Nombre del curso / especialidad", "grilla_especialidad"),
+        ("Días de cursada", "grilla_dias"),
+        ("Horarios", "grilla_horarios"),
+        ("Duración", "grilla_duracion"),
+        ("Establecimiento", "grilla_establecimiento"),
+        ("Fecha de iniciación", "grilla_fecha_de_iniciacion"),
+        ("Lugar en el que se dicta", "grilla_lugar_en_el_que_se_dicta"),
+        ("Localidad", "grilla_localidad"),
     ]
 
     for numero_fila, (etiqueta, clave) in enumerate(campos_curso, start=1):
         crear_campo(panel_curso, numero_fila, etiqueta, clave)
 
     # -----------------------------------------------------------------
-    # FUNCIONES DE LOS BOTONES
+    # 4. FUNCIONES DE DATOS Y EVENTOS
     # -----------------------------------------------------------------
+    def obtener_id_seleccionado():
+        seleccion = lista_cursos.curselection()
+        if not seleccion:
+            return None
+        texto = lista_cursos.get(seleccion[0])
+        if "ID " not in texto:
+            return None
+        try:
+            return int(texto.split("ID ")[1].strip())
+        except ValueError:
+            return None
+
+    def refrescar_lista_cursos():
+        lista_cursos.delete(0, tk.END)
+        cursor.execute("SELECT id, especialidad FROM cursos ORDER BY id DESC, especialidad")
+        for curso_id, esp in cursor.fetchall():
+            lista_cursos.insert(tk.END, f"{esp} / ID {curso_id}")
+
+    def detalles_curso(event=None):
+        id_c = obtener_id_seleccionado()
+        if id_c is None:
+            return
+
+        cursor.execute(
+            """SELECT especialidad, fecha_de_iniciacion, lugar_en_el_que_se_dicta,
+                      fecha_de_terminacion, dias, horarios, docente,
+                      cantidad_de_modulos, curso_numero
+               FROM cursos WHERE id = ?""",
+            (id_c,)
+        )
+        fila = cursor.fetchone()
+        if not fila:
+            messagebox.showinfo("Sin resultados", "No se encontró ese curso.", parent=ventana_cursos)
+            refrescar_lista_cursos()
+            return
+
+        ventana_detalle = Toplevel(ventana_cursos)
+        ventana_detalle.title(f"Detalle del curso #{id_c}")
+        ventana_detalle.geometry("560x480")
+        ventana_detalle.config(bg=COLOR_FONDO)
+
+        info = [
+            ("ID", id_c),
+            ("Curso", fila[0] or "-"),
+            ("Docente", fila[6] or "-"),
+            ("Fecha de inicio", fila[1] or "-"),
+            ("Fecha de terminación", fila[3] or "-"),
+            ("Días", fila[4] or "-"),
+            ("Horarios", fila[5] or "-"),
+            ("Cantidad de módulos", fila[7] if fila[7] is not None else "-"),
+            ("Número del curso", fila[8] if fila[8] is not None else "-"),
+            ("Lugar en que se dicta", fila[2] or "-"),
+        ]
+        for idx, (etiqueta, valor) in enumerate(info):
+            tk.Label(
+                ventana_detalle,
+                text=f"{etiqueta}:  {valor}",
+                bg=COLOR_FONDO,
+                fg=COLOR_TITULO,
+                font=("Segoe UI", 10)
+            ).grid(row=idx, column=0, sticky="w", padx=14, pady=6)
+
+    lista_cursos.bind("<Double-Button-1>", detalles_curso)
+
+    def grids():
+        label_id.grid()
+        entry_id.grid()
+        boton_cargar_datos.grid()
+        boton_para_editar.grid()
+        id_sel = obtener_id_seleccionado()
+        if id_sel is not None and not entry_id.get().strip():
+            entry_id.insert(0, str(id_sel))
+
+    def grids_remove():
+        label_id.grid_remove()
+        entry_id.delete(0, tk.END)
+        entry_id.grid_remove()
+        boton_cargar_datos.grid_remove()
+        boton_para_editar.grid_remove()
+
+    def agregar_curso():
+        especialidad = entry_especialidad.get().strip()
+        f_inicio = comprobar_fecha(entry_f_inicio)
+        lugar = entry_lugar_en_que_se_dicta.get().strip()
+        f_final = comprobar_fecha(entry_f_final)
+        dias = entry_dias.get().strip()
+        horarios = entry_horarios.get().strip()
+        docente = entry_docente.get().strip()
+        modulos_str = entry_cantidad_de_modulos.get().strip()
+        numero_str = entry_curso_numero.get().strip()
+
+        if not especialidad:
+            messagebox.showwarning("Faltan datos", "Escribí el nombre del curso.", parent=ventana_cursos)
+            return
+        if not numero_str.isdigit():
+            messagebox.showwarning("Dato inválido", "El número del curso debe ser numérico.", parent=ventana_cursos)
+            return
+        if modulos_str and not modulos_str.isdigit():
+            messagebox.showwarning("Dato inválido", "La cantidad de módulos debe ser numérica.", parent=ventana_cursos)
+            return
+
+        cantidad_de_modulos = int(modulos_str) if modulos_str else None
+        curso_numero = int(numero_str)
+
+        try:
+            cursor.execute(
+                """INSERT INTO cursos(
+                       especialidad, fecha_de_iniciacion, lugar_en_el_que_se_dicta,
+                       fecha_de_terminacion, dias, horarios, docente,
+                       cantidad_de_modulos, curso_numero
+                   ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                (especialidad, f_inicio, lugar, f_final, dias, horarios, docente, cantidad_de_modulos, curso_numero)
+            )
+            conexion.commit()
+            grids_remove()
+            refrescar_lista_cursos()
+            messagebox.showinfo("Curso guardado", "El curso se agregó correctamente.", parent=ventana_cursos)
+        except sqlite3.Error as error:
+            conexion.rollback()
+            messagebox.showerror("Error al guardar", f"No se pudo guardar el curso:\n{error}", parent=ventana_cursos)
+
+    def eliminar_curso():
+        id_c = obtener_id_seleccionado()
+        if id_c is None:
+            messagebox.showwarning("Atención", "Seleccioná un curso de la lista para eliminar.", parent=ventana_cursos)
+            return
+
+        try:
+            cursor.execute("DELETE FROM cursos WHERE id = ?", (id_c,))
+            conexion.commit()
+            grids_remove()
+            refrescar_lista_cursos()
+        except sqlite3.Error as error:
+            conexion.rollback()
+            messagebox.showerror("Error al eliminar", f"No se pudo eliminar el curso:\n{error}", parent=ventana_cursos)
+
+    def cargar_datos_curso():
+        raw_id = entry_id.get().strip()
+        if not raw_id.isdigit():
+            messagebox.showwarning("ID inválido", "Ingresá un ID numérico para cargar.", parent=ventana_cursos)
+            return
+        id_c = int(raw_id)
+
+        cursor.execute(
+            """SELECT especialidad, fecha_de_iniciacion, lugar_en_el_que_se_dicta,
+                      fecha_de_terminacion, dias, horarios, docente,
+                      cantidad_de_modulos, curso_numero
+               FROM cursos WHERE id = ?""",
+            (id_c,)
+        )
+        fila = cursor.fetchone()
+        if not fila:
+            messagebox.showinfo("Sin resultados", f"No existe ningún curso con ID {id_c}.", parent=ventana_cursos)
+            return
+
+        def set_entry(widget, val):
+            widget.delete(0, tk.END)
+            if val is not None:
+                widget.insert(0, str(val))
+
+        set_entry(entry_especialidad, fila[0])
+        set_entry(entry_f_inicio, fila[1])
+        set_entry(entry_lugar_en_que_se_dicta, fila[2])
+        set_entry(entry_f_final, fila[3])
+        set_entry(entry_dias, fila[4])
+        set_entry(entry_horarios, fila[5])
+        set_entry(entry_docente, fila[6])
+        set_entry(entry_cantidad_de_modulos, fila[7])
+        set_entry(entry_curso_numero, fila[8])
+
+    def editar_curso():
+        raw_id = entry_id.get().strip()
+        if not raw_id.isdigit():
+            messagebox.showwarning("ID inválido", "Ingresá un ID numérico para editar.", parent=ventana_cursos)
+            return
+        id_c = int(raw_id)
+
+        especialidad = entry_especialidad.get().strip()
+        f_inicio = comprobar_fecha(entry_f_inicio)
+        lugar = entry_lugar_en_que_se_dicta.get().strip()
+        f_final = comprobar_fecha(entry_f_final)
+        dias = entry_dias.get().strip()
+        horarios = entry_horarios.get().strip()
+        docente = entry_docente.get().strip()
+        modulos_str = entry_cantidad_de_modulos.get().strip()
+        numero_str = entry_curso_numero.get().strip()
+
+        if not especialidad or not numero_str.isdigit():
+            messagebox.showwarning("Faltan datos", "Completá el nombre y el número numérico del curso.", parent=ventana_cursos)
+            return
+        if modulos_str and not modulos_str.isdigit():
+            messagebox.showwarning("Dato inválido", "La cantidad de módulos debe ser numérica.", parent=ventana_cursos)
+            return
+
+        cantidad_de_modulos = int(modulos_str) if modulos_str else None
+        curso_numero = int(numero_str)
+
+        try:
+            cursor.execute(
+                """UPDATE cursos
+                   SET especialidad = ?, fecha_de_iniciacion = ?, lugar_en_el_que_se_dicta = ?,
+                       fecha_de_terminacion = ?, dias = ?, horarios = ?, docente = ?,
+                       cantidad_de_modulos = ?, curso_numero = ?
+                   WHERE id = ?""",
+                (especialidad, f_inicio, lugar, f_final, dias, horarios, docente, cantidad_de_modulos, curso_numero, id_c)
+            )
+            conexion.commit()
+            refrescar_lista_cursos()
+            messagebox.showinfo("Curso actualizado", "Los datos del curso se actualizaron correctamente.", parent=ventana_cursos)
+        except sqlite3.Error as error:
+            conexion.rollback()
+            messagebox.showerror("Error al editar", f"No se pudo modificar el curso:\n{error}", parent=ventana_cursos)
     def obtener_valor(clave):
         """Devuelve el texto escrito o la opción seleccionada."""
         if clave in variables:
@@ -980,38 +987,26 @@ def abrir_ficha_curso_grilla(al_guardar=None):
         domicilio_docente = obtener_valor("domicilio_docente")
         calle_numero_docente = obtener_valor("calle_numero_docente")
 
-        especialidad = obtener_valor("especialidad")
-        dias = obtener_valor("dias")
-        horarios = obtener_valor("horarios")
-        duracion = obtener_valor("duracion")
-        establecimiento = obtener_valor("establecimiento")
-        fecha_de_iniciacion = obtener_valor("fecha_de_iniciacion")
-        lugar_en_el_que_se_dicta = obtener_valor("lugar_en_el_que_se_dicta")
-        localidad = obtener_valor("localidad")
+        especialidad = obtener_valor("grilla_especialidad")
+        dias = obtener_valor("grilla_dias")
+        horarios = obtener_valor("grilla_horarios")
+        duracion = obtener_valor("grilla_duracion")
+        establecimiento = obtener_valor("grilla_establecimiento")
+        fecha_de_iniciacion = obtener_valor("grilla_fecha_de_iniciacion")
+        lugar_en_el_que_se_dicta = obtener_valor("grilla_lugar_en_el_que_se_dicta")
+        localidad = obtener_valor("grilla_localidad")
 
         # Compruebo que estén los datos básicos para identificar la ficha.
         if not docente_nombres or not docente_apellido:
-            messagebox.showwarning(
-                "Datos incompletos",
-                "Completá el nombre y el apellido del docente.",
-                parent=ventana_ficha
-            )
+            messagebox.showwarning("Datos incompletos", "Completá el nombre y el apellido del docente.", parent=ventana_cursos)
             return
 
         if not numero_documento:
-            messagebox.showwarning(
-                "Falta el documento",
-                "Ingresá el número del documento del docente.",
-                parent=ventana_ficha
-            )
+            messagebox.showwarning("Falta el documento", "Ingresá el número del documento del docente.", parent=ventana_cursos)
             return
 
         if not especialidad:
-            messagebox.showwarning(
-                "Falta el curso",
-                "Ingresá el nombre o especialidad del curso.",
-                parent=ventana_ficha
-            )
+            messagebox.showwarning("Falta el curso", "Ingresá el nombre o especialidad del curso.", parent=ventana_cursos)
             return
 
         # Mantengo el campo antiguo 'docente' para que sigan funcionando
@@ -1019,84 +1014,63 @@ def abrir_ficha_curso_grilla(al_guardar=None):
         docente_completo = f"{docente_nombres} {docente_apellido}".strip()
 
         try:
-            # Guardo los datos en la tabla cursos usando parámetros ?.
-            # Esto evita errores al escribir apóstrofes y otros caracteres.
-            cursor.execute("""
-                INSERT INTO cursos (
-                    docente,
-                    docente_nombres,
-                    docente_apellido,
-                    docente_especialidad,
-                    tipo_documento,
-                    numero_documento,
-                    nacionalidad_docente,
-                    domicilio_docente,
-                    calle_numero_docente,
-                    especialidad,
-                    fecha_de_iniciacion,
-                    lugar_en_el_que_se_dicta,
-                    dias,
-                    horarios,
-                    duracion,
-                    establecimiento,
-                    localidad
-                )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """, (
-                docente_completo,
-                docente_nombres,
-                docente_apellido,
-                docente_especialidad,
-                tipo_documento,
-                numero_documento,
-                nacionalidad_docente,
-                domicilio_docente,
-                calle_numero_docente,
-                especialidad,
-                fecha_de_iniciacion,
-                lugar_en_el_que_se_dicta,
-                dias,
-                horarios,
-                duracion,
-                establecimiento,
-                localidad
-            ))
+            cursor.execute(
+                """INSERT INTO cursos (
+                       docente, docente_nombres, docente_apellido, docente_especialidad,
+                       tipo_documento, numero_documento, nacionalidad_docente,
+                       domicilio_docente, calle_numero_docente, especialidad,
+                       fecha_de_iniciacion, lugar_en_el_que_se_dicta, dias, horarios,
+                       duracion, establecimiento, localidad
+                   ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                (
+                    docente_completo, docente_nombres, docente_apellido, docente_especialidad,
+                    tipo_documento, numero_documento, nacionalidad_docente,
+                    domicilio_docente, calle_numero_docente, especialidad,
+                    fecha_de_iniciacion, lugar_en_el_que_se_dicta, dias, horarios,
+                    duracion, establecimiento, localidad
 
-            # Confirmo la operación para que quede guardada en el archivo .db.
             conexion.commit()
 
-            # Si la ficha se abrió desde la ventana vieja de cursos,
-            # actualizo también su Listbox sin tener que cerrarla.
-            if callable(al_guardar):
-                try:
-                    al_guardar()
-                except Exception as error_lista:
-                    print(f"No se pudo actualizar la lista de cursos: {error_lista}")
+            refrescar_lista_cursos()
 
-            messagebox.showinfo(
-                "Ficha guardada",
-                "Los datos del docente y del curso se guardaron correctamente.",
-                parent=ventana_ficha
-            )
-
-            # Dejo la grilla lista para registrar el siguiente curso.
             limpiar_grilla()
+
+            messagebox.showinfo("Ficha guardada", "La ficha del curso se guardó correctamente.", parent=ventana_cursos)
 
         except sqlite3.Error as error:
             # Si ocurre un error, deshago la operación pendiente.
             conexion.rollback()
-            messagebox.showerror(
-                "Error al guardar",
-                f"No se pudo guardar la ficha del curso:\n{error}",
-                parent=ventana_ficha
-            )
+            messagebox.showerror("Error al guardar", f"No se pudo guardar la ficha del curso:\n{error}", parent=ventana_cursos)
 
     # -----------------------------------------------------------------
-    # BOTONERA INFERIOR
+    # 5. BOTONERA INFERIOR CONSOLIDADA (MISMA FILA, COLUMNAS ORDENADAS)
     # -----------------------------------------------------------------
-    panel_botones = tk.Frame(ventana_ficha, bg=COLOR_FONDO)
-    panel_botones.grid(row=2, column=0, sticky="ew", padx=15, pady=15)
-    panel_botones.columnconfigure(0, weight=1)
+    panel_botones = tk.Frame(ventana_cursos, bg=COLOR_FONDO)
+    panel_botones.grid(row=3, column=0, sticky="ew", padx=15, pady=(6, 12))
+
+    btn_cfg = dict(
+        bg=AMARILLO,
+        fg=BLANCO,
+        activebackground=AZUL_PETROLEO,
+        activeforeground=NEGRO,
+        relief="flat",
+        font=("Segoe UI", 9, "bold"),
+        padx=10,
+        pady=5
+    )
+
+    tk.Button(panel_botones, text="Agregar", command=agregar_curso, **btn_cfg).grid(row=0, column=0, padx=4)
+    tk.Button(panel_botones, text="Editar cursos", command=grids, **btn_cfg).grid(row=0, column=1, padx=4)
+
+    boton_cargar_datos = tk.Button(panel_botones, text="Cargar datos de curso", command=cargar_datos_curso, **btn_cfg)
+    boton_cargar_datos.grid(row=0, column=2, padx=4)
+    boton_cargar_datos.grid_remove()
+
+    boton_para_editar = tk.Button(panel_botones, text="EDITAR", command=editar_curso, **btn_cfg)
+    boton_para_editar.grid(row=0, column=3, padx=4)
+    boton_para_editar.grid_remove()
+
+    tk.Button(panel_botones, text="Eliminar", command=eliminar_curso, **btn_cfg).grid(row=0, column=4, padx=4)
 
     tk.Button(
         panel_botones,
@@ -1106,11 +1080,11 @@ def abrir_ficha_curso_grilla(al_guardar=None):
         activebackground=AZUL_PETROLEO,
         activeforeground=BLANCO,
         relief="flat",
-        font=("Segoe UI", 10, "bold"),
-        padx=18,
-        pady=9,
+        font=("Segoe UI", 9, "bold"),
+        padx=10,
+        pady=5,
         command=guardar_ficha_curso
-    ).grid(row=0, column=0, padx=5, pady=5, sticky="e")
+    ).grid(row=0, column=5, padx=(18, 4))
 
     tk.Button(
         panel_botones,
@@ -1120,11 +1094,11 @@ def abrir_ficha_curso_grilla(al_guardar=None):
         activebackground=AMARILLO,
         activeforeground=NEGRO,
         relief="flat",
-        font=("Segoe UI", 10, "bold"),
-        padx=18,
-        pady=9,
+        font=("Segoe UI", 9, "bold"),
+        padx=10,
+        pady=5,
         command=limpiar_grilla
-    ).grid(row=0, column=1, padx=5, pady=5)
+    ).grid(row=0, column=6, padx=4)
 
     tk.Button(
         panel_botones,
@@ -1134,45 +1108,13 @@ def abrir_ficha_curso_grilla(al_guardar=None):
         activebackground=ROJO,
         activeforeground=BLANCO,
         relief="flat",
-        font=("Segoe UI", 10, "bold"),
-        padx=18,
-        pady=9,
-        command=ventana_ficha.destroy
-    ).grid(row=0, column=2, padx=5, pady=5)
+        font=("Segoe UI", 9, "bold"),
+        padx=10,
+        pady=5,
+        command=al_cerrar_cursos
+    ).grid(row=0, column=7, padx=4)
 
-    # Aplico el tema SANCA que esté activo en ese momento.
-    aplicar_tema(ventana_ficha)
-
-    # El OptionMenu usa la clase Menubutton; le aplico sus colores también.
-    for menu in menus_opcion:
-        if MODO_OSCURO:
-            menu.configure(
-                bg=ENTRADA_OSCURA,
-                fg=TEXTO_OSCURO,
-                activebackground=SELECCION_OSCURA,
-                activeforeground=TEXTO_OSCURO
-            )
-            menu["menu"].configure(
-                bg=ENTRADA_OSCURA,
-                fg=TEXTO_OSCURO,
-                activebackground=SELECCION_OSCURA,
-                activeforeground=TEXTO_OSCURO
-            )
-        else:
-            menu.configure(
-                bg=BLANCO,
-                fg=COLOR_TITULO,
-                activebackground=COLOR_ACENTO,
-                activeforeground=COLOR_TITULO
-            )
-            menu["menu"].configure(
-                bg=BLANCO,
-                fg=COLOR_TITULO,
-                activebackground=COLOR_ACENTO,
-                activeforeground=COLOR_TITULO
-            )
-
-    # Al abrir la ventana, dejo activo el primer campo.
+    refrescar_lista_cursos()
     campos["docente_nombres"].focus_set()
 
 # BLOQUE 10: BANNER
