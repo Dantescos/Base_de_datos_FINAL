@@ -1322,10 +1322,13 @@ def eliminar_definitivo():
 
 def buscar_definitivo():
     dni_txt = entry_dni.get().strip()
-    if not dni_txt:
-        messagebox.showwarning("Atencion", "Escribi de forma numerica un DNI para buscar.")
+    nombre_buscar = entry_nombre.get().strip()
+    apellido_buscar = entry_apellido.get().strip()
+        
+    if not dni_txt or not nombre_buscar or not apellido_buscar:
+        messagebox.showwarning("Atencion", "Escribi los datos correctamente para buscar.")
         return
-    cursor.execute("SELECT nombres, apellido, dni FROM personas WHERE dni = ?", (dni_txt,))
+    cursor.execute("SELECT nombres, apellido, dni FROM personas WHERE nombres = ? AND apellido = ? AND dni = ?", (nombre_buscar,apellido_buscar,dni_txt,))
     fila = cursor.fetchone()
     if not fila:
         messagebox.showinfo("Sin resultados", "No existe esa persona.")
