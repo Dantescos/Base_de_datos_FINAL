@@ -137,6 +137,169 @@ for nombre_columna, tipo_columna in {
 
 conexion.commit()  # Confirmo los cambios
 
+NOMBRE_BASE_DATOS = "PROYECTO_FINAL_45.db"
+
+def obtener_directorio_datos(plataforma=None, entorno=None, directorio_personal=None):
+    """Devuelve una carpeta de datos persistente para Windows, Linux o macOS."""
+    plataforma = plataforma or sys.platform
+    entorno = os.environ if entorno is None else entorno
+    directorio_personal = Path.home() if directorio_personal is None else Path(directorio_personal)
+
+    if plataforma.startswith("win"):
+        base = Path(entorno.get("LOCALAPPDATA") or directorio_personal / "AppData" / "Local")
+    elif plataforma == "darwin":
+        base = directorio_personal / "Library" / "Application Support"
+    else:
+        xdg = entorno.get("XDG_DATA_HOME")
+        base = Path(xdg).expanduser() if xdg and Path(xdg).is_absolute() else directorio_personal / ".local" / "share"
+    return base / "CasaJovenes"
+
+def resolver_ruta_base_datos():
+    directorio_datos = obtener_directorio_datos()
+    directorio_datos.mkdir(parents=True, exist_ok=True)
+    ruta_destino = directorio_datos / NOMBRE_BASE_DATOS
+    if ruta_destino.exists():
+        return ruta_destino
+
+    # Migración no destructiva desde las ubicaciones usadas por versiones anteriores.
+    directorio_app = Path(sys.executable).resolve().parent if getattr(sys, "frozen", False) else Path(__file__).resolve().parent
+    candidatos = (Path.cwd() / NOMBRE_BASE_DATOS, directorio_app / NOMBRE_BASE_DATOS)
+    vistos = set()
+    for origen in candidatos:
+        origen = origen.resolve()
+        if origen == ruta_destino.resolve() or origen in vistos:
+            continue
+        vistos.add(origen)
+        if origen.is_file():
+            conexion_origen = sqlite3.connect(str(origen))
+            conexion_destino = sqlite3.connect(str(ruta_destino))
+            try:
+                conexion_origen.backup(conexion_destino)
+            finally:
+                conexion_destino.close()
+                conexion_origen.close()
+            break
+    return ruta_destino
+
+RUTA_BASE_DATOS = resolver_ruta_base_datos()
+conexion = sqlite3.connect(str(RUTA_BASE_DATOS))  # Abro o creo la base de datos en la carpeta de datos del usuario
+cursor = conexion.cursor()  # Creo el cursor
+
+cursor.execute("""CREATE TABLE IF NOT EXISTS personas(
+    id INTEGER PRIMARY KEY AUTOINCREMENT, nombre TEXT NOT NULL, apellido TEXT NOT NULL,
+    dni INTEGER UNIQUE NOT NULL, edad INTEGER, fecha_nacimiento TEXT, fecha_ingreso TEXT,
+    telefono TEXT, direccion TEXT, contacto_emergencia TEXT, telefono_emergencia TEXT,
+    obra_social TEXT, estado TEXT, consentimiento TEXT, foto BLOB)""")  # Creo tabla personas
+
+cursor.execute("""CREATE TABLE IF NOT EXISTS entrevistas(
+    id INTEGER PRIMARY KEY AUTOINCREMENT, nombre_profecional TEXT NOT NULL, apellido_profecional TEXT,
+    dni_profecional TEXT, matricula TEXT, especialidad TEXT, telefono_profecional TEXT,
+    email_profecional TEXT, activo_profecional TEXT, entrevista TEXT NOT NULL,
+    dni_paciente INTEGER NOT NULL, fecha_entrevista TEXT NOT NULL, hora_entrevista TEXT,
+    tipo_entrevista TEXT, proxima_sesion_entrevista TEXT)""")  # Creo tabla entrevistas
+
+cursor.execute("""CREATE TABLE IF NOT EXISTS pdf (
+    id INTEGER PRIMARY KEY AUTOINCREMENT, nombre TEXT NOT NULL, formato TEXT NOT NULL,
+    contenido BLOB NOT NULL, dni_personas INTEGER)""")  # Creo tabla pdf para fotos/documentos
+
+cursor.execute("""CREATE TABLE IF NOT EXISTS recursos(
+    id INTEGER PRIMARY KEY AUTOINCREMENT, nombre TEXT UNIQUE NOT NULL, contenido BLOB)""")  # Creo tabla recursos
+
+cursor.execute("PRAGMA table_info(personas)")  # Obtengo info de las columnas
+_columnas_personas = {fila[1] for fila in cursor.fetchall()}  # Guardo los nombres de las columnas
+
+for _col, _tipo in (("fecha_egreso", "TEXT"), ("tipo_egreso", "TEXT"), ("motivo_egreso", "TEXT")):
+    if _col not in _columnas_personas: cursor.execute(f"ALTER TABLE personas ADD COLUMN {_col} {_tipo}")  # Agrego columnas si no existen
+
+cursor.execute("PRAGMA table_info(pdf)")
+_columnas_pdf = {fila[1] for fila in cursor.fetchall()}
+for _col, _tipo in (("categoria", "TEXT NOT NULL DEFAULT 'Imagen'"), ("ruta_archivo", "TEXT")):
+    if _col not in _columnas_pdf:
+        cursor.execute(f"ALTER TABLE pdf ADD COLUMN {_col} {_tipo}")
+
+conexion.commit()  # Confirmo los cambios
+
+RUTA_LEGAJOS = RUTA_BASE_DATOS.parent / "Legajos"
+RUTA_LEGAJOS.mkdir(parents=True, exist_ok=True)
+
+def ruta_carpeta_legajo(dni):
+    carpeta = RUTA_LEGAJOS / str(dni)
+    carpeta.mkdir(parents=True, exist_ok=True)
+    return carpeta
+
+def ruta_unica_en_carpeta(carpeta, nombre):
+    nombre_seguro = Path(nombre).name or "documento"
+    destino = carpeta / nombre_seguro
+    if not destino.exists():
+        return destino
+    base, extension = destino.stem, destino.suffix
+    contador = 2
+    while True:
+        candidato = carpeta / f"{base}_{contador}{extension}"
+        if not candidato.exists():
+            return candidato
+        contador += 1
+
+def guardar_archivo_legajo(dni, ruta_origen, categoria):
+    origen = Path(ruta_origen)
+    if not origen.is_file():
+        raise FileNotFoundError(f"No se encontró el archivo: {origen}")
+    contenido = origen.read_bytes()
+    if not contenido:
+        raise ValueError("El archivo está vacío.")
+    carpeta = ruta_carpeta_legajo(dni)
+    destino = ruta_unica_en_carpeta(carpeta, origen.name)
+    try:
+        destino.write_bytes(contenido)
+        cursor.execute("""INSERT INTO pdf(nombre, formato, contenido, dni_personas, categoria, ruta_archivo)
+                          VALUES (?, ?, ?, ?, ?, ?)""",
+                       (destino.name, destino.suffix.lstrip(".").lower() or "bin", sqlite3.Binary(contenido),
+                        int(dni), categoria, str(destino)))
+        conexion.commit()
+    except Exception:
+        try: destino.unlink(missing_ok=True)
+        except OSError: pass
+        raise
+    return cursor.lastrowid, destino
+
+def guardar_foto_perfil_en_carpeta(dni, contenido, nombre="foto_perfil.png"):
+    carpeta = ruta_carpeta_legajo(dni)
+    extension = Path(nombre).suffix.lower() or ".png"
+    destino = carpeta / f"foto_perfil{extension}"
+    destino.write_bytes(contenido)
+    return destino
+
+def mover_carpeta_legajo(dni_anterior, dni_nuevo):
+    origen = RUTA_LEGAJOS / str(dni_anterior)
+    if not origen.is_dir():
+        return
+    destino = ruta_carpeta_legajo(dni_nuevo)
+    for archivo in origen.iterdir():
+        if not archivo.is_file():
+            continue
+        nuevo_archivo = ruta_unica_en_carpeta(destino, archivo.name)
+        archivo.rename(nuevo_archivo)
+        cursor.execute("UPDATE pdf SET ruta_archivo = ? WHERE ruta_archivo = ?", (str(nuevo_archivo), str(archivo)))
+    try: origen.rmdir()
+    except OSError: pass
+    conexion.commit()
+
+def eliminar_carpeta_legajo(dni):
+    carpeta = RUTA_LEGAJOS / str(dni)
+    if carpeta.is_dir():
+        shutil.rmtree(carpeta)
+
+def abrir_archivo_externo(ruta):
+    ruta = str(ruta)
+    if sys.platform.startswith("win"):
+        os.startfile(ruta)
+    elif sys.platform == "darwin":
+        subprocess.Popen(["open", ruta])
+    else:
+        subprocess.Popen(["xdg-open", ruta])
+
+
+
 # BLOQUE 5: PALETA DE COLORES
 # PALETA SANCA CFP 401
 
