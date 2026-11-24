@@ -139,6 +139,7 @@ conexion.commit()  # Confirmo los cambios
 
 # BLOQUE 5: PALETA DE COLORES
 # PALETA SANCA CFP 401
+
 COLOR_FONDO        = "#FBFAF7"  # fondo general ventana
 COLOR_NAVBAR       = "#1B3A6B"  # barra superior
 COLOR_TEXTO_NAVBAR = "#FFFFFF"  # letras sobre navbar
@@ -151,6 +152,7 @@ COLOR_ACENTO       = "#F2A63B"  # botones importantes
 COLOR_ACENTO_TEXTO = "#2E2E2E"  # letra sobre ámbar
 COLOR_EXITO        = "#5E8C6A"  # mensajes OK
 COLOR_ERROR        = "#C0392B"  # errores / eliminar
+
 # Viejo colores
 ROJO = "#E3000F"  # Rojo fuerte
 AMARILLO = "#FCAF17"  # Amarillo
@@ -192,6 +194,7 @@ VERDE_AZULADO = "#26A69A"  # Verde azulado para botones
 #Blanco	        #FFFFFF             Letras sobre fondo azul oscuro (navbar, botones azules). Para que se lea bien.
 #Verde salvia	#5E8C6A	            Mensajes de éxito ("Curso guardado", "Persona registrada"). También para el estado "Activo".
 #Rojo ladrillo	#C0392B	            Errores, alertas, botón Eliminar. Solo para cosas que el usuario tiene que frenar y leer.
+
 # BLOQUE 6: MODO OSCURO ARREGLADO
 MODO_OSCURO = False  # La aplicación comienza con la paleta clara de SANCA
 
@@ -576,6 +579,7 @@ def abrir_ventana_cursos():
     boton_eliminar = Button(ventana_cursos, text="Eliminar", bg=AMARILLO, fg=BLANCO, activebackground=AZUL_PETROLEO, activeforeground=NEGRO, relief="flat", command=eliminar_curso)
     boton_eliminar.grid(row=30, column=4, padx=5, pady=10)
     refrescar_lista_cursos()
+
 # BLOQUE 9: VENTANA GRILLA 
     # Abro la nueva ficha organizada en grilla, con los datos del docente
     # a la izquierda y la ficha del curso a la derecha.
@@ -1007,6 +1011,7 @@ def abrir_ficha_curso_grilla(al_guardar=None):
 
     # Al abrir la ventana, dejo activo el primer campo.
     campos["docente_nombres"].focus_set()
+
 # BLOQUE 10: BANNER
 banner = tk.Frame(ventana, bg=COLOR_NAVBAR, height=150)  # Frame del banner
 banner.pack(side="top", fill="x")  # Empaquetado arriba
@@ -1234,64 +1239,65 @@ def buscar_definitivo():
             break
 
 # BLOQUE 12: FRAME DE BOTONES
-frame_btn = Frame(ventana, bg=GRIS_NIEBLA, height=55)  # Frame de botones
-frame_btn_info = Frame(ventana, bg=GRIS_NIEBLA)  # Frame botón info
+frame_btn = Frame(ventana, bg=COLOR_FONDO, height=55)  # Frame de botones
+frame_btn_info = Frame(ventana, bg=COLOR_FONDO)  # Frame botón info
 frame_btn_info.pack(side="bottom", fill="x", padx=10, pady=15)
 frame_btn.pack(side="top", fill="x", padx=15, pady=10)
 frame_btn.pack_propagate(False)
-btn_tema       = Button(frame_btn, text="☾", command = alternar_modo_oscuro)  # Botón tema
+btn_tema       = Button(frame_btn, text="☾", command = alternar_modo_oscuro,fg=NEGRO,bg=BLANCO)  # Botón tema
 btn_tema.pack(side="right", padx=5, pady=7)
-btn_cursos     = Button(frame_btn, text="Cursos", command=abrir_ventana_cursos)
+btn_cursos     = Button(frame_btn, text="Cursos", width=8,height=2,fg=COLOR_BOTON_TEXTO,bg = COLOR_BOTON,command=abrir_ventana_cursos)
 btn_cursos.pack(side="left", padx=5, pady=7)
 
-
-sub_btn = Frame(frame_btn, bg=GRIS_NIEBLA)  # Sub-frame botones para el medio arriba
+sub_btn = Frame(frame_btn, bg=COLOR_FONDO)  # Sub-frame botones para el medio arriba
 sub_btn.pack(side="left", fill="both", expand=True)
 sub_btn.columnconfigure(0, weight=1)
 sub_btn.columnconfigure(5, weight=1)
 
-btn_agregar_definitivo = Button(sub_btn,text="Agregar definitivo", width=5, height=2, command=agregar_definitivo)
+
+btn_agregar_definitivo = Button(sub_btn,text="Agregar", width=8, height=2,fg=COLOR_ACENTO_TEXTO,bg = COLOR_ACENTO, command=agregar_definitivo)
 btn_agregar_definitivo.grid(row=0, column=1, padx=15, pady=17)
 
-btn_eliminar = Button(sub_btn,text="Eliminar", width=5, height=2, command=eliminar_definitivo)
+btn_eliminar = Button(sub_btn,text="Eliminar",fg=BLANCO,bg = COLOR_ERROR, width=8, height=2, command=eliminar_definitivo)
 btn_eliminar.grid(row=0, column=2, padx=5, pady=7)
 
-btn_buscar_definitivo = Button(sub_btn, text="Buscar definitivo", width=5, height=2, command=buscar_definitivo)
+btn_buscar_definitivo = Button(sub_btn, text="Buscar",fg=COLOR_BOTON_TEXTO,bg = COLOR_BOTON, width=8, height=2, command=buscar_definitivo)
 btn_buscar_definitivo.grid(row=0, column=3, padx=17, pady=19)
 
-btn_limpiar = Button(sub_btn, text="Limpiar", width=5, height=2, command=limpiar)
+btn_limpiar = Button(sub_btn, text="Limpiar", width=8, height=2,fg=COLOR_BOTON_TEXTO,bg = COLOR_BOTON, command=limpiar)
 btn_limpiar.grid(row=0, column=4, padx=5, pady=7)
 
 # BLOQUE 13: FORMULARIO
-frame_form = Frame(ventana, bg=GRIS_NIEBLA)  # Frame formulario
+
+frame_form = Frame(ventana, bg=COLOR_FONDO)  # Frame formulario
 frame_form.pack(side="top", fill="x", padx=15, pady=10)
 
-label_nombre = Label(frame_form, text="Nombre:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12))
+label_nombre = Label(frame_form, text="Nombre:", bg=COLOR_FONDO, fg=COLOR_TITULO, font=("Segoe UI", 12))
 label_nombre.grid(row=0, column=2, sticky="e", padx=5)
 entry_nombre = Entry(frame_form, width=22, font=("Segoe UI", 12))
 entry_nombre.grid(row=0, column=3, padx=5, pady=3)
 
-label_apellido = Label(frame_form, text="Apellido:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12))
+label_apellido = Label(frame_form, text="Apellido:", bg=COLOR_FONDO, fg=COLOR_TITULO, font=("Segoe UI", 12))
 label_apellido.grid(row=0, column=4, sticky="e", padx=5)
 entry_apellido = tk.Entry(frame_form, width=22, font=("Segoe UI", 12))
 entry_apellido.grid(row=0, column=5, padx=5, pady=3)
 
-label_dni = Label(frame_form, text="DNI:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12))
+label_dni = Label(frame_form, text="DNI:", bg=COLOR_FONDO, fg=COLOR_TITULO, font=("Segoe UI", 12))
 label_dni.grid(row=0, column=6, sticky="e", padx=5)
 entry_dni = Entry(frame_form, width=15, font=("Segoe UI", 12))
 entry_dni.grid(row=0, column=7, padx=5, pady=3)
 
 # BLOQUE 14: CUERPO PARA LA VENTANA PRINCIPAL (PARTE VISUAL)
-cuerpo = Frame(ventana, bg=GRIS_NIEBLA)  # Frame cuerpo
+cuerpo = Frame(ventana, bg=COLOR_FONDO)  # Frame cuerpo
 cuerpo.pack(fill="both", expand=True, padx=40, pady=10)
 cuerpo.columnconfigure(0, weight=0)
 cuerpo.columnconfigure(1, weight=1)
 cuerpo.rowconfigure(0, weight=1)
 
-frame_izquierda = Frame(cuerpo, bg=GRIS_NIEBLA)  # Frame izquierdo
+frame_izquierda = Frame(cuerpo, bg=COLOR_FONDO)  # Frame izquierdo
 frame_izquierda.grid(row=0, column=0, sticky="n", padx=(20, 40), pady=(45, 0))
 
-frame_foto = Frame(frame_izquierda, bg=BLANCO, relief="solid", bd=1, width=250, height=250)  # Frame foto
+frame_foto = Frame(frame_izquierda, bg=COLOR_FONDO, relief="solid", bd=1, width=250, height=250)  # Frame foto
 frame_foto.pack()
 frame_foto.pack_propagate(False)
 
@@ -1307,13 +1313,13 @@ titulo_lista.pack(anchor="w", padx=10, pady=(10, 5))
 contador_legajos = tk.Label(frame_lista, text="Legajos activos: 0", bg=GRIS_AZULADO, fg=AMARILLO, font=("Segoe UI", 11, "bold"))
 contador_legajos.pack(anchor="w", padx=10, pady=(0, 10))
 
-caja_lista = Frame(frame_lista, bg=BLANCO)  # Caja para la lista
+caja_lista = Frame(frame_lista, bg=COLOR_FONDO)  # Caja para la lista
 caja_lista.pack(fill="both", expand=True, padx=10, pady=(0, 10))
 
 scroll = tk.Scrollbar(caja_lista, orient="vertical")  # Scroll
 scroll.pack(side="right", fill="y")
 
-lista_personas = Listbox(caja_lista, yscrollcommand=scroll.set, font=("Segoe UI", 12), bg=BLANCO, fg=GRIS_AZULADO, selectbackground=AZUL_SERENO, selectforeground=BLANCO)
+lista_personas = Listbox(caja_lista, yscrollcommand=scroll.set, font=("Segoe UI", 12), bg=COLOR_FONDO, fg=GRIS_AZULADO, selectbackground=AZUL_SERENO, selectforeground=BLANCO)
 lista_personas.pack(side="left", fill="both", expand=True)
 scroll.config(command=lista_personas.yview)
 lista_personas.bind("<<ListboxSelect>>", al_seleccionar)
@@ -1336,67 +1342,67 @@ def abrir_ventana_perfil(event=None):
     foto_pendiente = {"bytes": None}
     dni_original = {"valor": entry_dni.get().strip()}
     #Frame izquierdo
-    frame_izquierdo = Frame(ventana_perfil, bg=GRIS_NIEBLA)
+    frame_izquierdo = Frame(ventana_perfil, bg=COLOR_FONDO)
     frame_izquierdo.pack(side="left", fill="y", padx=15, pady=15)
 
-    Label(frame_izquierdo, text=" Nombres:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=0, column=0, sticky="e", padx=5)
+    Label(frame_izquierdo, text=" Nombres:", bg=COLOR_FONDO, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=0, column=0, sticky="e", padx=5)
     entry_nombre_perfil = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
     entry_nombre_perfil.grid(row=0, column=1, padx=5, pady=3)
     entry_nombre_perfil.insert(0, entry_nombre.get())
 
-    Label(frame_izquierdo, text=" Apellido:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=1, column=0, sticky="e", padx=5)
+    Label(frame_izquierdo, text=" Apellido:", bg=COLOR_FONDO, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=1, column=0, sticky="e", padx=5)
     entry_apellido_perfil = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
     entry_apellido_perfil.grid(row=1, column=1, padx=5, pady=3)
     entry_apellido_perfil.insert(0, entry_apellido.get())
 
-    Label(frame_izquierdo, text="Edad:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=2, column=0, sticky="e", padx=5)
+    Label(frame_izquierdo, text="Edad:", bg=COLOR_FONDO, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=2, column=0, sticky="e", padx=5)
     entry_edad_perfil = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
     entry_edad_perfil.grid(row=2, column=1, padx=5, pady=3)
     entry_edad_perfil.insert(0, "")
 
-    Label(frame_izquierdo, text=" DNI:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=3, column=0, sticky="e", padx=5)
+    Label(frame_izquierdo, text=" DNI:", bg=COLOR_FONDO, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=3, column=0, sticky="e", padx=5)
     entry_dni_perfil = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
     entry_dni_perfil.grid(row=3, column=1, padx=5, pady=3)
     entry_dni_perfil.insert(0, entry_dni.get())
     entry_dni_perfil_ref = entry_dni_perfil
 
-    Label(frame_izquierdo, text=" Domicilio:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=4, column=0, sticky="e", padx=5)
+    Label(frame_izquierdo, text=" Domicilio:", bg=COLOR_FONDO, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=4, column=0, sticky="e", padx=5)
     entry_direccion_perfil = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
     entry_direccion_perfil.grid(row=4, column=1, padx=5, pady=3)
 
-    Label(frame_izquierdo, text=" Fecha de nacimiento:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=5, column=0, sticky="e", padx=5)
+    Label(frame_izquierdo, text=" Fecha de nacimiento:", bg=COLOR_FONDO, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=5, column=0, sticky="e", padx=5)
     entry_f_nacimiento_perfil = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
     entry_f_nacimiento_perfil.grid(row=5, column=1, padx=5, pady=3)
 
-    Label(frame_izquierdo, text=" Fecha de ingreso al instituto:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=6, column=0, sticky="e", padx=5)
+    Label(frame_izquierdo, text=" Fecha de ingreso al instituto:", bg=COLOR_FONDO, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=6, column=0, sticky="e", padx=5)
     entry_fecha_ingreso_perfil = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
     entry_fecha_ingreso_perfil.grid(row=6, column=1, padx=5, pady=3)
 
-    Label(frame_izquierdo, text="Telefono:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=7, column=0, sticky="e", padx=5)
+    Label(frame_izquierdo, text="Telefono:", bg=COLOR_FONDO, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=7, column=0, sticky="e", padx=5)
     entry_telefono_perfil = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
     entry_telefono_perfil.grid(row=7, column=1, padx=5, pady=3)
 
-    Label(frame_izquierdo, text="Nombre del contacto de emergencia:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=8, column=0, sticky="e", padx=5)
+    Label(frame_izquierdo, text="Nombre del contacto de emergencia:", bg=COLOR_FONDO, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=8, column=0, sticky="e", padx=5)
     entry_contacto_emergencia_perfil = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
     entry_contacto_emergencia_perfil.grid(row=8, column=1, padx=5, pady=3)
 
-    Label(frame_izquierdo, text="Telefono del contacto de emergencia:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=9, column=0, sticky="e", padx=5)
+    Label(frame_izquierdo, text="Telefono del contacto de emergencia:", bg=COLOR_FONDO, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=9, column=0, sticky="e", padx=5)
     entry_tel_emergencia_perfil = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
     entry_tel_emergencia_perfil.grid(row=9, column=1, padx=5, pady=3)
 
-    Label(frame_izquierdo, text="Obra social:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=10, column=0, sticky="e", padx=5)
+    Label(frame_izquierdo, text="Obra social:", bg=COLOR_FONDO, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=10, column=0, sticky="e", padx=5)
     entry_obra_social_perfil = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
     entry_obra_social_perfil.grid(row=10, column=1, padx=5, pady=3)
 
-    Label(frame_izquierdo, text="Nacionalidad:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=11, column=0, sticky="e", padx=5)
+    Label(frame_izquierdo, text="Nacionalidad:", bg=COLOR_FONDO, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=11, column=0, sticky="e", padx=5)
     entry_nacionalidad = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
     entry_nacionalidad.grid(row=11, column=1, padx=5, pady=3)
     
-    Label(frame_izquierdo, text=" Localidad:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=12, column=0, sticky="e", padx=5)
+    Label(frame_izquierdo, text=" Localidad:", bg=COLOR_FONDO, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=12, column=0, sticky="e", padx=5)
     entry_localidad = Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
     entry_localidad.grid(row=12, column=1, padx=5, pady=3)
 
-    Label(frame_izquierdo, text="Mail: ", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=13, column=0, sticky="e", padx=5)
+    Label(frame_izquierdo, text="Mail: ", bg=COLOR_FONDO, fg=GRIS_AZULADO, font=("Segoe UI", 12)).grid(row=13, column=0, sticky="e", padx=5)
     entry_mail_perfil= Entry(frame_izquierdo, width=22, font=("Segoe UI", 12))
     entry_mail_perfil.grid(row=13, column=1, padx=5, pady=3)
 
@@ -1701,30 +1707,30 @@ def abrir_ventana_perfil(event=None):
             traceback.print_exc()
             messagebox.showerror("Error", "No se pudo crear el Word.")
 
-    boton_guardar_perfil = Button(frame_izquierdo, text="Guardar cambios", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12),command=guardar_cambios_perfil)
+    boton_guardar_perfil = Button(frame_izquierdo, text="Guardar cambios",fg=COLOR_BOTON_TEXTO,bg = COLOR_BOTON, font=("Segoe UI", 12),command=guardar_cambios_perfil)
     boton_guardar_perfil.grid(row=16, column=0, padx=10, pady=5, sticky="ew")
-    boton_editor_fotos = Button(frame_izquierdo,text="Editar fotos",bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12),command=abrir_ventana_editor_fotos)
+    boton_editor_fotos = Button(frame_izquierdo,text="Editar fotos",fg=COLOR_BOTON_TEXTO,bg = COLOR_BOTON, font=("Segoe UI", 12),command=abrir_ventana_editor_fotos)
     boton_editor_fotos.grid(row=16, column=1, padx=10, sticky="ew")
-    boton_pdf_paciente = Button(frame_izquierdo,text=" Generar PDF de este alumno",bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12),command=exportar_pdf_persona)
+    boton_pdf_paciente = Button(frame_izquierdo,text=" Generar PDF de este alumno",fg=COLOR_BOTON_TEXTO,bg = COLOR_BOTON, font=("Segoe UI", 12),command=exportar_pdf_persona)
     boton_pdf_paciente.grid(row=17, column=0, padx=10, sticky="ew")
-    boton_word_paciente = Button(frame_izquierdo,text=" Generar Word de este estudiante",bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12),command=exportar_word_persona)
+    boton_word_paciente = Button(frame_izquierdo,text=" Generar Word de este estudiante",fg=COLOR_BOTON_TEXTO,bg = COLOR_BOTON, font=("Segoe UI", 12),command=exportar_word_persona)
     boton_word_paciente.grid(row=17, column=1, padx=10, sticky="ew")
-    boton_ver_doc = Button(frame_izquierdo,text="Ver/Editar documento",bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 12),command=lambda: abrir_ventana_ver_documento(entry_dni_perfil.get().strip()))
+    boton_ver_doc = Button(frame_izquierdo,text="Ver/Editar documento",fg=COLOR_BOTON_TEXTO,bg = COLOR_BOTON, font=("Segoe UI", 12),command=lambda: abrir_ventana_ver_documento(entry_dni_perfil.get().strip()))
     boton_ver_doc.grid(row=17, column=2, columnspan=2, padx=10, pady=5, sticky="ew")
 
-    frame_derecha = Frame(ventana_perfil, bg=GRIS_NIEBLA)
+    frame_derecha = Frame(ventana_perfil, bg=COLOR_FONDO)
     frame_derecha.pack(side="right", fill="both", expand=True, padx=(0, 15), pady=15)
-    frame_foto_perfil = Frame(frame_derecha, bg=BLANCO, relief="solid",bd=1, height=280)
+    frame_foto_perfil = Frame(frame_derecha, bg=COLOR_FONDO, relief="solid",bd=1, height=280)
     frame_foto_perfil.pack(side="top", fill="x", pady=(0, 10))
     frame_foto_perfil.pack_propagate(False)
-    visor_foto_perfil = tk.Label(frame_foto_perfil,text="👤\nClic para subir foto",bg=BLANCO, fg=GRIS_MEDIO,font=("Segoe UI", 20), cursor="hand2")
+    visor_foto_perfil = tk.Label(frame_foto_perfil,text="👤\nClic para subir foto",bg=COLOR_FONDO,fg=GRIS_MEDIO,font=("Segoe UI", 20), cursor="hand2")
     visor_foto_perfil.pack(fill="both", expand=True, padx=10, pady=10)
     visor_foto_perfil.bind("<Button-1>", subir_foto_perfil)
-    boton_quitar_foto = Button(frame_derecha, bg = VERDE_AZULADO, fg =BLANCO,text="Quitar foto",command=quitar_foto_perfil)
+    boton_quitar_foto = Button(frame_derecha, bg = ROJO, fg =BLANCO,text="Quitar foto",command=quitar_foto_perfil)
     boton_quitar_foto.pack(side="top", padx=10, pady=5)
     frame_galeria = Frame(frame_derecha, bg=GRIS_NIEBLA)
     frame_galeria.pack(side="top", fill="x", pady=(0, 10))
-    Label(frame_galeria, text="Fotos del alumno:", bg=GRIS_NIEBLA, fg=GRIS_AZULADO, font=("Segoe UI", 10, "bold")).pack(anchor="w")
+    Label(frame_galeria, text="Fotos del alumno:", bg=COLOR_FONDO, fg=GRIS_AZULADO, font=("Segoe UI", 10, "bold")).pack(anchor="w")
     frame_galeria_inner = Frame(frame_galeria, bg=GRIS_NIEBLA, height=120)
     frame_galeria_inner.pack(fill="x")
     frame_galeria_inner.pack_propagate(False)
@@ -1737,7 +1743,7 @@ def abrir_ventana_perfil(event=None):
     frame_lista_perfil = Frame(frame_derecha, bg=GRIS_AZULADO, relief="solid", bd=1)
     frame_lista_perfil.pack(side="top", fill="both", expand=True, pady=(0, 20))
     # Ver como se puede reciclar esto 
-    Label(frame_lista_perfil, text="Documentos del estudiante", bg=GRIS_AZULADO, fg=BLANCO, font=("Segoe UI", 15, "bold")).pack(side="top", padx=10, pady=10)
+    Label(frame_lista_perfil, text="Documentos del estudiante", fg=COLOR_FONDO ,bg=GRIS_AZULADO, font=("Segoe UI", 15, "bold")).pack(side="top", padx=10, pady=10)
     scroll_perfil = tk.Scrollbar(frame_lista_perfil, orient="vertical")
     scroll_perfil.pack(side="right", fill="y")
     lista_personas_perfil = Listbox(frame_lista_perfil, yscrollcommand=scroll_perfil.set, font=("Segoe UI", 12), bg=BLANCO, fg=GRIS_AZULADO, selectbackground=AZUL_SERENO, selectforeground=BLANCO)
@@ -1754,28 +1760,28 @@ def abrir_ventana_editor_fotos():
     ventana_editor_fotos = tk.Toplevel(ventana)
     ventana_editor_fotos.title("Editor de fotos")
     ventana_editor_fotos.geometry("600x750")
-    ventana_editor_fotos.config(bg=GRIS_NIEBLA)
+    ventana_editor_fotos.config(bg=COLOR_FONDO)
 
     try: dni_actual = entry_dni_perfil_ref.get().strip() if entry_dni_perfil_ref is not None else ""
     except tk.TclError: dni_actual = ""
 
-    frame_editor_fotos_superior = Frame(ventana_editor_fotos, bg=GRIS_NIEBLA)
+    frame_editor_fotos_superior = Frame(ventana_editor_fotos, bg=COLOR_FONDO)
     frame_editor_fotos_superior.pack(side="top", fill="both", expand=True)
-    visor_foto_editor = Label(frame_editor_fotos_superior, text="👤\nSin foto", bg=BLANCO, fg=NEGRO, relief="solid", bd=1, font=("Segoe UI", 20))
+    visor_foto_editor = Label(frame_editor_fotos_superior, text="👤\nSin foto", bg=COLOR_FONDO, fg=GRIS_AZULADO, relief="solid", bd=1, font=("Segoe UI", 20))
     visor_foto_editor.pack(fill="both", expand=True, padx=10, pady=10)
 
-    frame_lista_imgs = Frame(ventana_editor_fotos, bg=GRIS_NIEBLA)
+    frame_lista_imgs = Frame(ventana_editor_fotos, bg=COLOR_FONDO)
     frame_lista_imgs.pack(fill="x", padx=10, pady=5)
-    label_contador = Label(frame_lista_imgs, text="Imagenes cargadas: 0", font=("Segoe UI", 11, "bold"), bg=VERDE_AZULADO, fg=BLANCO)
+    label_contador = Label(frame_lista_imgs, text="Imagenes cargadas: 0", font=("Segoe UI", 11, "bold"), bg=COLOR_FONDO, fg=GRIS_AZULADO)
     label_contador.pack(fill="x")
-    frame_lista_scroll = Frame(frame_lista_imgs, bg=GRIS_NIEBLA)
+    frame_lista_scroll = Frame(frame_lista_imgs, bg=COLOR_FONDO)
     frame_lista_scroll.pack(fill="x", pady=5)
     scroll_imgs = tk.Scrollbar(frame_lista_scroll, orient="vertical")
     scroll_imgs.pack(side="right", fill="y")
     lista_imagenes = Listbox(frame_lista_scroll, height=8, font=("Segoe UI", 10), yscrollcommand=scroll_imgs.set)
     lista_imagenes.pack(side="left", fill="both", expand=True)
     scroll_imgs.config(command=lista_imagenes.yview)
-    frame_editor_fotos_inferior = Frame(ventana_editor_fotos, bg=GRIS_NIEBLA)
+    frame_editor_fotos_inferior = Frame(ventana_editor_fotos, bg=COLOR_FONDO)
     frame_editor_fotos_inferior.pack(side="bottom", fill="x", pady=10)
     ids_imagenes = []
 
@@ -1862,10 +1868,9 @@ def abrir_ventana_editor_fotos():
 
     frame_editor_fotos_inferior.columnconfigure(0, weight=1)
     frame_editor_fotos_inferior.columnconfigure(5, weight=1)
-    Button(frame_editor_fotos_inferior, bg = VERDE_AZULADO,fg = BLANCO, text="Agregar imagen", command=agregar_imagen).grid(row=0, column=2, padx=10, sticky="ew")
-    Button(frame_editor_fotos_inferior,bg = VERDE_AZULADO, fg =BLANCO, text="Eliminar imagen", command=eliminar_imagen).grid(row=0, column=3, padx=10, sticky="ew")
-    Button(frame_editor_fotos_inferior,bg =VERDE_AZULADO, fg =BLANCO, text="Limpiar TODAS", command=limpiar_todas).grid(row=0, column=4, padx=10, sticky="ew")
-    #agregar_boton_luna(ventana_editor_fotos)
+    Button(frame_editor_fotos_inferior, bg = COLOR_BOTON,fg = COLOR_BOTON_TEXTO, text="Agregar imagen", command=agregar_imagen).grid(row=0, column=2, padx=10, sticky="ew")
+    Button(frame_editor_fotos_inferior,bg = COLOR_BOTON, fg =COLOR_BOTON_TEXTO, text="Eliminar imagen", command=eliminar_imagen).grid(row=0, column=3, padx=10, sticky="ew")
+    Button(frame_editor_fotos_inferior,bg = ROJO, fg =BLANCO, text="Limpiar TODAS", command=limpiar_todas).grid(row=0, column=4, padx=10, sticky="ew")
     refrescar_lista_imagenes()
 # ===========================================================================================================================
 # BLOQUE 16: GENERAR PDF
@@ -2263,7 +2268,7 @@ def abrir_ventana_ver_documento(dni_persona=None):
         if not dni:
             messagebox.showwarning("Atención", "Escribí un DNI primero.")
             return
-        cursor.execute("""SELECT id,nombre,apellido,dni,edad,domicilio,fecha_ingreso,telefono,mail,fecha_nacimiento,contacto_emergencia,telefono_emergencia,obra_social,nacionalidad,localidad FROM personas WHERE dni = ? ORDER BY id""", (dni,))
+        cursor.execute("""SELECT id,nombres,apellido,dni,edad,domicilio,fecha_ingreso,telefono,mail,fecha_nacimiento,contacto_emergencia,telefono_emergencia,obra_social,nacionalidad,localidad FROM personas WHERE dni = ? ORDER BY id""", (dni,))
         filas = cursor.fetchall()
         if not filas:
             text_doc.insert("1.0", "No hay archivos para ese DNI.")
@@ -2342,11 +2347,11 @@ def abrir_ventana_ver_documento(dni_persona=None):
 
     frame_btn = Frame(ventana_doc, bg=GRIS_NIEBLA)
     frame_btn.pack(anchor="center")
-    Button(frame_btn,bg =  VERDE_AZULADO, fg = BLANCO, text="⟳", command=cargar_documento).pack(side="left", padx=5)
-    Button(frame_btn, bg = VERDE_AZULADO, fg = BLANCO, text="Guardar PDF", command=guardar_pdf).pack(side="left", padx=5)
-    Button(frame_btn, bg = VERDE_AZULADO, fg = BLANCO, text="Guardar Word", command=guardar_word).pack(side="left", padx=5)
-    Button(frame_btn, bg = VERDE_AZULADO, fg = BLANCO, text="Eliminar archivo", command=eliminar_archivo).pack(side="left", padx=5)
-    Button(frame_btn, bg = VERDE_AZULADO, fg = BLANCO, text="Importar PDF/Word", command=importar_documento).pack(side="left", padx=5)
+    Button(frame_btn,bg =  COLOR_BOTON, fg = COLOR_BOTON_TEXTO, text="⟳", command=cargar_documento).pack(side="left", padx=5)
+    Button(frame_btn, bg = COLOR_BOTON, fg = COLOR_BOTON_TEXTO, text="Guardar PDF", command=guardar_pdf).pack(side="left", padx=5)
+    Button(frame_btn, bg = COLOR_BOTON, fg = COLOR_BOTON_TEXTO, text="Guardar Word", command=guardar_word).pack(side="left", padx=5)
+    Button(frame_btn, bg = ROJO, fg = BLANCO, text="Eliminar archivo", command=eliminar_archivo).pack(side="left", padx=5)
+    Button(frame_btn, bg = COLOR_BOTON, fg = COLOR_BOTON_TEXTO, text="Importar PDF/Word", command=importar_documento).pack(side="left", padx=5)
     if dni_persona:
         cargar_documento()
     aplicar_tema(ventana_doc)  # Aplico el tema actual a la ventana de documentos
