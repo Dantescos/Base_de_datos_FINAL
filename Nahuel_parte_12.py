@@ -2887,7 +2887,83 @@ def al_cerrar_app():
     try: conexion.close()
     except Exception: pass
     ventana.destroy()
+################333
 
+def crear_word_de_texto(ruta, texto):
+    lineas = []
+    for linea in texto.splitlines() or [""]:
+        # Escapo los caracteres especiales de HTML.
+        linea_segura = linea.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+        if linea_segura == "":
+            lineas.append("<p>&nbsp;</p>")
+        else:
+            lineas.append(f"<p>{linea_segura}</p>")
+    html = "<html><head><meta charset='utf-8'></head><body>" + "\n".join(lineas) + "</body></html>"
+    with open(ruta, "w", encoding="utf-8") as archivo:
+        archivo.write(html)
+
+def crear_pdf_de_texto(ruta, texto):
+    # PDF simple de texto plano (una fuente, una línea por renglón).
+    paginas = []
+    lineas_pagina = []
+    y = 790
+
+    def cerrar_pagina():
+        nonlocal lineas_pagina, y
+        if lineas_pagina:
+            paginas.append(lineas_pagina)
+        lineas_pagina = []
+        y = 790
+
+    for linea in texto.splitlines() or [""]:
+        if y < 55:
+            cerrar_pagina()
+        lineas_pagina.append((linea, y))
+        y -= 15
+    cerrar_pagina()
+    if not paginas:
+        paginas = [[]]
+
+    objetos = [None, None]
+    referencias = []
+    id_fuente = 3 + 2 * len(paginas)
+
+    for lineas in paginas:
+        contenido = "".join(
+            f"BT /F1 10 Tf 1 0 0 1 50 {pos_y} Tm <{linea.encode('cp1252', errors='replace').hex().upper()}> Tj ET\n"
+            for linea, pos_y in lineas
+        ).encode("ascii")
+        id_pagina = len(objetos) + 1
+        id_contenido = id_pagina + 1
+        referencias.append(f"{id_pagina} 0 R")
+        objetos.append(
+            f"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] "
+            f"/Resources << /Font << /F1 {id_fuente} 0 R >> >> /Contents {id_contenido} 0 R >>".encode("ascii"))
+        objetos.append(f"<< /Length {len(contenido)} >>\nstream\n".encode("ascii") + contenido + b"\nendstream")
+
+    objetos[0] = b"<< /Type /Catalog /Pages 2 0 R >>"
+    objetos[1] = f"<< /Type /Pages /Kids [{' '.join(referencias)}] /Count {len(referencias)} >>".encode("ascii")
+    objetos.append(b"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>")
+
+    salida = bytearray(b"%PDF-1.4\n")
+    offsets = [0]
+    for numero, objeto in enumerate(objetos, start=1):
+        offsets.append(len(salida))
+        salida.extend(f"{numero} 0 obj\n".encode("ascii"))
+        salida.extend(objeto)
+        salida.extend(b"\nendobj\n")
+
+    pos = len(salida)
+    salida.extend(f"xref\n0 {len(objetos)+1}\n".encode("ascii"))
+    salida.extend(b"0000000000 65535 f \n")
+    for offset in offsets[1:]:
+        salida.extend(f"{offset:010d} 00000 n \n".encode("ascii"))
+    salida.extend(f"trailer\n<< /Size {len(objetos)+1} /Root 1 0 R >>\nstartxref\n{pos}\n%%EOF\n".encode("ascii"))
+
+    with open(ruta, "wb") as archivo:
+        archivo.write(salida)
+
+##########################3
 ventana.protocol("WM_DELETE_WINDOW", al_cerrar_app)
 refrescar_lista()
 
