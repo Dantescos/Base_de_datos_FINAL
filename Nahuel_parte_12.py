@@ -2646,7 +2646,7 @@ def abrir_ventana_autores():
     frame_textos.pack_propagate(False)
     Label(frame_textos, text="AUTORES", bg=AZUL_PETROLEO, fg=BLANCO, font=("Segoe UI", 32, "bold")).pack(pady=(40, 5))
     Label(frame_textos, text="EQUIPO DE DESARROLLO", bg=AZUL_PETROLEO,fg=AMARILLO, font=("Segoe UI", 14, "bold")).pack(pady=(0, 20))
-    nombres = ["Antonio Garcia", "Nahuel Villafañe", "Mateo Dabruzzo Wilczek", "Federico 'Fedelobo'", "Ignacio", "Thiago", "Pablo Laporta",]
+    nombres = ["Antonio Garcia", "Nahuel Villafañe", "Mateo Dabruzzo Wilczek", "Federico 'Fedelobo'", "Ignacio Bertoli", "Thiago Sgroi", "Pablo Laporta",]
     for nombre in nombres: Label(frame_textos, text=nombre, bg=AZUL_PETROLEO, fg=BLANCO, font=("Segoe UI", 12)).pack(pady=2)
     Label(frame_textos, text="___________________________________________", bg=AZUL_PETROLEO, fg=GRIS_MEDIO).pack(pady=15)
     Label(frame_textos, text="LICENCIA", bg=AZUL_PETROLEO, fg=BLANCO, font=("Segoe UI", 18, "bold")).pack(pady=5)
