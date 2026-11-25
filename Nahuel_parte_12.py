@@ -12,11 +12,13 @@ import os  # Para rutas y archivos
 import textwrap  # Para cortar texto
 import re  # Para expresiones regulares
 import base64  # Para codificar/decodificar base64
-import PyPDF2  # Para leer archivos PDF
+#import PyPDF2  # Para leer archivos PDF
 import shutil  # Para mover archivos
-import sys  # Para detectar si se ejecuta como EXE
-import subprocess  # Para abrir archivos externos en Linux y macOS
-from pathlib import Path  # Para trabajar con rutas de archivos
+import sys
+from pathlib import Path
+import subprocess
+from datetime import datetime
+
 
 # BLOQUE 2: IMÁGENES EN BASE64
 
