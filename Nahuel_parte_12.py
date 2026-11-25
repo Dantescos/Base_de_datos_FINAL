@@ -2161,7 +2161,7 @@ def abrir_ventana_perfil(event=None):
     boton_quitar_foto.pack(side="top", padx=10, pady=5)
     frame_galeria = Frame(frame_derecha, bg=GRIS_NIEBLA)
     frame_galeria.pack(side="top", fill="x", pady=(0, 10))
-    Label(frame_galeria, text="Fotos del alumno:", bg=COLOR_FONDO, fg=GRIS_AZULADO, font=("Segoe UI", 10, "bold")).pack(anchor="w")
+    Label(frame_galeria, text="Documentos del estudiante", bg=COLOR_FONDO, fg=GRIS_AZULADO, font=("Segoe UI", 10, "bold")).pack(anchor="w")
     frame_galeria_inner = Frame(frame_galeria, bg=GRIS_NIEBLA, height=120)
     frame_galeria_inner.pack(fill="x")
     frame_galeria_inner.pack_propagate(False)
@@ -2173,8 +2173,8 @@ def abrir_ventana_perfil(event=None):
     lista_fotos_galeria.bind("<<ListboxSelect>>", asignar_foto_galeria)
     frame_lista_perfil = Frame(frame_derecha, bg=GRIS_AZULADO, relief="solid", bd=1)
     frame_lista_perfil.pack(side="top", fill="both", expand=True, pady=(0, 20))
-    # Ver como se puede reciclar esto 
-    Label(frame_lista_perfil, text="Documentos del estudiante", fg=COLOR_FONDO ,bg=GRIS_AZULADO, font=("Segoe UI", 15, "bold")).pack(side="top", padx=10, pady=10)
+    # Ver como se puede reciclar esto fede estubo por aqui :3
+    Label(frame_lista_perfil, text="cursos cursados", fg=COLOR_FONDO ,bg=GRIS_AZULADO, font=("Segoe UI", 15, "bold")).pack(side="top", padx=10, pady=10)
     scroll_perfil = tk.Scrollbar(frame_lista_perfil, orient="vertical")
     scroll_perfil.pack(side="right", fill="y")
     lista_personas_perfil = Listbox(frame_lista_perfil, yscrollcommand=scroll_perfil.set, font=("Segoe UI", 12), bg=BLANCO, fg=GRIS_AZULADO, selectbackground=AZUL_SERENO, selectforeground=BLANCO)
