@@ -12,13 +12,12 @@ import os  # Para rutas y archivos
 import textwrap  # Para cortar texto
 import re  # Para expresiones regulares
 import base64  # Para codificar/decodificar base64
-#import PyPDF2  # Para leer archivos PDF
+import PyPDF2  # Para leer archivos PDF
 import shutil  # Para mover archivos
 import sys
 from pathlib import Path
 import subprocess
 from datetime import datetime
-#fede estubo aqui :3
 
 # BLOQUE 2: IMÁGENES EN BASE64
 
@@ -56,14 +55,12 @@ RUTA_BASE_DATOS_ACTUAL = Path.cwd() / NOMBRE_BASE_DATOS
 if not RUTA_BASE_DATOS.is_file() and RUTA_BASE_DATOS_ACTUAL.is_file():
     RUTA_BASE_DATOS = RUTA_BASE_DATOS_ACTUAL
 
-
 # ------------------------------------------------------------
 # 2. ÚNICA CONEXIÓN SQLITE DE SANCA
 # ------------------------------------------------------------
 
 conexion = sqlite3.connect(str(RUTA_BASE_DATOS))
 cursor = conexion.cursor()
-
 
 # ------------------------------------------------------------
 # 3. FUNCIÓN PARA AGREGAR COLUMNAS SIN BORRAR INFORMACIÓN
@@ -83,12 +80,9 @@ def agregar_columna_si_falta(tabla, columna, tipo):
         cursor.execute(f"ALTER TABLE {tabla} ADD COLUMN {columna} {tipo}")
         print(f"Columna agregada: {tabla}.{columna}")
 
-
 # ============================================================
 # TABLA 1: PERSONAS
 # ============================================================
-
-
 
 def obtener_directorio_datos(plataforma=None, entorno=None, directorio_personal=None):
     """Devuelve una carpeta de datos persistente para Windows, Linux o macOS."""
@@ -140,7 +134,6 @@ entry_dni_perfil_ref = None  # Variable global que apunta al tk.Entry del DNI en
 
 # BLOQUE 3: BASE DE DATOS
 
-#fede estubo aqui :3
 NOMBRE_BASE_DATOS = "mammaasda"
 
 RUTA_BASE_DATOS = resolver_ruta_base_datos()
@@ -177,7 +170,7 @@ cursor.execute("""CREATE TABLE IF NOT EXISTS personas(
     nacionalidad TEXT,
     localidad TEXT,
     foto BLOB)""")
-#fede estubo aqui :3
+
 cursor.execute("""CREATE TABLE IF NOT EXISTS pdf (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     nombre TEXT NOT NULL,
@@ -192,7 +185,7 @@ cursor.execute("""CREATE TABLE IF NOT EXISTS recursos(
 
 cursor.execute("PRAGMA table_info(personas)")  # Obtengo info de las columnas
 _columnas_personas = {fila[1] for fila in cursor.fetchall()}  # Guardo los nombres de las columnas
-#fede estubo aqui
+
 # BLOQUE 4: NAVAJA SUIZA, aca lo hice es una funcion que ayude a las consultas a la base de datos , por si se llega a consultar mal a la base de datos o no lo encuentra 
 def agregar_columna_si_falta(tabla, columna, tipo):
     cursor.execute(f"PRAGMA table_info({tabla})")
@@ -256,11 +249,6 @@ for nombre_columna, tipo_columna in {
 }.items():
     agregar_columna_si_falta("pdf", nombre_columna, tipo_columna)
 
-
-
-
-
-
 for _col, _tipo in (("fecha_egreso", "TEXT"), ("tipo_egreso", "TEXT"), ("motivo_egreso", "TEXT")):
     if _col not in _columnas_personas: cursor.execute(f"ALTER TABLE personas ADD COLUMN {_col} {_tipo}")  # Agrego columnas si no existen
 
@@ -314,7 +302,7 @@ def guardar_archivo_legajo(dni, ruta_origen, categoria):
         except OSError: pass
         raise
     return cursor.lastrowid, destino
-#fede estubo aqui :3
+
 def guardar_foto_perfil_en_carpeta(dni, contenido, nombre="foto_perfil.png"):
     carpeta = ruta_carpeta_legajo(dni)
     extension = Path(nombre).suffix.lower() or ".png"
@@ -351,24 +339,6 @@ def abrir_archivo_externo(ruta):
     else:
         subprocess.Popen(["xdg-open", ruta])
 
-
-
-
-
-
-
-
-
-
-
-
-
-#################################################################################333
-
-
-
-
-
 # ------------------------------------------------------------
 # 4. CONFIRMAR E INFORMAR LA CONEXIÓN
 # ------------------------------------------------------------
@@ -382,7 +352,6 @@ print(f"Archivo: {RUTA_BASE_DATOS}")
 print("Tablas: personas, cursos, pdf y recursos")
 print("========================================")
 
-
 # ============================================================
 # 5. CARPETAS Y UTILIDADES DE LEGAJOS DE SANCA
 # ============================================================
@@ -390,12 +359,10 @@ print("========================================")
 RUTA_LEGAJOS = RUTA_BASE_DATOS.parent / "Legajos"
 RUTA_LEGAJOS.mkdir(parents=True, exist_ok=True)
 
-
 def ruta_carpeta_legajo(dni):
     carpeta = RUTA_LEGAJOS / str(dni)
     carpeta.mkdir(parents=True, exist_ok=True)
     return carpeta
-
 
 def ruta_unica_en_carpeta(carpeta, nombre):
     nombre_seguro = Path(nombre).name or "documento"
@@ -412,7 +379,6 @@ def ruta_unica_en_carpeta(carpeta, nombre):
         if not candidato.exists():
             return candidato
         contador += 1
-
 
 def guardar_archivo_legajo(dni, ruta_origen, categoria):
     origen = Path(ruta_origen)
@@ -452,14 +418,12 @@ def guardar_archivo_legajo(dni, ruta_origen, categoria):
 
     return cursor.lastrowid, destino
 
-
 def guardar_foto_perfil_en_carpeta(dni, contenido, nombre="foto_perfil.png"):
     carpeta = ruta_carpeta_legajo(dni)
     extension = Path(nombre).suffix.lower() or ".png"
     destino = carpeta / f"foto_perfil{extension}"
     destino.write_bytes(contenido)
     return destino
-
 
 def mover_carpeta_legajo(dni_anterior, dni_nuevo):
     origen = RUTA_LEGAJOS / str(dni_anterior)
@@ -488,12 +452,10 @@ def mover_carpeta_legajo(dni_anterior, dni_nuevo):
 
     conexion.commit()
 
-
 def eliminar_carpeta_legajo(dni):
     carpeta = RUTA_LEGAJOS / str(dni)
     if carpeta.is_dir():
         shutil.rmtree(carpeta)
-
 
 def abrir_archivo_externo(ruta):
     ruta = str(ruta)
@@ -504,7 +466,6 @@ def abrir_archivo_externo(ruta):
         subprocess.Popen(["open", ruta])
     else:
         subprocess.Popen(["xdg-open", ruta])
-
 
 # BLOQUE 5: PALETA DE COLORES
 # PALETA SANCA CFP 401
@@ -522,7 +483,7 @@ COLOR_ACENTO_TEXTO = "#2E2E2E"  # letra sobre ámbar
 COLOR_EXITO        = "#5E8C6A"  # mensajes OK
 COLOR_ERROR        = "#C0392B"  # errores / eliminar
 
-# Viejo colores
+# Viejos colores
 ROJO = "#E3000F"  # Rojo fuerte
 AMARILLO = "#FCAF17"  # Amarillo
 NEGRO = "#0a0a0a"  # Casi negro
@@ -536,7 +497,6 @@ GRIS_AZULADO = "#2C3E50"  # Gris azulado oscuro
 GRIS_MEDIO = "#7F8C8D"  # Gris medio
 AZUL_SERENO = "#4A90E2"  # Azul sereno para selección
 VERDE_AZULADO = "#26A69A"  # Verde azulado para botones
-
 
 # Instrucciones para los colores
 #Resumen rápido de uso
@@ -576,7 +536,6 @@ TEXTO_OSCURO = "#F1F4F8"
 TEXTO_SECUNDARIO_OSCURO = "#B8C3D1"
 SELECCION_OSCURA = "#3E6FA8"
 
-
 def _guardar_colores_originales(widget):
     # Guardo una sola vez los colores con los que fue creado cada widget.
     # Así puedo volver exactamente al modo claro al apretar nuevamente la luna.
@@ -598,7 +557,6 @@ def _guardar_colores_originales(widget):
             continue
 
     widget._sanca_colores_originales = colores
-
 
 def aplicar_tema(widget=None):
     # Si no recibo una ventana específica, aplico el tema desde la principal.
@@ -667,7 +625,6 @@ def aplicar_tema(widget=None):
             aplicar_tema(hijo)
     except tk.TclError:
         pass
-
 
 def alternar_modo_oscuro():
     # Cada vez que se presiona el botón, cambio entre claro y oscuro.
@@ -1594,7 +1551,6 @@ def al_seleccionar(event=None):
     # Muestro la fotografía guardada.
     mostrar_foto(dni)
 
-
 def limpiar():
     # Borro los campos de texto.
     entry_nombre.delete(0, tk.END)
@@ -1604,7 +1560,6 @@ def limpiar():
     # Restablezco el visor de fotografía.
     visor_foto.configure(image="", text="👤\\nSin foto")
     visor_foto.image = None
-
 
 def agregar_definitivo():
     # Obtengo los datos escritos por el usuario.
@@ -1730,7 +1685,6 @@ sub_btn = Frame(frame_btn, bg=COLOR_FONDO)  # Sub-frame botones para el medio ar
 sub_btn.pack(side="left", fill="both", expand=True)
 sub_btn.columnconfigure(0, weight=1)
 sub_btn.columnconfigure(5, weight=1)
-
 
 btn_agregar_definitivo = Button(sub_btn,text="Agregar", width=8, height=2,fg=COLOR_ACENTO_TEXTO,bg = COLOR_ACENTO, command=agregar_definitivo)
 btn_agregar_definitivo.grid(row=0, column=1, padx=15, pady=17)
@@ -2769,7 +2723,6 @@ def abrir_ventana_autores():
     else:
         Label(frame_foto, text="No se encontró la imagen", bg=BLANCO, fg=NEGRO).pack(expand=True)
 
-
 # BLOQUE 19: VENTANA DE DOCUMENTOS
 def abrir_ventana_ver_documento(dni_persona=None):
     ventana_doc = Toplevel(ventana)
@@ -2887,13 +2840,11 @@ def abrir_ventana_ver_documento(dni_persona=None):
     aplicar_tema(ventana_doc)  # Aplico el tema actual a la ventana de documentos
 Button(frame_btn, bg =  COLOR_BOTON, fg = COLOR_BOTON_TEXTO,text="Autores",command=abrir_ventana_autores).pack(side="left", padx=5)
 
-
 # BLOQUE 20: CERRAR APLICACION
 def al_cerrar_app():
     try: conexion.close()
     except Exception: pass
     ventana.destroy()
-################333
 
 def crear_word_de_texto(ruta, texto):
     lineas = []
@@ -2969,7 +2920,6 @@ def crear_pdf_de_texto(ruta, texto):
     with open(ruta, "wb") as archivo:
         archivo.write(salida)
 
-##########################3
 ventana.protocol("WM_DELETE_WINDOW", al_cerrar_app)
 refrescar_lista()
 
