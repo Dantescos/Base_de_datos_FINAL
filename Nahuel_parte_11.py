@@ -14,6 +14,9 @@ import re  # Para expresiones regulares
 import base64  # Para codificar/decodificar base64
 import PyPDF2  # Para leer archivos PDF
 import shutil  # Para mover archivos
+import sys  # Para detectar si se ejecuta como EXE
+import subprocess  # Para abrir archivos externos en Linux y macOS
+from pathlib import Path  # Para trabajar con rutas de archivos
 
 # BLOQUE 2: IMÁGENES EN BASE64
 
@@ -21,72 +24,90 @@ SANCA_BASE64 = "/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAMCAgoKCAgICAgKCAgICAgICAgICAgI
 # String enorme con la imagen de SANCA codificada en base64 (mascota de la app).
 entry_dni_perfil_ref = None  # Variable global que apunta al tk.Entry del DNI en la ventana de perfil
 
-# BLOQUE 3: BASE DE DATOS
-conexion = sqlite3.connect("Centro de Formación Profesional 401  Escuela de oficios SANCA.db")  # Abro o creo la base de datos
-cursor = conexion.cursor()  # Creo el cursor
+# ============================================================
+# BLOQUE 3 Y 4: BASE DE DATOS EXCLUSIVA DE SANCA
+# ============================================================
 
-# Base de datos para los cursos
-cursor.execute("""CREATE TABLE IF NOT EXISTS cursos(
-id INTEGER PRIMARY KEY AUTOINCREMENT,
-docente TEXT,
-especialidad TEXT,
-fecha_de_iniciacion TEXT,
-lugar_en_el_que_se_dicta TEXT,
-fecha_de_terminacion TEXT,
-dias TEXT,
-horarios TEXT,
-cantidad_de_modulo INTEGER,
-curso_numero INTEGER)""")  
+# ------------------------------------------------------------
+# 1. UBICACIÓN DE LA BASE DE DATOS
+# ------------------------------------------------------------
 
-# Creo tabla personas
-cursor.execute("""CREATE TABLE IF NOT EXISTS personas(
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    nombres TEXT,
-    apellido TEXT,
-    dni INTEGER UNIQUE NOT NULL, 
-    edad INTEGER, 
-    domicilio TEXT,
-    fecha_ingreso TEXT,
-    telefono TEXT, 
-    mail TEXT,
-    fecha_nacimiento TEXT,
-    contacto_emergencia TEXT, 
-    telefono_emergencia TEXT,
-    obra_social TEXT,
-    nacionalidad TEXT,
-    localidad TEXT,
-    foto BLOB)""")
+# Cuando se ejecuta como EXE, utilizo la carpeta del ejecutable.
+# Cuando se ejecuta como PY, utilizo la carpeta de este archivo.
+if getattr(sys, "frozen", False):
+    CARPETA_APLICACION = Path(sys.executable).resolve().parent
+else:
+    CARPETA_APLICACION = Path(__file__).resolve().parent
 
-cursor.execute("""CREATE TABLE IF NOT EXISTS pdf (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    nombre TEXT NOT NULL,
-    formato TEXT NOT NULL,
-    contenido BLOB NOT NULL, 
-    dni_personas INTEGER)""")  # Creo tabla pdf para fotos/documentos
+# Nombre de la base de datos propia de SANCA.
+NOMBRE_BASE_DATOS = (
+    "Centro de Formación Profesional 401  Escuela de oficios SANCA.db"
+)
 
-cursor.execute("""CREATE TABLE IF NOT EXISTS recursos(
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    nombre TEXT UNIQUE NOT NULL, 
-    contenido BLOB)""")  # Creo tabla recursos para las imagenes, usar IDEA de FEDE del otro proyecto asi no se guarda en lista
+# Primero busco la base de datos junto al programa.
+RUTA_BASE_DATOS = CARPETA_APLICACION / NOMBRE_BASE_DATOS
 
-cursor.execute("PRAGMA table_info(personas)")  # Obtengo info de las columnas
-_columnas_personas = {fila[1] for fila in cursor.fetchall()}  # Guardo los nombres de las columnas
+# Compatibilidad con la ubicación relativa utilizada por versiones anteriores:
+# si ya existe una base en la carpeta de trabajo, la reutilizo.
+RUTA_BASE_DATOS_ACTUAL = Path.cwd() / NOMBRE_BASE_DATOS
+if not RUTA_BASE_DATOS.is_file() and RUTA_BASE_DATOS_ACTUAL.is_file():
+    RUTA_BASE_DATOS = RUTA_BASE_DATOS_ACTUAL
 
-# BLOQUE 4: NAVAJA SUIZA, aca lo hice es una funcion que ayude a las consultas a la base de datos , por si se llega a consultar mal a la base de datos o no lo encuentra 
+
+# ------------------------------------------------------------
+# 2. ÚNICA CONEXIÓN SQLITE DE SANCA
+# ------------------------------------------------------------
+
+conexion = sqlite3.connect(str(RUTA_BASE_DATOS))
+cursor = conexion.cursor()
+
+
+# ------------------------------------------------------------
+# 3. FUNCIÓN PARA AGREGAR COLUMNAS SIN BORRAR INFORMACIÓN
+# ------------------------------------------------------------
+
 def agregar_columna_si_falta(tabla, columna, tipo):
-    cursor.execute(f"PRAGMA table_info({tabla})")
-    columnas = {fila[1] for fila in cursor.fetchall()}
+    """Agrega una columna únicamente cuando todavía no existe."""
 
-    if columna not in columnas:
+    tablas_permitidas = {"personas", "cursos", "pdf", "recursos"}
+    if tabla not in tablas_permitidas:
+        raise ValueError(f"Tabla no permitida: {tabla}")
+
+    cursor.execute(f"PRAGMA table_info({tabla})")
+    columnas_existentes = {fila[1] for fila in cursor.fetchall()}
+
+    if columna not in columnas_existentes:
         cursor.execute(f"ALTER TABLE {tabla} ADD COLUMN {columna} {tipo}")
         print(f"Columna agregada: {tabla}.{columna}")
 
-# Guardo primero las columnas originales para poder recuperar datos de nombres viejos.
-cursor.execute("PRAGMA table_info(personas)")
-_columnas_originales_personas = {fila[1] for fila in cursor.fetchall()}
 
-# Campos que necesita el programa para trabajar con personas.
-_columnas_necesarias_personas = {
+# ============================================================
+# TABLA 1: PERSONAS
+# ============================================================
+
+cursor.execute("""
+    CREATE TABLE IF NOT EXISTS personas (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        nombres TEXT,
+        apellido TEXT,
+        dni INTEGER UNIQUE NOT NULL,
+        edad INTEGER,
+        domicilio TEXT,
+        fecha_ingreso TEXT,
+        telefono TEXT,
+        mail TEXT,
+        fecha_nacimiento TEXT,
+        contacto_emergencia TEXT,
+        telefono_emergencia TEXT,
+        obra_social TEXT,
+        nacionalidad TEXT,
+        localidad TEXT,
+        foto BLOB
+    )
+""")
+
+# Mantengo también columnas adicionales presentes en versiones previas.
+columnas_personas = {
     "nombres": "TEXT",
     "apellido": "TEXT",
     "dni": "INTEGER",
@@ -101,166 +122,238 @@ _columnas_necesarias_personas = {
     "obra_social": "TEXT",
     "nacionalidad": "TEXT",
     "localidad": "TEXT",
-    "foto": "BLOB"
+    "foto": "BLOB",
+    "estado": "TEXT",
+    "consentimiento": "TEXT",
+    "fecha_egreso": "TEXT",
+    "tipo_egreso": "TEXT",
+    "motivo_egreso": "TEXT"
 }
 
-for nombre_columna, tipo_columna in _columnas_necesarias_personas.items():
+for nombre_columna, tipo_columna in columnas_personas.items():
     agregar_columna_si_falta("personas", nombre_columna, tipo_columna)
 
-# Si una versión anterior usaba otros nombres, copio esos valores al nombre actual.
+# Compatibilidad con nombres antiguos de columnas.
 cursor.execute("PRAGMA table_info(personas)")
 _columnas_personas = {fila[1] for fila in cursor.fetchall()}
 
 if "nombre" in _columnas_personas:
-    cursor.execute("UPDATE personas SET nombres = nombre WHERE (nombres IS NULL OR nombres = '') AND nombre IS NOT NULL")
+    cursor.execute("""
+        UPDATE personas
+        SET nombres = nombre
+        WHERE (nombres IS NULL OR nombres = '') AND nombre IS NOT NULL
+    """)
+
 if "direccion" in _columnas_personas:
-    cursor.execute("UPDATE personas SET domicilio = direccion WHERE (domicilio IS NULL OR domicilio = '') AND direccion IS NOT NULL")
+    cursor.execute("""
+        UPDATE personas
+        SET domicilio = direccion
+        WHERE (domicilio IS NULL OR domicilio = '') AND direccion IS NOT NULL
+    """)
+
 if "contacto_emergecia" in _columnas_personas:
-    cursor.execute("UPDATE personas SET contacto_emergencia = contacto_emergecia WHERE (contacto_emergencia IS NULL OR contacto_emergencia = '') AND contacto_emergecia IS NOT NULL")
+    cursor.execute("""
+        UPDATE personas
+        SET contacto_emergencia = contacto_emergecia
+        WHERE (contacto_emergencia IS NULL OR contacto_emergencia = '')
+          AND contacto_emergecia IS NOT NULL
+    """)
 
-# Corrijo también el nombre de la columna de cantidad de módulos en bases viejas.
-cursor.execute("PRAGMA table_info(cursos)")
-_columnas_cursos = {fila[1] for fila in cursor.fetchall()}
-if "cantidad_de_modulos" not in _columnas_cursos:
-    cursor.execute("ALTER TABLE cursos ADD COLUMN cantidad_de_modulos INTEGER")
-    if "cantidad_de_modulo" in _columnas_cursos:
-        cursor.execute("UPDATE cursos SET cantidad_de_modulos = cantidad_de_modulo WHERE cantidad_de_modulos IS NULL")
 
-# Me aseguro de que las columnas de la galería de archivos estén disponibles.
-for nombre_columna, tipo_columna in {
+# ============================================================
+# TABLA 2: CURSOS
+# ============================================================
+
+cursor.execute("""
+    CREATE TABLE IF NOT EXISTS cursos (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        docente TEXT,
+        especialidad TEXT,
+        fecha_de_iniciacion TEXT,
+        lugar_en_el_que_se_dicta TEXT,
+        fecha_de_terminacion TEXT,
+        dias TEXT,
+        horarios TEXT,
+        cantidad_de_modulo INTEGER,
+        cantidad_de_modulos INTEGER,
+        curso_numero INTEGER,
+        docente_nombres TEXT,
+        docente_apellido TEXT,
+        docente_especialidad TEXT,
+        tipo_documento TEXT,
+        numero_documento TEXT,
+        nacionalidad_docente TEXT,
+        domicilio_docente TEXT,
+        calle_numero_docente TEXT,
+        duracion TEXT,
+        establecimiento TEXT,
+        localidad TEXT
+    )
+""")
+
+columnas_cursos = {
+    # Campos utilizados por el formulario rápido.
+    "docente": "TEXT",
+    "especialidad": "TEXT",
+    "fecha_de_iniciacion": "TEXT",
+    "lugar_en_el_que_se_dicta": "TEXT",
+    "fecha_de_terminacion": "TEXT",
+    "dias": "TEXT",
+    "horarios": "TEXT",
+    "cantidad_de_modulo": "INTEGER",
+    "cantidad_de_modulos": "INTEGER",
+    "curso_numero": "INTEGER",
+
+    # Campos utilizados por la grilla completa.
+    "docente_nombres": "TEXT",
+    "docente_apellido": "TEXT",
+    "docente_especialidad": "TEXT",
+    "tipo_documento": "TEXT",
+    "numero_documento": "TEXT",
+    "nacionalidad_docente": "TEXT",
+    "domicilio_docente": "TEXT",
+    "calle_numero_docente": "TEXT",
+    "duracion": "TEXT",
+    "establecimiento": "TEXT",
+    "localidad": "TEXT"
+}
+
+for nombre_columna, tipo_columna in columnas_cursos.items():
+    agregar_columna_si_falta("cursos", nombre_columna, tipo_columna)
+
+# Migro el dato de la columna antigua, si corresponde.
+cursor.execute("""
+    UPDATE cursos
+    SET cantidad_de_modulos = cantidad_de_modulo
+    WHERE cantidad_de_modulos IS NULL
+""")
+
+
+# ============================================================
+# TABLA 3: PDF, IMÁGENES Y DOCUMENTOS DE PERSONAS
+# ============================================================
+
+cursor.execute("""
+    CREATE TABLE IF NOT EXISTS pdf (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        nombre TEXT NOT NULL,
+        formato TEXT NOT NULL,
+        contenido BLOB NOT NULL,
+        dni_personas INTEGER,
+        categoria TEXT NOT NULL DEFAULT 'Imagen',
+        ruta_archivo TEXT
+    )
+""")
+
+columnas_pdf = {
     "nombre": "TEXT",
     "formato": "TEXT",
     "contenido": "BLOB",
-    "dni_personas": "INTEGER"
-}.items():
+    "dni_personas": "INTEGER",
+    "categoria": "TEXT NOT NULL DEFAULT 'Imagen'",
+    "ruta_archivo": "TEXT"
+}
+
+for nombre_columna, tipo_columna in columnas_pdf.items():
     agregar_columna_si_falta("pdf", nombre_columna, tipo_columna)
 
-conexion.commit()  # Confirmo los cambios
 
-NOMBRE_BASE_DATOS = "PROYECTO_FINAL_45.db"
+# ============================================================
+# TABLA 4: RECURSOS
+# ============================================================
 
-def obtener_directorio_datos(plataforma=None, entorno=None, directorio_personal=None):
-    """Devuelve una carpeta de datos persistente para Windows, Linux o macOS."""
-    plataforma = plataforma or sys.platform
-    entorno = os.environ if entorno is None else entorno
-    directorio_personal = Path.home() if directorio_personal is None else Path(directorio_personal)
+cursor.execute("""
+    CREATE TABLE IF NOT EXISTS recursos (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        nombre TEXT UNIQUE NOT NULL,
+        contenido BLOB
+    )
+""")
 
-    if plataforma.startswith("win"):
-        base = Path(entorno.get("LOCALAPPDATA") or directorio_personal / "AppData" / "Local")
-    elif plataforma == "darwin":
-        base = directorio_personal / "Library" / "Application Support"
-    else:
-        xdg = entorno.get("XDG_DATA_HOME")
-        base = Path(xdg).expanduser() if xdg and Path(xdg).is_absolute() else directorio_personal / ".local" / "share"
-    return base / "CasaJovenes"
 
-def resolver_ruta_base_datos():
-    directorio_datos = obtener_directorio_datos()
-    directorio_datos.mkdir(parents=True, exist_ok=True)
-    ruta_destino = directorio_datos / NOMBRE_BASE_DATOS
-    if ruta_destino.exists():
-        return ruta_destino
+# ------------------------------------------------------------
+# 4. CONFIRMAR E INFORMAR LA CONEXIÓN
+# ------------------------------------------------------------
 
-    # Migración no destructiva desde las ubicaciones usadas por versiones anteriores.
-    directorio_app = Path(sys.executable).resolve().parent if getattr(sys, "frozen", False) else Path(__file__).resolve().parent
-    candidatos = (Path.cwd() / NOMBRE_BASE_DATOS, directorio_app / NOMBRE_BASE_DATOS)
-    vistos = set()
-    for origen in candidatos:
-        origen = origen.resolve()
-        if origen == ruta_destino.resolve() or origen in vistos:
-            continue
-        vistos.add(origen)
-        if origen.is_file():
-            conexion_origen = sqlite3.connect(str(origen))
-            conexion_destino = sqlite3.connect(str(ruta_destino))
-            try:
-                conexion_origen.backup(conexion_destino)
-            finally:
-                conexion_destino.close()
-                conexion_origen.close()
-            break
-    return ruta_destino
+conexion.commit()
 
-RUTA_BASE_DATOS = resolver_ruta_base_datos()
-conexion = sqlite3.connect(str(RUTA_BASE_DATOS))  # Abro o creo la base de datos en la carpeta de datos del usuario
-cursor = conexion.cursor()  # Creo el cursor
+print("========================================")
+print("SANCA - BASE DE DATOS CONECTADA")
+print("========================================")
+print(f"Archivo: {RUTA_BASE_DATOS}")
+print("Tablas: personas, cursos, pdf y recursos")
+print("========================================")
 
-cursor.execute("""CREATE TABLE IF NOT EXISTS personas(
-    id INTEGER PRIMARY KEY AUTOINCREMENT, nombre TEXT NOT NULL, apellido TEXT NOT NULL,
-    dni INTEGER UNIQUE NOT NULL, edad INTEGER, fecha_nacimiento TEXT, fecha_ingreso TEXT,
-    telefono TEXT, direccion TEXT, contacto_emergencia TEXT, telefono_emergencia TEXT,
-    obra_social TEXT, estado TEXT, consentimiento TEXT, foto BLOB)""")  # Creo tabla personas
 
-cursor.execute("""CREATE TABLE IF NOT EXISTS entrevistas(
-    id INTEGER PRIMARY KEY AUTOINCREMENT, nombre_profecional TEXT NOT NULL, apellido_profecional TEXT,
-    dni_profecional TEXT, matricula TEXT, especialidad TEXT, telefono_profecional TEXT,
-    email_profecional TEXT, activo_profecional TEXT, entrevista TEXT NOT NULL,
-    dni_paciente INTEGER NOT NULL, fecha_entrevista TEXT NOT NULL, hora_entrevista TEXT,
-    tipo_entrevista TEXT, proxima_sesion_entrevista TEXT)""")  # Creo tabla entrevistas
-
-cursor.execute("""CREATE TABLE IF NOT EXISTS pdf (
-    id INTEGER PRIMARY KEY AUTOINCREMENT, nombre TEXT NOT NULL, formato TEXT NOT NULL,
-    contenido BLOB NOT NULL, dni_personas INTEGER)""")  # Creo tabla pdf para fotos/documentos
-
-cursor.execute("""CREATE TABLE IF NOT EXISTS recursos(
-    id INTEGER PRIMARY KEY AUTOINCREMENT, nombre TEXT UNIQUE NOT NULL, contenido BLOB)""")  # Creo tabla recursos
-
-cursor.execute("PRAGMA table_info(personas)")  # Obtengo info de las columnas
-_columnas_personas = {fila[1] for fila in cursor.fetchall()}  # Guardo los nombres de las columnas
-
-for _col, _tipo in (("fecha_egreso", "TEXT"), ("tipo_egreso", "TEXT"), ("motivo_egreso", "TEXT")):
-    if _col not in _columnas_personas: cursor.execute(f"ALTER TABLE personas ADD COLUMN {_col} {_tipo}")  # Agrego columnas si no existen
-
-cursor.execute("PRAGMA table_info(pdf)")
-_columnas_pdf = {fila[1] for fila in cursor.fetchall()}
-for _col, _tipo in (("categoria", "TEXT NOT NULL DEFAULT 'Imagen'"), ("ruta_archivo", "TEXT")):
-    if _col not in _columnas_pdf:
-        cursor.execute(f"ALTER TABLE pdf ADD COLUMN {_col} {_tipo}")
-
-conexion.commit()  # Confirmo los cambios
+# ============================================================
+# 5. CARPETAS Y UTILIDADES DE LEGAJOS DE SANCA
+# ============================================================
 
 RUTA_LEGAJOS = RUTA_BASE_DATOS.parent / "Legajos"
 RUTA_LEGAJOS.mkdir(parents=True, exist_ok=True)
+
 
 def ruta_carpeta_legajo(dni):
     carpeta = RUTA_LEGAJOS / str(dni)
     carpeta.mkdir(parents=True, exist_ok=True)
     return carpeta
 
+
 def ruta_unica_en_carpeta(carpeta, nombre):
     nombre_seguro = Path(nombre).name or "documento"
     destino = carpeta / nombre_seguro
+
     if not destino.exists():
         return destino
+
     base, extension = destino.stem, destino.suffix
     contador = 2
+
     while True:
         candidato = carpeta / f"{base}_{contador}{extension}"
         if not candidato.exists():
             return candidato
         contador += 1
 
+
 def guardar_archivo_legajo(dni, ruta_origen, categoria):
     origen = Path(ruta_origen)
+
     if not origen.is_file():
         raise FileNotFoundError(f"No se encontró el archivo: {origen}")
+
     contenido = origen.read_bytes()
     if not contenido:
         raise ValueError("El archivo está vacío.")
+
     carpeta = ruta_carpeta_legajo(dni)
     destino = ruta_unica_en_carpeta(carpeta, origen.name)
+
     try:
         destino.write_bytes(contenido)
-        cursor.execute("""INSERT INTO pdf(nombre, formato, contenido, dni_personas, categoria, ruta_archivo)
-                          VALUES (?, ?, ?, ?, ?, ?)""",
-                       (destino.name, destino.suffix.lstrip(".").lower() or "bin", sqlite3.Binary(contenido),
-                        int(dni), categoria, str(destino)))
+        cursor.execute("""
+            INSERT INTO pdf(
+                nombre, formato, contenido, dni_personas, categoria, ruta_archivo
+            ) VALUES (?, ?, ?, ?, ?, ?)
+        """, (
+            destino.name,
+            destino.suffix.lstrip(".").lower() or "bin",
+            sqlite3.Binary(contenido),
+            int(dni),
+            categoria,
+            str(destino)
+        ))
         conexion.commit()
+
     except Exception:
-        try: destino.unlink(missing_ok=True)
-        except OSError: pass
+        try:
+            destino.unlink(missing_ok=True)
+        except OSError:
+            pass
         raise
+
     return cursor.lastrowid, destino
+
 
 def guardar_foto_perfil_en_carpeta(dni, contenido, nombre="foto_perfil.png"):
     carpeta = ruta_carpeta_legajo(dni)
@@ -269,35 +362,50 @@ def guardar_foto_perfil_en_carpeta(dni, contenido, nombre="foto_perfil.png"):
     destino.write_bytes(contenido)
     return destino
 
+
 def mover_carpeta_legajo(dni_anterior, dni_nuevo):
     origen = RUTA_LEGAJOS / str(dni_anterior)
+
     if not origen.is_dir():
         return
+
     destino = ruta_carpeta_legajo(dni_nuevo)
+
     for archivo in origen.iterdir():
         if not archivo.is_file():
             continue
+
         nuevo_archivo = ruta_unica_en_carpeta(destino, archivo.name)
         archivo.rename(nuevo_archivo)
-        cursor.execute("UPDATE pdf SET ruta_archivo = ? WHERE ruta_archivo = ?", (str(nuevo_archivo), str(archivo)))
-    try: origen.rmdir()
-    except OSError: pass
+
+        cursor.execute(
+            "UPDATE pdf SET ruta_archivo = ? WHERE ruta_archivo = ?",
+            (str(nuevo_archivo), str(archivo))
+        )
+
+    try:
+        origen.rmdir()
+    except OSError:
+        pass
+
     conexion.commit()
+
 
 def eliminar_carpeta_legajo(dni):
     carpeta = RUTA_LEGAJOS / str(dni)
     if carpeta.is_dir():
         shutil.rmtree(carpeta)
 
+
 def abrir_archivo_externo(ruta):
     ruta = str(ruta)
+
     if sys.platform.startswith("win"):
         os.startfile(ruta)
     elif sys.platform == "darwin":
         subprocess.Popen(["open", ruta])
     else:
         subprocess.Popen(["xdg-open", ruta])
-
 
 
 # BLOQUE 5: PALETA DE COLORES
@@ -507,10 +615,9 @@ def comprobar_fecha(entry_fecha):
 
 # BLOQUE 9: VENTANA DE CURSOS Y GRILLA
 ventana_cursos = None  # Variable global para controlar la instancia
-entry_cursos_ref = None
 
 def abrir_ventana_cursos():
-    global ventana_cursos, entry_cursos_ref
+    global ventana_cursos
     # Evita abrir ventanas duplicadas si ya está activa
     if ventana_cursos is not None and ventana_cursos.winfo_exists():
         ventana_cursos.lift()
@@ -524,102 +631,28 @@ def abrir_ventana_cursos():
     ventana_cursos.config(bg=COLOR_FONDO)
 
     def al_cerrar_cursos():
-        global ventana_cursos, entry_cursos_ref
-        entry_cursos_ref = None
+        global ventana_cursos
         if ventana_cursos is not None and ventana_cursos.winfo_exists():
             ventana_cursos.destroy()
         ventana_cursos = None
         
     # Layout principal de ventana_cursos:
-    # Fila 0: Barra superior (lista de cursos + carga rápida)
-    # Fila 1: Formulario clásico / edición por ID
-    # Fila 2: Cuerpo con dos paneles (Datos del docente | Ficha del curso)
-    # Fila 3: Botonera inferior unificada
+    # Fila 0: grillas de docente y curso + lista de cursos a la derecha.
+    # Fila 1: botones de acciones.
     ventana_cursos.columnconfigure(0, weight=1)
-    ventana_cursos.rowconfigure(2, weight=1)
+    ventana_cursos.rowconfigure(0, weight=1)
 
     # -----------------------------------------------------------------
-    # 1. ENCABEZADO + LISTADO DE CURSOS
-    # -----------------------------------------------------------------
-    encabezado = tk.Frame(
-        ventana_cursos,
-        bg=COLOR_NAVBAR,
-        bd=1,
-        relief="solid",
-        padx=10,
-        pady=8
-    )
-    encabezado.grid(row=0, column=0, sticky="ew", padx=15, pady=(12, 6))
-    encabezado.columnconfigure(1, weight=1)
-
-    tk.Label(
-        encabezado,
-        text="CURSOS REGISTRADOS (doble clic para ver detalle)",
-        bg=COLOR_NAVBAR,
-        fg=BLANCO,
-        font=("Segoe UI", 10, "bold")
-    ).grid(row=0, column=0, sticky="w", padx=(0, 10))
-
-    lista_cursos = Listbox(encabezado, height=4, font=("Segoe UI", 9))
-    lista_cursos.grid(row=0, column=1, sticky="ew")
-
-    # -----------------------------------------------------------------
-    # 2. FORMULARIO RÁPIDO / EDICIÓN POR ID
-    # -----------------------------------------------------------------
-    frame_form = tk.LabelFrame(
-        ventana_cursos,
-        text="Carga rápida / Edición por ID",
-        bg=COLOR_PANEL,
-        fg=COLOR_TITULO,
-        font=("Segoe UI", 9, "bold"),
-        padx=10,
-        pady=8
-    )
-    frame_form.grid(row=1, column=0, sticky="ew", padx=15, pady=6)
-    for col in range(6):
-        frame_form.columnconfigure(col, weight=1 if col % 2 == 1 else 0)
-
-    def crear_par_entry(parent, texto, fila, col_base):
-        tk.Label(parent, text=texto, bg=COLOR_PANEL, fg=COLOR_LABEL).grid(
-            row=fila, column=col_base, sticky="e", padx=(6, 3), pady=3
-        )
-        ent = tk.Entry(parent)
-        ent.grid(row=fila, column=col_base + 1, sticky="ew", padx=(0, 8), pady=3)
-        return ent
-
-    entry_especialidad = crear_par_entry(frame_form, "Nombre del curso:", 0, 0)
-    entry_docente = crear_par_entry(frame_form, "Docente:", 0, 2)
-    entry_curso_numero = crear_par_entry(frame_form, "Número del curso:", 0, 4)
-
-    entry_f_inicio = crear_par_entry(frame_form, "Fecha de inicio:", 1, 0)
-    entry_f_final = crear_par_entry(frame_form, "Fecha de finalización:", 1, 2)
-    entry_cantidad_de_modulos = crear_par_entry(frame_form, "Cantidad de módulos:", 1, 4)
-
-    entry_dias = crear_par_entry(frame_form, "Días:", 2, 0)
-    entry_horarios = crear_par_entry(frame_form, "Horarios:", 2, 2)
-    entry_lugar_en_que_se_dicta = crear_par_entry(frame_form, "Lugar en que se dicta:", 2, 4)
-
-    entry_cursos_ref = entry_especialidad
-
-    label_id = tk.Label(frame_form, text="ID para editar:", bg=COLOR_PANEL, fg=COLOR_LABEL)
-    label_id.grid(row=3, column=0, sticky="e", padx=(6, 3), pady=4)
-    label_id.grid_remove()
-
-    entry_id = tk.Entry(frame_form, width=10)
-    entry_id.grid(row=3, column=1, sticky="w", padx=(0, 8), pady=4)
-    entry_id.grid_remove()
-
-    # -----------------------------------------------------------------
-    # 3. CUERPO: DOS PANELES LADO A LADO (GRILLA DOCENTE Y CURSO)
+    # 3. CUERPO: GRILLA DEL DOCENTE, GRILLA DEL CURSO Y LISTA LATERAL
     # -----------------------------------------------------------------
     campos = {}
     variables = {}
-    menus_opcion = []
 
     cuerpo = tk.Frame(ventana_cursos, bg=COLOR_FONDO)
-    cuerpo.grid(row=2, column=0, sticky="nsew", padx=15, pady=6)
+    cuerpo.grid(row=0, column=0, sticky="nsew", padx=15, pady=(12, 6))
     cuerpo.columnconfigure(0, weight=1, uniform="paneles")
     cuerpo.columnconfigure(1, weight=1, uniform="paneles")
+    cuerpo.columnconfigure(2, weight=0, minsize=280)
     cuerpo.rowconfigure(0, weight=1)
 
     panel_docente = tk.Frame(
@@ -641,8 +674,64 @@ def abrir_ventana_cursos():
         padx=10,
         pady=8
     )
-    panel_curso.grid(row=0, column=1, sticky="nsew", padx=(6, 0))
+    panel_curso.grid(row=0, column=1, sticky="nsew", padx=6)
     panel_curso.columnconfigure(1, weight=1)
+
+    # -------------------------------------------------------------
+    # PANEL DERECHO: CURSOS REGISTRADOS
+    # -------------------------------------------------------------
+    panel_lista_cursos = tk.Frame(
+        cuerpo,
+        bg=COLOR_PANEL,
+        bd=1,
+        relief="solid",
+        padx=8,
+        pady=8
+    )
+    panel_lista_cursos.grid(row=0, column=2, sticky="nsew", padx=(6, 0))
+    panel_lista_cursos.columnconfigure(0, weight=1)
+    panel_lista_cursos.rowconfigure(1, weight=1)
+
+    tk.Label(
+        panel_lista_cursos,
+        text="CURSOS REGISTRADOS",
+        bg=COLOR_NAVBAR,
+        fg=BLANCO,
+        font=("Segoe UI", 10, "bold"),
+        anchor="center",
+        pady=7
+    ).grid(row=0, column=0, sticky="ew", pady=(0, 8))
+
+    marco_lista_cursos = tk.Frame(panel_lista_cursos, bg=COLOR_PANEL)
+    marco_lista_cursos.grid(row=1, column=0, sticky="nsew")
+    marco_lista_cursos.columnconfigure(0, weight=1)
+    marco_lista_cursos.rowconfigure(0, weight=1)
+
+    scroll_cursos = tk.Scrollbar(marco_lista_cursos, orient="vertical")
+    scroll_cursos.grid(row=0, column=1, sticky="ns")
+
+    lista_cursos = Listbox(
+        marco_lista_cursos,
+        height=20,
+        font=("Segoe UI", 9),
+        bg=BLANCO,
+        fg=COLOR_TITULO,
+        selectbackground=AZUL_SERENO,
+        selectforeground=BLANCO,
+        yscrollcommand=scroll_cursos.set,
+        activestyle="none"
+    )
+    lista_cursos.grid(row=0, column=0, sticky="nsew")
+    scroll_cursos.config(command=lista_cursos.yview)
+
+    tk.Label(
+        panel_lista_cursos,
+        text="Doble clic para ver el detalle",
+        bg=COLOR_PANEL,
+        fg=COLOR_LABEL,
+        font=("Segoe UI", 8),
+        anchor="w"
+    ).grid(row=2, column=0, sticky="ew", pady=(6, 0))
 
     tk.Label(
         panel_docente,
@@ -693,7 +782,6 @@ def abrir_ventana_cursos():
             )
             control.grid(row=fila, column=1, sticky="ew", ipady=1)
             variables[clave] = variable
-            menus_opcion.append(control)
         else:
             control = tk.Entry(
                 panel,
@@ -726,7 +814,7 @@ def abrir_ventana_cursos():
             etiqueta, clave = datos_campo
             crear_campo(panel_docente, numero_fila, etiqueta, clave)
 
-    # Claves prefijadas con "grilla_" para no pisar el formulario superior
+    # Campos correspondientes a la ficha del curso
     campos_curso = [
         ("Nombre del curso / especialidad", "grilla_especialidad"),
         ("Días de cursada", "grilla_dias"),
@@ -744,309 +832,469 @@ def abrir_ventana_cursos():
     # -----------------------------------------------------------------
     # 4. FUNCIONES DE DATOS Y EVENTOS
     # -----------------------------------------------------------------
+
+    # Mantengo los ID separados del texto visible en el Listbox.
+    # Así el programa no depende del formato que se muestra al usuario.
+    ids_cursos_lista = []
+    curso_en_edicion = {"id": None}
+
     def obtener_id_seleccionado():
+        """Devuelve el ID del curso seleccionado en la lista lateral."""
         seleccion = lista_cursos.curselection()
         if not seleccion:
             return None
-        texto = lista_cursos.get(seleccion[0])
-        if "ID " not in texto:
+
+        indice = seleccion[0]
+        if indice < 0 or indice >= len(ids_cursos_lista):
             return None
-        try:
-            return int(texto.split("ID ")[1].strip())
-        except ValueError:
-            return None
+
+        return ids_cursos_lista[indice]
 
     def refrescar_lista_cursos():
+        """Vuelve a consultar SQLite y actualiza el Listbox de cursos."""
         lista_cursos.delete(0, tk.END)
-        cursor.execute("SELECT id, especialidad FROM cursos ORDER BY id DESC, especialidad")
-        for curso_id, esp in cursor.fetchall():
-            lista_cursos.insert(tk.END, f"{esp} / ID {curso_id}")
+        ids_cursos_lista.clear()
 
-    def detalles_curso(event=None):
-        id_c = obtener_id_seleccionado()
-        if id_c is None:
-            return
+        cursor.execute("""
+            SELECT id, especialidad, docente
+            FROM cursos
+            ORDER BY id DESC
+        """)
 
-        cursor.execute(
-            """SELECT especialidad, fecha_de_iniciacion, lugar_en_el_que_se_dicta,
-                      fecha_de_terminacion, dias, horarios, docente,
-                      cantidad_de_modulos, curso_numero
-               FROM cursos WHERE id = ?""",
-            (id_c,)
-        )
-        fila = cursor.fetchone()
-        if not fila:
-            messagebox.showinfo("Sin resultados", "No se encontró ese curso.", parent=ventana_cursos)
-            refrescar_lista_cursos()
-            return
-
-        ventana_detalle = Toplevel(ventana_cursos)
-        ventana_detalle.title(f"Detalle del curso #{id_c}")
-        ventana_detalle.geometry("560x480")
-        ventana_detalle.config(bg=COLOR_FONDO)
-
-        info = [
-            ("ID", id_c),
-            ("Curso", fila[0] or "-"),
-            ("Docente", fila[6] or "-"),
-            ("Fecha de inicio", fila[1] or "-"),
-            ("Fecha de terminación", fila[3] or "-"),
-            ("Días", fila[4] or "-"),
-            ("Horarios", fila[5] or "-"),
-            ("Cantidad de módulos", fila[7] if fila[7] is not None else "-"),
-            ("Número del curso", fila[8] if fila[8] is not None else "-"),
-            ("Lugar en que se dicta", fila[2] or "-"),
-        ]
-        for idx, (etiqueta, valor) in enumerate(info):
-            tk.Label(
-                ventana_detalle,
-                text=f"{etiqueta}:  {valor}",
-                bg=COLOR_FONDO,
-                fg=COLOR_TITULO,
-                font=("Segoe UI", 10)
-            ).grid(row=idx, column=0, sticky="w", padx=14, pady=6)
-
-    lista_cursos.bind("<Double-Button-1>", detalles_curso)
-
-    def grids():
-        label_id.grid()
-        entry_id.grid()
-        boton_cargar_datos.grid()
-        boton_para_editar.grid()
-        id_sel = obtener_id_seleccionado()
-        if id_sel is not None and not entry_id.get().strip():
-            entry_id.insert(0, str(id_sel))
-
-    def grids_remove():
-        label_id.grid_remove()
-        entry_id.delete(0, tk.END)
-        entry_id.grid_remove()
-        boton_cargar_datos.grid_remove()
-        boton_para_editar.grid_remove()
-
-    def agregar_curso():
-        especialidad = entry_especialidad.get().strip()
-        f_inicio = comprobar_fecha(entry_f_inicio)
-        lugar = entry_lugar_en_que_se_dicta.get().strip()
-        f_final = comprobar_fecha(entry_f_final)
-        dias = entry_dias.get().strip()
-        horarios = entry_horarios.get().strip()
-        docente = entry_docente.get().strip()
-        modulos_str = entry_cantidad_de_modulos.get().strip()
-        numero_str = entry_curso_numero.get().strip()
-
-        if not especialidad:
-            messagebox.showwarning("Faltan datos", "Escribí el nombre del curso.", parent=ventana_cursos)
-            return
-        if not numero_str.isdigit():
-            messagebox.showwarning("Dato inválido", "El número del curso debe ser numérico.", parent=ventana_cursos)
-            return
-        if modulos_str and not modulos_str.isdigit():
-            messagebox.showwarning("Dato inválido", "La cantidad de módulos debe ser numérica.", parent=ventana_cursos)
-            return
-
-        cantidad_de_modulos = int(modulos_str) if modulos_str else None
-        curso_numero = int(numero_str)
-
-        try:
-            cursor.execute(
-                """INSERT INTO cursos(
-                       especialidad, fecha_de_iniciacion, lugar_en_el_que_se_dicta,
-                       fecha_de_terminacion, dias, horarios, docente,
-                       cantidad_de_modulos, curso_numero
-                   ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-                (especialidad, f_inicio, lugar, f_final, dias, horarios, docente, cantidad_de_modulos, curso_numero)
+        for curso_id, especialidad, docente in cursor.fetchall():
+            ids_cursos_lista.append(curso_id)
+            texto = (
+                f"ID {curso_id} | "
+                f"{especialidad or 'Curso sin nombre'} | "
+                f"Docente: {docente or 'Sin asignar'}"
             )
-            conexion.commit()
-            grids_remove()
-            refrescar_lista_cursos()
-            messagebox.showinfo("Curso guardado", "El curso se agregó correctamente.", parent=ventana_cursos)
-        except sqlite3.Error as error:
-            conexion.rollback()
-            messagebox.showerror("Error al guardar", f"No se pudo guardar el curso:\n{error}", parent=ventana_cursos)
+            lista_cursos.insert(tk.END, texto)
 
-    def eliminar_curso():
-        id_c = obtener_id_seleccionado()
-        if id_c is None:
-            messagebox.showwarning("Atención", "Seleccioná un curso de la lista para eliminar.", parent=ventana_cursos)
-            return
-
-        try:
-            cursor.execute("DELETE FROM cursos WHERE id = ?", (id_c,))
-            conexion.commit()
-            grids_remove()
-            refrescar_lista_cursos()
-        except sqlite3.Error as error:
-            conexion.rollback()
-            messagebox.showerror("Error al eliminar", f"No se pudo eliminar el curso:\n{error}", parent=ventana_cursos)
-
-    def cargar_datos_curso():
-        raw_id = entry_id.get().strip()
-        if not raw_id.isdigit():
-            messagebox.showwarning("ID inválido", "Ingresá un ID numérico para cargar.", parent=ventana_cursos)
-            return
-        id_c = int(raw_id)
-
-        cursor.execute(
-            """SELECT especialidad, fecha_de_iniciacion, lugar_en_el_que_se_dicta,
-                      fecha_de_terminacion, dias, horarios, docente,
-                      cantidad_de_modulos, curso_numero
-               FROM cursos WHERE id = ?""",
-            (id_c,)
-        )
-        fila = cursor.fetchone()
-        if not fila:
-            messagebox.showinfo("Sin resultados", f"No existe ningún curso con ID {id_c}.", parent=ventana_cursos)
-            return
-
-        def set_entry(widget, val):
-            widget.delete(0, tk.END)
-            if val is not None:
-                widget.insert(0, str(val))
-
-        set_entry(entry_especialidad, fila[0])
-        set_entry(entry_f_inicio, fila[1])
-        set_entry(entry_lugar_en_que_se_dicta, fila[2])
-        set_entry(entry_f_final, fila[3])
-        set_entry(entry_dias, fila[4])
-        set_entry(entry_horarios, fila[5])
-        set_entry(entry_docente, fila[6])
-        set_entry(entry_cantidad_de_modulos, fila[7])
-        set_entry(entry_curso_numero, fila[8])
-
-    def editar_curso():
-        raw_id = entry_id.get().strip()
-        if not raw_id.isdigit():
-            messagebox.showwarning("ID inválido", "Ingresá un ID numérico para editar.", parent=ventana_cursos)
-            return
-        id_c = int(raw_id)
-
-        especialidad = entry_especialidad.get().strip()
-        f_inicio = comprobar_fecha(entry_f_inicio)
-        lugar = entry_lugar_en_que_se_dicta.get().strip()
-        f_final = comprobar_fecha(entry_f_final)
-        dias = entry_dias.get().strip()
-        horarios = entry_horarios.get().strip()
-        docente = entry_docente.get().strip()
-        modulos_str = entry_cantidad_de_modulos.get().strip()
-        numero_str = entry_curso_numero.get().strip()
-
-        if not especialidad or not numero_str.isdigit():
-            messagebox.showwarning("Faltan datos", "Completá el nombre y el número numérico del curso.", parent=ventana_cursos)
-            return
-        if modulos_str and not modulos_str.isdigit():
-            messagebox.showwarning("Dato inválido", "La cantidad de módulos debe ser numérica.", parent=ventana_cursos)
-            return
-
-        cantidad_de_modulos = int(modulos_str) if modulos_str else None
-        curso_numero = int(numero_str)
-
-        try:
-            cursor.execute(
-                """UPDATE cursos
-                   SET especialidad = ?, fecha_de_iniciacion = ?, lugar_en_el_que_se_dicta = ?,
-                       fecha_de_terminacion = ?, dias = ?, horarios = ?, docente = ?,
-                       cantidad_de_modulos = ?, curso_numero = ?
-                   WHERE id = ?""",
-                (especialidad, f_inicio, lugar, f_final, dias, horarios, docente, cantidad_de_modulos, curso_numero, id_c)
-            )
-            conexion.commit()
-            refrescar_lista_cursos()
-            messagebox.showinfo("Curso actualizado", "Los datos del curso se actualizaron correctamente.", parent=ventana_cursos)
-        except sqlite3.Error as error:
-            conexion.rollback()
-            messagebox.showerror("Error al editar", f"No se pudo modificar el curso:\n{error}", parent=ventana_cursos)
     def obtener_valor(clave):
-        """Devuelve el texto escrito o la opción seleccionada."""
+        """Devuelve el texto escrito o la opción seleccionada en la grilla."""
         if clave in variables:
             return variables[clave].get().strip()
         return campos[clave].get().strip()
 
+    def leer_datos_grilla():
+        """Recopila y valida los datos de las dos grillas."""
+        datos = {
+            "docente_nombres": obtener_valor("docente_nombres"),
+            "docente_apellido": obtener_valor("docente_apellido"),
+            "docente_especialidad": obtener_valor("docente_especialidad"),
+            "tipo_documento": obtener_valor("tipo_documento"),
+            "numero_documento": obtener_valor("numero_documento"),
+            "nacionalidad_docente": obtener_valor("nacionalidad_docente"),
+            "domicilio_docente": obtener_valor("domicilio_docente"),
+            "calle_numero_docente": obtener_valor("calle_numero_docente"),
+            "especialidad": obtener_valor("grilla_especialidad"),
+            "dias": obtener_valor("grilla_dias"),
+            "horarios": obtener_valor("grilla_horarios"),
+            "duracion": obtener_valor("grilla_duracion"),
+            "establecimiento": obtener_valor("grilla_establecimiento"),
+            "fecha_de_iniciacion": obtener_valor("grilla_fecha_de_iniciacion"),
+            "lugar_en_el_que_se_dicta": obtener_valor("grilla_lugar_en_el_que_se_dicta"),
+            "localidad": obtener_valor("grilla_localidad")
+        }
+
+        if not datos["docente_nombres"] or not datos["docente_apellido"]:
+            messagebox.showwarning(
+                "Datos incompletos",
+                "Completá el nombre y el apellido del docente.",
+                parent=ventana_cursos
+            )
+            return None
+
+        if not datos["numero_documento"]:
+            messagebox.showwarning(
+                "Falta el documento",
+                "Ingresá el número del documento del docente.",
+                parent=ventana_cursos
+            )
+            return None
+
+        if not datos["especialidad"]:
+            messagebox.showwarning(
+                "Falta el curso",
+                "Ingresá el nombre o especialidad del curso.",
+                parent=ventana_cursos
+            )
+            return None
+
+        datos["docente"] = (
+            f"{datos['docente_nombres']} {datos['docente_apellido']}".strip()
+        )
+        return datos
+
     def limpiar_grilla():
-        """Vacía las celdas para poder cargar otro curso."""
+        """Vacía las dos grillas y sale del modo de edición."""
         for control in campos.values():
             control.delete(0, tk.END)
 
-        # Restablezco el tipo de documento a DNI.
         if "tipo_documento" in variables:
             variables["tipo_documento"].set("DNI")
 
-        # Devuelvo el cursor al primer campo.
+        curso_en_edicion["id"] = None
+        boton_cargar_datos.grid_remove()
+        boton_para_editar.grid_remove()
         campos["docente_nombres"].focus_set()
 
-    def guardar_ficha_curso():
-        """Guarda la ficha completa en la tabla cursos de SQLite."""
+    def grids():
+        """Activa las opciones para cargar y editar un curso existente."""
+        # Al entrar al modo edición, primero hay que cargar un registro.
+        curso_en_edicion["id"] = None
+        boton_cargar_datos.grid()
+        boton_para_editar.grid()
 
-        # Recupero todos los valores de la grilla.
-        docente_nombres = obtener_valor("docente_nombres")
-        docente_apellido = obtener_valor("docente_apellido")
-        docente_especialidad = obtener_valor("docente_especialidad")
-        tipo_documento = obtener_valor("tipo_documento")
-        numero_documento = obtener_valor("numero_documento")
-        nacionalidad_docente = obtener_valor("nacionalidad_docente")
-        domicilio_docente = obtener_valor("domicilio_docente")
-        calle_numero_docente = obtener_valor("calle_numero_docente")
+    def grids_remove():
+        """Oculta los controles específicos del modo de edición."""
+        boton_cargar_datos.grid_remove()
+        boton_para_editar.grid_remove()
+        curso_en_edicion["id"] = None
 
-        especialidad = obtener_valor("grilla_especialidad")
-        dias = obtener_valor("grilla_dias")
-        horarios = obtener_valor("grilla_horarios")
-        duracion = obtener_valor("grilla_duracion")
-        establecimiento = obtener_valor("grilla_establecimiento")
-        fecha_de_iniciacion = obtener_valor("grilla_fecha_de_iniciacion")
-        lugar_en_el_que_se_dicta = obtener_valor("grilla_lugar_en_el_que_se_dicta")
-        localidad = obtener_valor("grilla_localidad")
-
-        # Compruebo que estén los datos básicos para identificar la ficha.
-        if not docente_nombres or not docente_apellido:
-            messagebox.showwarning("Datos incompletos", "Completá el nombre y el apellido del docente.", parent=ventana_cursos)
+    def cargar_datos_curso():
+        """Carga en las grillas los datos del curso seleccionado."""
+        id_curso = obtener_id_seleccionado()
+        if id_curso is None:
+            messagebox.showwarning(
+                "Seleccioná un curso",
+                "Elegí un curso de la lista de la derecha antes de cargar sus datos.",
+                parent=ventana_cursos
+            )
             return
 
-        if not numero_documento:
-            messagebox.showwarning("Falta el documento", "Ingresá el número del documento del docente.", parent=ventana_cursos)
+        cursor.execute("""
+            SELECT
+                docente_nombres,
+                docente_apellido,
+                docente_especialidad,
+                tipo_documento,
+                numero_documento,
+                nacionalidad_docente,
+                domicilio_docente,
+                calle_numero_docente,
+                especialidad,
+                dias,
+                horarios,
+                duracion,
+                establecimiento,
+                fecha_de_iniciacion,
+                lugar_en_el_que_se_dicta,
+                localidad
+            FROM cursos
+            WHERE id = ?
+        """, (id_curso,))
+
+        fila = cursor.fetchone()
+        if not fila:
+            messagebox.showinfo(
+                "Sin resultados",
+                f"No se encontró el curso con ID {id_curso}.",
+                parent=ventana_cursos
+            )
+            refrescar_lista_cursos()
             return
 
-        if not especialidad:
-            messagebox.showwarning("Falta el curso", "Ingresá el nombre o especialidad del curso.", parent=ventana_cursos)
-            return
+        claves = [
+            "docente_nombres",
+            "docente_apellido",
+            "docente_especialidad",
+            "tipo_documento",
+            "numero_documento",
+            "nacionalidad_docente",
+            "domicilio_docente",
+            "calle_numero_docente",
+            "grilla_especialidad",
+            "grilla_dias",
+            "grilla_horarios",
+            "grilla_duracion",
+            "grilla_establecimiento",
+            "grilla_fecha_de_iniciacion",
+            "grilla_lugar_en_el_que_se_dicta",
+            "grilla_localidad"
+        ]
 
-        # Mantengo el campo antiguo 'docente' para que sigan funcionando
-        # las consultas y pantallas anteriores de tu programa SANCA.
-        docente_completo = f"{docente_nombres} {docente_apellido}".strip()
+        for clave, valor in zip(claves, fila):
+            if clave in variables:
+                variables[clave].set(valor or "")
+            else:
+                control = campos[clave]
+                control.delete(0, tk.END)
+                if valor is not None:
+                    control.insert(0, str(valor))
+
+        curso_en_edicion["id"] = id_curso
+        campos["docente_nombres"].focus_set()
+
+        messagebox.showinfo(
+            "Curso cargado",
+            f"Los datos del curso ID {id_curso} se cargaron en las grillas.",
+            parent=ventana_cursos
+        )
+
+    def agregar_curso():
+        """Registra un curso nuevo utilizando exclusivamente las grillas."""
+        datos = leer_datos_grilla()
+        if datos is None:
+            return
 
         try:
-            cursor.execute(
-                """INSERT INTO cursos (
-                       docente, docente_nombres, docente_apellido, docente_especialidad,
-                       tipo_documento, numero_documento, nacionalidad_docente,
-                       domicilio_docente, calle_numero_docente, especialidad,
-                       fecha_de_iniciacion, lugar_en_el_que_se_dicta, dias, horarios,
-                       duracion, establecimiento, localidad
-                   ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-                (
-                    docente_completo, docente_nombres, docente_apellido, docente_especialidad,
-                    tipo_documento, numero_documento, nacionalidad_docente,
-                    domicilio_docente, calle_numero_docente, especialidad,
-                    fecha_de_iniciacion, lugar_en_el_que_se_dicta, dias, horarios,
-                    duracion, establecimiento, localidad
+            cursor.execute("""
+                INSERT INTO cursos (
+                    docente,
+                    docente_nombres,
+                    docente_apellido,
+                    docente_especialidad,
+                    tipo_documento,
+                    numero_documento,
+                    nacionalidad_docente,
+                    domicilio_docente,
+                    calle_numero_docente,
+                    especialidad,
+                    fecha_de_iniciacion,
+                    lugar_en_el_que_se_dicta,
+                    dias,
+                    horarios,
+                    duracion,
+                    establecimiento,
+                    localidad
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (
+                datos["docente"],
+                datos["docente_nombres"],
+                datos["docente_apellido"],
+                datos["docente_especialidad"],
+                datos["tipo_documento"],
+                datos["numero_documento"],
+                datos["nacionalidad_docente"],
+                datos["domicilio_docente"],
+                datos["calle_numero_docente"],
+                datos["especialidad"],
+                datos["fecha_de_iniciacion"],
+                datos["lugar_en_el_que_se_dicta"],
+                datos["dias"],
+                datos["horarios"],
+                datos["duracion"],
+                datos["establecimiento"],
+                datos["localidad"]
+            ))
 
             conexion.commit()
-
+            nuevo_id = cursor.lastrowid
             refrescar_lista_cursos()
-
             limpiar_grilla()
 
-            messagebox.showinfo("Ficha guardada", "La ficha del curso se guardó correctamente.", parent=ventana_cursos)
+            messagebox.showinfo(
+                "Curso agregado",
+                f"El curso se registró correctamente. ID asignado: {nuevo_id}.",
+                parent=ventana_cursos
+            )
 
         except sqlite3.Error as error:
-            # Si ocurre un error, deshago la operación pendiente.
             conexion.rollback()
-            messagebox.showerror("Error al guardar", f"No se pudo guardar la ficha del curso:\n{error}", parent=ventana_cursos)
+            messagebox.showerror(
+                "Error al agregar",
+                f"No se pudo guardar el curso:\n{error}",
+                parent=ventana_cursos
+            )
+
+    def editar_curso():
+        """Actualiza el curso que previamente se cargó desde el Listbox."""
+        id_curso = curso_en_edicion["id"]
+        if id_curso is None:
+            messagebox.showwarning(
+                "Primero cargá un curso",
+                "Presioná 'Cargar datos de curso' después de seleccionar un curso.",
+                parent=ventana_cursos
+            )
+            return
+
+        datos = leer_datos_grilla()
+        if datos is None:
+            return
+
+        try:
+            cursor.execute("""
+                UPDATE cursos SET
+                    docente = ?,
+                    docente_nombres = ?,
+                    docente_apellido = ?,
+                    docente_especialidad = ?,
+                    tipo_documento = ?,
+                    numero_documento = ?,
+                    nacionalidad_docente = ?,
+                    domicilio_docente = ?,
+                    calle_numero_docente = ?,
+                    especialidad = ?,
+                    fecha_de_iniciacion = ?,
+                    lugar_en_el_que_se_dicta = ?,
+                    dias = ?,
+                    horarios = ?,
+                    duracion = ?,
+                    establecimiento = ?,
+                    localidad = ?
+                WHERE id = ?
+            """, (
+                datos["docente"],
+                datos["docente_nombres"],
+                datos["docente_apellido"],
+                datos["docente_especialidad"],
+                datos["tipo_documento"],
+                datos["numero_documento"],
+                datos["nacionalidad_docente"],
+                datos["domicilio_docente"],
+                datos["calle_numero_docente"],
+                datos["especialidad"],
+                datos["fecha_de_iniciacion"],
+                datos["lugar_en_el_que_se_dicta"],
+                datos["dias"],
+                datos["horarios"],
+                datos["duracion"],
+                datos["establecimiento"],
+                datos["localidad"],
+                id_curso
+            ))
+
+            if cursor.rowcount == 0:
+                conexion.rollback()
+                messagebox.showwarning(
+                    "Curso no encontrado",
+                    f"No existe un curso con ID {id_curso}.",
+                    parent=ventana_cursos
+                )
+                refrescar_lista_cursos()
+                return
+
+            conexion.commit()
+            refrescar_lista_cursos()
+            limpiar_grilla()
+
+            messagebox.showinfo(
+                "Curso actualizado",
+                f"Los datos del curso ID {id_curso} se actualizaron correctamente.",
+                parent=ventana_cursos
+            )
+
+        except sqlite3.Error as error:
+            conexion.rollback()
+            messagebox.showerror(
+                "Error al editar",
+                f"No se pudo modificar el curso:\n{error}",
+                parent=ventana_cursos
+            )
+
+    def eliminar_curso():
+        """Elimina el curso seleccionado en la lista lateral, con confirmación."""
+        id_curso = obtener_id_seleccionado()
+
+        if id_curso is None:
+            messagebox.showwarning(
+                "Atención",
+                "Seleccioná un curso de la lista para eliminar.",
+                parent=ventana_cursos
+            )
+            return
+
+        confirmar = messagebox.askyesno(
+            "Confirmar eliminación",
+            f"¿Querés eliminar el curso ID {id_curso}? Esta acción no se puede deshacer.",
+            parent=ventana_cursos
+        )
+        if not confirmar:
+            return
+
+        try:
+            cursor.execute("DELETE FROM cursos WHERE id = ?", (id_curso,))
+            conexion.commit()
+            refrescar_lista_cursos()
+
+            if curso_en_edicion["id"] == id_curso:
+                limpiar_grilla()
+
+            messagebox.showinfo(
+                "Curso eliminado",
+                f"El curso ID {id_curso} se eliminó correctamente.",
+                parent=ventana_cursos
+            )
+
+        except sqlite3.Error as error:
+            conexion.rollback()
+            messagebox.showerror(
+                "Error al eliminar",
+                f"No se pudo eliminar el curso:\n{error}",
+                parent=ventana_cursos
+            )
+
+    def detalles_curso(event=None):
+        """Muestra los datos de la grilla del curso seleccionado."""
+        id_curso = obtener_id_seleccionado()
+        if id_curso is None:
+            return
+
+        cursor.execute("""
+            SELECT
+                docente_nombres, docente_apellido, docente_especialidad,
+                tipo_documento, numero_documento, nacionalidad_docente,
+                domicilio_docente, calle_numero_docente, especialidad,
+                dias, horarios, duracion, establecimiento,
+                fecha_de_iniciacion, lugar_en_el_que_se_dicta, localidad
+            FROM cursos
+            WHERE id = ?
+        """, (id_curso,))
+
+        fila = cursor.fetchone()
+        if not fila:
+            messagebox.showinfo(
+                "Sin resultados",
+                "No se encontró ese curso.",
+                parent=ventana_cursos
+            )
+            refrescar_lista_cursos()
+            return
+
+        etiquetas = [
+            "Nombre del docente", "Apellido del docente",
+            "Especialidad del docente", "Tipo de documento",
+            "Número de documento", "Nacionalidad",
+            "Domicilio / barrio", "Calle y número",
+            "Nombre del curso", "Días de cursada", "Horarios",
+            "Duración", "Establecimiento", "Fecha de iniciación",
+            "Lugar en el que se dicta", "Localidad"
+        ]
+
+        ventana_detalle = Toplevel(ventana_cursos)
+        ventana_detalle.title(f"Detalle del curso #{id_curso}")
+        ventana_detalle.geometry("650x620")
+        ventana_detalle.config(bg=COLOR_FONDO)
+        ventana_detalle.columnconfigure(0, weight=1)
+
+        tk.Label(
+            ventana_detalle,
+            text=f"FICHA DEL CURSO — ID {id_curso}",
+            bg=COLOR_NAVBAR,
+            fg=BLANCO,
+            font=("Segoe UI", 12, "bold"),
+            pady=10
+        ).grid(row=0, column=0, sticky="ew", padx=12, pady=12)
+
+        for indice, (etiqueta, valor) in enumerate(zip(etiquetas, fila), start=1):
+            tk.Label(
+                ventana_detalle,
+                text=f"{etiqueta}:  {valor if valor not in (None, '') else '-'}",
+                bg=COLOR_FONDO,
+                fg=COLOR_TITULO,
+                font=("Segoe UI", 10),
+                anchor="w",
+                wraplength=600
+            ).grid(row=indice, column=0, sticky="ew", padx=16, pady=5)
+
+    lista_cursos.bind("<Double-Button-1>", detalles_curso)
 
     # -----------------------------------------------------------------
-    # 5. BOTONERA INFERIOR CONSOLIDADA (MISMA FILA, COLUMNAS ORDENADAS)
+    # 5. BOTONERA INFERIOR: ACCIONES ORIGINALES SOBRE LAS GRILLAS
     # -----------------------------------------------------------------
     panel_botones = tk.Frame(ventana_cursos, bg=COLOR_FONDO)
-    panel_botones.grid(row=3, column=0, sticky="ew", padx=15, pady=(6, 12))
+    panel_botones.grid(row=1, column=0, sticky="ew", padx=15, pady=(6, 12))
 
     btn_cfg = dict(
         bg=AMARILLO,
@@ -1059,32 +1307,47 @@ def abrir_ventana_cursos():
         pady=5
     )
 
-    tk.Button(panel_botones, text="Agregar", command=agregar_curso, **btn_cfg).grid(row=0, column=0, padx=4)
-    tk.Button(panel_botones, text="Editar cursos", command=grids, **btn_cfg).grid(row=0, column=1, padx=4)
+    # Agregar: guarda un curso nuevo con los datos de ambas grillas.
+    tk.Button(
+        panel_botones,
+        text="Agregar",
+        command=agregar_curso,
+        **btn_cfg
+    ).grid(row=0, column=0, padx=4)
 
-    boton_cargar_datos = tk.Button(panel_botones, text="Cargar datos de curso", command=cargar_datos_curso, **btn_cfg)
+    # Editar cursos: habilita Cargar datos y EDITAR.
+    tk.Button(
+        panel_botones,
+        text="Editar cursos",
+        command=grids,
+        **btn_cfg
+    ).grid(row=0, column=1, padx=4)
+
+    boton_cargar_datos = tk.Button(
+        panel_botones,
+        text="Cargar datos de curso",
+        command=cargar_datos_curso,
+        **btn_cfg
+    )
     boton_cargar_datos.grid(row=0, column=2, padx=4)
     boton_cargar_datos.grid_remove()
 
-    boton_para_editar = tk.Button(panel_botones, text="EDITAR", command=editar_curso, **btn_cfg)
+    boton_para_editar = tk.Button(
+        panel_botones,
+        text="EDITAR",
+        command=editar_curso,
+        **btn_cfg
+    )
     boton_para_editar.grid(row=0, column=3, padx=4)
     boton_para_editar.grid_remove()
 
-    tk.Button(panel_botones, text="Eliminar", command=eliminar_curso, **btn_cfg).grid(row=0, column=4, padx=4)
-
+    # Eliminar: borra el curso seleccionado en el Listbox de la derecha.
     tk.Button(
         panel_botones,
-        text="GUARDAR FICHA",
-        bg=COLOR_BOTON,
-        fg=COLOR_BOTON_TEXTO,
-        activebackground=AZUL_PETROLEO,
-        activeforeground=BLANCO,
-        relief="flat",
-        font=("Segoe UI", 9, "bold"),
-        padx=10,
-        pady=5,
-        command=guardar_ficha_curso
-    ).grid(row=0, column=5, padx=(18, 4))
+        text="Eliminar cursos",
+        command=eliminar_curso,
+        **btn_cfg
+    ).grid(row=0, column=4, padx=4)
 
     tk.Button(
         panel_botones,
@@ -1098,7 +1361,7 @@ def abrir_ventana_cursos():
         padx=10,
         pady=5,
         command=limpiar_grilla
-    ).grid(row=0, column=6, padx=4)
+    ).grid(row=0, column=5, padx=4)
 
     tk.Button(
         panel_botones,
@@ -1112,8 +1375,10 @@ def abrir_ventana_cursos():
         padx=10,
         pady=5,
         command=al_cerrar_cursos
-    ).grid(row=0, column=7, padx=4)
+    ).grid(row=0, column=6, padx=4)
 
+    # Al abrir la ventana, oculto solo los botones propios del modo edición.
+    grids_remove()
     refrescar_lista_cursos()
     campos["docente_nombres"].focus_set()
 
