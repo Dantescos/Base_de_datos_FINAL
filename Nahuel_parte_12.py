@@ -18,7 +18,7 @@ import sys
 from pathlib import Path
 import subprocess
 from datetime import datetime
-
+#fede estubo aqui :3
 
 # BLOQUE 2: IMÁGENES EN BASE64
 
@@ -141,7 +141,7 @@ entry_dni_perfil_ref = None  # Variable global que apunta al tk.Entry del DNI en
 # BLOQUE 3: BASE DE DATOS
 
 #fede estubo aqui :3
-NOMBRE_BASE_DATOS = "/home/programador10/mammaasda"
+NOMBRE_BASE_DATOS = "mammaasda"
 
 RUTA_BASE_DATOS = resolver_ruta_base_datos()
 conexion = sqlite3.connect(str(RUTA_BASE_DATOS))  # Abro o creo la base de datos en la carpeta de datos del usuario
@@ -192,7 +192,7 @@ cursor.execute("""CREATE TABLE IF NOT EXISTS recursos(
 
 cursor.execute("PRAGMA table_info(personas)")  # Obtengo info de las columnas
 _columnas_personas = {fila[1] for fila in cursor.fetchall()}  # Guardo los nombres de las columnas
-
+#fede estubo aqui
 # BLOQUE 4: NAVAJA SUIZA, aca lo hice es una funcion que ayude a las consultas a la base de datos , por si se llega a consultar mal a la base de datos o no lo encuentra 
 def agregar_columna_si_falta(tabla, columna, tipo):
     cursor.execute(f"PRAGMA table_info({tabla})")
@@ -314,7 +314,7 @@ def guardar_archivo_legajo(dni, ruta_origen, categoria):
         except OSError: pass
         raise
     return cursor.lastrowid, destino
-
+#fede estubo aqui :3
 def guardar_foto_perfil_en_carpeta(dni, contenido, nombre="foto_perfil.png"):
     carpeta = ruta_carpeta_legajo(dni)
     extension = Path(nombre).suffix.lower() or ".png"
@@ -2762,7 +2762,6 @@ def abrir_ventana_autores():
         label_foto.pack(expand=True)
     else:
         Label(frame_foto, text="No se encontró la imagen", bg=BLANCO, fg=NEGRO).pack(expand=True)
-    alternar_modo_oscuro(ventana_autores)
 
 
 # BLOQUE 19: VENTANA DE DOCUMENTOS
