@@ -674,7 +674,13 @@ def alternar_modo_oscuro():
     global MODO_OSCURO
     MODO_OSCURO = not MODO_OSCURO
     aplicar_tema(ventana)
-    btn_tema.configure(text="☀" if MODO_OSCURO else "☾")
+    for ventana_abierta in ventana.winfo_children():
+        if isinstance(ventana_abierta,Toplevel):
+            aplicar_tema(ventana_abierta)
+            btn_tema.configure(text="☀" if MODO_OSCURO else "☾")
+            
+def aplicar_tema_ventana_nueva(ventana_nueva):
+    aplicar_tema(ventana_nueva)
 
 # BLOQUE 7: VENTANA PRINCIPAL
 ventana = tk.Tk()  # Creo la ventana principal
