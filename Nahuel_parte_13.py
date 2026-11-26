@@ -2473,7 +2473,6 @@ def obtener_bytes_sanca():
         return None
     return fila[0]
 
-
 def abrir_ventana_autores():
     cargar_imagen()
     ventana_autores = tk.Toplevel(ventana)
@@ -2482,32 +2481,19 @@ def abrir_ventana_autores():
     ventana_autores.config(bg=AZUL_PETROLEO)
 
     frame_textos = Frame(ventana_autores, bg=AZUL_PETROLEO, width=450)
-    frame_textos.pack(side="left", fill="y", padx=(60, 0))
+    frame_textos.pack(side="left", fill="y", padx=(60, 0)) 
     frame_textos.pack_propagate(False)
-
-    Label(ventana_autores, text="AUTORES", bg=AZUL_PETROLEO, fg=BLANCO, font=("Segoe UI", 32, "bold")).pack(pady=(40, 5))
-    Label(ventana_autores, text="EQUIPO DE DESARROLLO", bg=AZUL_PETROLEO, fg=AMARILLO, font=("Segoe UI", 14, "bold")).pack(pady=(0, 20))
-
-    nombres = ["Antonio Garcia", "Nahuel Villafañe", "Mateo Dabruzzo Wilczek", "Federico 'Fedelobo'", "Ignacio Bertoli", "Thiago Sgroi", "Pablo Laporta"]
-    for nombre in nombres:
-        Label(ventana_autores, text=nombre, bg=AZUL_PETROLEO, fg=BLANCO, font=("Segoe UI", 12)).pack(pady=2)
-
-    Label(ventana_autores, text="___________________________________________", bg=AZUL_PETROLEO, fg=GRIS_MEDIO).pack(pady=15)
-    Label(ventana_autores, text="LICENCIA", bg=AZUL_PETROLEO, fg=BLANCO, font=("Segoe UI", 18, "bold")).pack(pady=5)
-
-    texto_legal = (
-        "© 2026 Equipo de programación Sanca.\n"
-        "Todos los derechos reservados.\n"
-        "Prohibida la copia, modificación, distribución\n"
-        "y uso comercial del software sin\n"
-        "autorización escrita del titular.\n"
-        "Ley 11.723 de Propiedad Intelectual."
-    )
-    Label(ventana_autores, text=texto_legal, bg=AZUL_PETROLEO, fg=GRIS_NIEBLA, font=("Segoe UI", 12), justify="center").pack()
+    Label(frame_textos, text="AUTORES", bg=AZUL_PETROLEO, fg=BLANCO, font=("Segoe UI", 32, "bold")).pack(pady=(40, 5))
+    Label(frame_textos, text="EQUIPO DE DESARROLLO", bg=AZUL_PETROLEO,fg=AMARILLO, font=("Segoe UI", 14, "bold")).pack(pady=(0, 20))
+    nombres = ["Antonio Garcia", "Nahuel Villafañe", "Mateo Dabruzzo Wilczek", "Federico 'Fedelobo'", "Ignacio Bertoli", "Thiago Sgroi", "Pablo Laporta",]
+    for nombre in nombres: Label(frame_textos, text=nombre, bg=AZUL_PETROLEO, fg=BLANCO, font=("Segoe UI", 12)).pack(pady=2)
+    Label(frame_textos, text="___________________________________________", bg=AZUL_PETROLEO, fg=GRIS_MEDIO).pack(pady=15)
+    Label(frame_textos, text="LICENCIA", bg=AZUL_PETROLEO, fg=BLANCO, font=("Segoe UI", 18, "bold")).pack(pady=5)
+    texto_legal = ("© 2026 Equipo de programación Sanca.\n" "Todos los derechos reservados.\n\n" "Prohibida la copia, modificación, distribución\n" "y uso comercial del software sin\n" "autorización escrita del titular.\n\n" "Ley 11.723 de Propiedad Intelectual.")
+    Label(frame_textos, text=texto_legal, bg=AZUL_PETROLEO, fg=GRIS_NIEBLA, font=("Segoe UI", 12), justify="center").pack()
 
     frame_foto = Frame(ventana_autores, bg=BLANCO)
     frame_foto.pack(side="right", fill="both", expand=True, padx=(20, 40))
-
     bytes_sanca = obtener_bytes_sanca()
     if bytes_sanca:
         img = Image.open(BytesIO(bytes_sanca))
@@ -2518,8 +2504,6 @@ def abrir_ventana_autores():
         label_foto.pack(expand=True)
     else:
         Label(frame_foto, text="No se encontró la imagen", bg=BLANCO, fg=NEGRO).pack(expand=True)
-
-    aplicar_tema_ventana_nueva(ventana_autores)
 
 
 # ============================================================
