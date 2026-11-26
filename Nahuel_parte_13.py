@@ -74,6 +74,7 @@ def agregar_columna_si_falta(tabla, columna, tipo):
 cursor.execute("""CREATE TABLE IF NOT EXISTS cursos(
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     docente TEXT,
+    nombre_curso TEXT,
     especialidad TEXT,
     fecha_de_iniciacion TEXT,
     lugar_en_el_que_se_dicta TEXT,
@@ -81,8 +82,8 @@ cursor.execute("""CREATE TABLE IF NOT EXISTS cursos(
     dias TEXT,
     horarios TEXT,
     cantidad_de_modulo INTEGER,
-    curso_numero INTEGER)""")
-
+    curso_numero INTEGER,
+    numero INTEGER)""")
 # Creo tabla personas
 cursor.execute("""CREATE TABLE IF NOT EXISTS personas(
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -103,7 +104,7 @@ cursor.execute("""CREATE TABLE IF NOT EXISTS personas(
     cursos_hechos TEXT,
     cursos_en_progreso TEXT,
     foto BLOB)""")
-
+#fede estubo aqui :3
 # Creo tabla pdf para fotos/documentos
 cursor.execute("""CREATE TABLE IF NOT EXISTS pdf (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -694,6 +695,9 @@ def abrir_ventana_cursos():
 
     # Campos correspondientes a la ficha del curso
     campos_curso = [
+        ("Nombre del docente", "grilla_docente"),
+        ("Nombre del curso", "grilla_nombre_curso"),
+        ("numero del curso", "grilla_numero"),
         ("Nombre del curso / especialidad", "grilla_especialidad"),
         ("Días de cursada", "grilla_dias"),
         ("Horarios", "grilla_horarios"),
@@ -703,7 +707,7 @@ def abrir_ventana_cursos():
         ("Lugar en el que se dicta", "grilla_lugar_en_el_que_se_dicta"),
         ("Localidad", "grilla_localidad"),
     ]
-
+    #fede estubo aqui :3
     for numero_fila, (etiqueta, clave) in enumerate(campos_curso, start=1):
         crear_campo(panel_curso, numero_fila, etiqueta, clave)
 
@@ -838,7 +842,7 @@ def abrir_ventana_cursos():
                 parent=ventana_cursos
             )
             return
-
+#fede estubo aqui :3
         cursor.execute("""
             SELECT
                 docente_nombres, docente_apellido, docente_especialidad,
@@ -846,7 +850,7 @@ def abrir_ventana_cursos():
                 domicilio_docente, calle_numero_docente,
                 especialidad, dias, horarios, duracion,
                 establecimiento, fecha_de_iniciacion,
-                lugar_en_el_que_se_dicta, localidad
+                lugar_en_el_que_se_dicta, localidad, numero, docente 
             FROM cursos
             WHERE id = ?
         """, (id_curso,))
