@@ -1121,16 +1121,7 @@ def abrir_ventana_cursos():
     panel_botones = tk.Frame(ventana_cursos, bg=COLOR_FONDO)
     panel_botones.grid(row=1, column=0, sticky="ew", padx=15, pady=(6, 12))
 
-    btn_cfg = dict(
-        bg=AMARILLO,
-        fg=BLANCO,
-        activebackground=AZUL_PETROLEO,
-        activeforeground=NEGRO,
-        relief="flat",
-        font=("Segoe UI", 9, "bold"),
-        padx=10,
-        pady=5
-    )
+    btn_cfg = dict(bg=AMARILLO,fg=BLANCO,activebackground=AZUL_PETROLEO,activeforeground=NEGRO,relief="flat",font=("Segoe UI", 9, "bold"),padx=10,pady=5)
 
     tk.Button(panel_botones, text="Agregar", command=agregar_curso, **btn_cfg).grid(row=0, column=0, padx=4)
     tk.Button(panel_botones, text="Editar cursos", command=grids, **btn_cfg).grid(row=0, column=1, padx=4)
@@ -2685,9 +2676,196 @@ def abrir_ventana_ver_documento(dni_persona=None):
 
     aplicar_tema_ventana_nueva(ventana_doc)
 
+# ============================================================
+# BLOQUE 23: PDF Y WORD PARA CURSOS
+# ============================================================
+def crear_pdf_de_texto_cursos(ruta, texto):
+    paginas = []
+    lineas_pagina = []
+    # Como no hay foto, el texto puede empezar más arriba
+    y = 805
+
+    def cerrar_pagina():
+        nonlocal lineas_pagina, y
+        if lineas_pagina:
+            paginas.append(lineas_pagina)
+        lineas_pagina = []
+        y = 805
+
+    for linea in texto.splitlines() or [""]:
+        if y < 55:
+            cerrar_pagina()
+        if linea.startswith("## "):
+            texto_linea = linea[3:]
+            tamano = 24
+            es_header = True
+            espacio = 36
+        elif linea.startswith("# "):
+            texto_linea = linea[2:]
+            tamano = 14
+            es_header = True
+            espacio = 24
+        else:
+            texto_linea = linea
+            tamano = 10
+            es_header = False
+            espacio = 15
+        lineas_pagina.append((texto_linea, y, es_header, tamano))
+        y -= espacio
+
+    cerrar_pagina()
+    if not paginas:
+        paginas = [[]]
+
+    for n, lineas in enumerate(paginas, start=1):
+        lineas.append((f"Pagina {n} de {len(paginas)}", 35, False, 10))
+
+    objetos = [None, None]
+    referencias = []
+    id_fuente = 3 + 2 * len(paginas)
+    id_fuente_bold = id_fuente + 1
+
+    for idx, lineas in enumerate(paginas):
+        def _fmt(linea, pos_y, es_header, tamano):
+            fuente = "F2" if es_header else "F1"
+            return f"BT /{fuente} {tamano} Tf 1 0 0 1 50 {pos_y} Tm <{linea.encode('cp1252', errors='replace').hex().upper()}> Tj ET\n"
+
+        contenido_str = "".join(_fmt(linea, pos_y, es_header, tam) for linea, pos_y, es_header, tam in lineas)
+        contenido = contenido_str.encode("ascii")
+
+        id_pagina = len(objetos) + 1
+        id_contenido = id_pagina + 1
+        referencias.append(f"{id_pagina} 0 R")
+
+        # Sin foto, solo necesitamos las fuentes
+        recursos = f"/Resources << /Font << /F1 {id_fuente} 0 R /F2 {id_fuente_bold} 0 R >> >>"
+
+        objetos.append(f"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] {recursos} /Contents {id_contenido} 0 R >>".encode("ascii"))
+        objetos.append(f"<< /Length {len(contenido)} >>\nstream\n".encode("ascii") + contenido + b"\nendstream")
+
+    objetos[0] = b"<< /Type /Catalog /Pages 2 0 R >>"
+    objetos[1] = f"<< /Type /Pages /Kids [{' '.join(referencias)}] /Count {len(referencias)} >>".encode("ascii")
+    objetos.append(b"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>")
+    objetos.append(b"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>")
+
+    salida = bytearray(b"%PDF-1.4\n")
+    offsets = [0]
+    for numero, objeto in enumerate(objetos, start=1):
+        offsets.append(len(salida))
+        salida.extend(f"{numero} 0 obj\n".encode("ascii"))
+        salida.extend(objeto)
+        salida.extend(b"\nendobj\n")
+
+    pos = len(salida)
+    salida.extend(f"xref\n0 {len(objetos)+1}\n".encode("ascii"))
+    salida.extend(b"0000000000 65535 f \n")
+    for offset in offsets[1:]:
+        salida.extend(f"{offset:010d} 00000 n \n".encode("ascii"))
+    salida.extend(f"trailer\n<< /Size {len(objetos)+1} /Root 1 0 R >>\nstartxref\n{pos}\n%%EOF\n".encode("ascii"))
+
+    with open(ruta, "wb") as archivo:
+        archivo.write(salida)
+def crear_word_de_texto_cursos(ruta, texto):
+    def escapar_rtf(s):
+        salida = []
+        for ch in s:
+            if ch == "\\":
+                salida.append("\\\\")
+            elif ch == "{":
+                salida.append("\\{")
+            elif ch == "}":
+                salida.append("\\}")
+            elif ord(ch) > 127:
+                try:
+                    val = ord(ch)
+                    if val < 0:
+                        val += 65536
+                    if val < 32768:
+                        salida.append(f"\\u{val}?")
+                    else:
+                        salida.append(f"\\u{val - 65536}?")
+                except Exception:
+                    salida.append(ch)
+            else:
+                salida.append(ch)
+        return "".join(salida)
+
+    partes = [
+        "{\\rtf1\\ansi\\deff0",
+        "{\\fonttbl{\\f0 Arial;}}",
+        "{\\colortbl ;\\red0\\green0\\blue0;}",
+        "\\paperw11906\\paperh16838\\margl1000\\margr1000\\margt1000\\margb1000",
+        "\\viewkind4\\uc1\\pard\\cf1\\f0\\fs24\n"
+    ]
+
+    # Como no hay foto, el texto ocupa toda la página sin tabla
+    for linea in (texto.splitlines() or [""]):
+        if linea.startswith("## "):
+            # Título principal (más grande y en negrita)
+            partes.append(f"\\pard\\b\\fs48 {escapar_rtf(linea[3:])}\\b0\\fs24\\sa200\\par\n")
+        elif linea.startswith("# "):
+            # Subtítulo (un poco más grande y en negrita)
+            partes.append(f"\\pard\\b\\fs32 {escapar_rtf(linea[2:])}\\b0\\fs24\\sb200\\sa100\\par\n")
+        elif linea.strip() == "":
+            # Línea vacía (espacio entre secciones)
+            partes.append("\\pard\\par\n")
+        else:
+            # Texto normal
+            partes.append(f"\\pard {escapar_rtf(linea)}\\par\n")
+
+    partes.append("}")
+
+    with open(ruta, "wb") as archivo:
+        archivo.write("".join(partes).encode('utf-8'))
+
+def exportar_pdf_persona():
+        texto = _texto_ficha_persona()
+        if texto is None:
+            return
+        ruta = filedialog.asksaveasfilename(            title="Guardar perfil como PDF",
+            defaultextension=".pdf",
+            initialfile=f"perfil_{id_cursos.get().strip()}.pdf",
+            filetypes=[("PDF", "*.pdf")]
+        )
+        if not ruta:
+            return
+        dni = entry_dni_perfil.get().strip()
+        cursor.execute("SELECT foto FROM personas WHERE dni = ?", (dni,))
+        fila = cursor.fetchone()
+        foto_bytes = fila[0] if fila and fila[0] else None
+        try:
+            crear_pdf_de_texto(ruta, texto, foto_bytes)
+            messagebox.showinfo("OK", f"Perfil guardado en:\n{ruta}")
+        except Exception:
+            traceback.print_exc()
+            messagebox.showerror("Error", "No se pudo crear el PDF.")
+
+def exportar_word_persona():
+        texto = _texto_ficha_persona()
+        if texto is None:
+            return
+        ruta = filedialog.asksaveasfilename(
+            title="Guardar perfil como Word",
+            defaultextension=".rtf",
+            initialfile=f"perfil_{entry_dni_perfil.get().strip()}.rtf",
+            filetypes=[("Word (RTF)", "*.rtf")]
+        )
+        if not ruta:
+            return
+        dni = entry_dni_perfil.get().strip()
+        cursor.execute("SELECT foto FROM personas WHERE dni = ?", (dni,))
+        fila = cursor.fetchone()
+        foto_bytes = fila[0] if fila and fila[0] else None
+        try:
+            crear_word_de_texto(ruta, texto, foto_bytes)
+            messagebox.showinfo("OK", f"Perfil guardado en:\n{ruta}")
+        except Exception:
+            traceback.print_exc()
+            messagebox.showerror("Error", "No se pudo crear el Word.")
+
 
 # ============================================================
-# BLOQUE 23: CERRAR APLICACION
+# BLOQUE 24: CERRAR APLICACION
 # ============================================================
 def al_cerrar_app():
     try:
