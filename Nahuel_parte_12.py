@@ -341,19 +341,7 @@ def abrir_archivo_externo(ruta):
     else:
         subprocess.Popen(["xdg-open", ruta])
 
-# ------------------------------------------------------------
-# 4. CONFIRMAR E INFORMAR LA CONEXIÓN
-# ------------------------------------------------------------
-
 conexion.commit()
-
-print("========================================")
-print("SANCA - BASE DE DATOS CONECTADA")
-print("========================================")
-print(f"Archivo: {RUTA_BASE_DATOS}")
-print("Tablas: personas, cursos, pdf y recursos")
-print("========================================")
-
 # ============================================================
 # 5. CARPETAS Y UTILIDADES DE LEGAJOS DE SANCA
 # ============================================================
