@@ -2818,51 +2818,128 @@ def crear_word_de_texto_cursos(ruta, texto):
     with open(ruta, "wb") as archivo:
         archivo.write("".join(partes).encode('utf-8'))
 
-def exportar_pdf_persona():
-        texto = _texto_ficha_persona()
-        if texto is None:
-            return
-        ruta = filedialog.asksaveasfilename(            title="Guardar perfil como PDF",
-            defaultextension=".pdf",
-            initialfile=f"perfil_{id_cursos.get().strip()}.pdf",
-            filetypes=[("PDF", "*.pdf")]
-        )
-        if not ruta:
-            return
-        dni = entry_dni_perfil.get().strip()
-        cursor.execute("SELECT foto FROM personas WHERE dni = ?", (dni,))
-        fila = cursor.fetchone()
-        foto_bytes = fila[0] if fila and fila[0] else None
-        try:
-            crear_pdf_de_texto(ruta, texto, foto_bytes)
-            messagebox.showinfo("OK", f"Perfil guardado en:\n{ruta}")
-        except Exception:
-            traceback.print_exc()
-            messagebox.showerror("Error", "No se pudo crear el PDF.")
+def exportar_curso_pdf(id_curso):
+    # Consultar datos del curso
+    cursor.execute("""
+        SELECT docente_nombres, docente_apellido, docente_especialidad,
+               tipo_documento, numero_documento, nacionalidad_docente,
+               domicilio_docente, calle_numero_docente,
+               especialidad, dias, horarios, duracion,
+               establecimiento, fecha_de_iniciacion,
+               lugar_en_el_que_se_dicta, localidad
+        FROM cursos WHERE id = ?
+    """, (id_curso,))
+    curso = cursor.fetchone()
+    
+    if not curso:
+        messagebox.showinfo("Sin resultados", "No se encontró ese curso.")
+        return
+    
+    # Construir texto
+    docente_completo = f"{curso[0] or ''} {curso[1] or ''}".strip()
+    lineas = [
+        f"## Curso: {curso[8] or 'Sin nombre'}",
+        f"ID del curso: {id_curso}",
+        "",
+        "# DATOS DEL DOCENTE",
+        f"Nombre: {curso[0] or '-'}",
+        f"Apellido: {curso[1] or '-'}",
+        f"Especialidad: {curso[2] or '-'}",
+        f"Tipo de documento: {curso[3] or '-'}",
+        f"Número de documento: {curso[4] or '-'}",
+        f"Nacionalidad: {curso[5] or '-'}",
+        f"Domicilio: {curso[6] or '-'}",
+        f"Calle y número: {curso[7] or '-'}",
+        "",
+        "# INFORMACIÓN DEL CURSO",
+        f"Días de cursada: {curso[9] or '-'}",
+        f"Horarios: {curso[10] or '-'}",
+        f"Duración: {curso[11] or '-'}",
+        f"Establecimiento: {curso[12] or '-'}",
+        f"Fecha de iniciación: {curso[13] or '-'}",
+        f"Lugar en el que se dicta: {curso[14] or '-'}",
+        f"Localidad: {curso[15] or '-'}"
+    ]
+    texto = "\n".join(lineas)
+    
+    # Guardar PDF
+    ruta = filedialog.asksaveasfilename(
+        title="Guardar curso como PDF",
+        defaultextension=".pdf",
+        initialfile=f"curso_{id_curso}.pdf",
+        filetypes=[("PDF", "*.pdf")]
+    )
+    if not ruta:
+        return
+    
+    try:
+        crear_pdf_de_texto_cursos(ruta, texto)  # Sin foto
+        messagebox.showinfo("OK", f"Curso guardado en:\n{ruta}")
+    except Exception:
+        traceback.print_exc()
+        messagebox.showerror("Error", "No se pudo crear el PDF.")
 
-def exportar_word_persona():
-        texto = _texto_ficha_persona()
-        if texto is None:
-            return
-        ruta = filedialog.asksaveasfilename(
-            title="Guardar perfil como Word",
-            defaultextension=".rtf",
-            initialfile=f"perfil_{entry_dni_perfil.get().strip()}.rtf",
-            filetypes=[("Word (RTF)", "*.rtf")]
-        )
-        if not ruta:
-            return
-        dni = entry_dni_perfil.get().strip()
-        cursor.execute("SELECT foto FROM personas WHERE dni = ?", (dni,))
-        fila = cursor.fetchone()
-        foto_bytes = fila[0] if fila and fila[0] else None
-        try:
-            crear_word_de_texto(ruta, texto, foto_bytes)
-            messagebox.showinfo("OK", f"Perfil guardado en:\n{ruta}")
-        except Exception:
-            traceback.print_exc()
-            messagebox.showerror("Error", "No se pudo crear el Word.")
 
+def exportar_curso_word(id_curso):
+    # Consultar datos del curso
+    cursor.execute("""
+        SELECT docente_nombres, docente_apellido, docente_especialidad,
+               tipo_documento, numero_documento, nacionalidad_docente,
+               domicilio_docente, calle_numero_docente,
+               especialidad, dias, horarios, duracion,
+               establecimiento, fecha_de_iniciacion,
+               lugar_en_el_que_se_dicta, localidad
+        FROM cursos WHERE id = ?
+    """, (id_curso,))
+    curso = cursor.fetchone()
+    
+    if not curso:
+        messagebox.showinfo("Sin resultados", "No se encontró ese curso.")
+        return
+    
+    # Construir texto
+    docente_completo = f"{curso[0] or ''} {curso[1] or ''}".strip()
+    lineas = [
+        f"## Curso: {curso[8] or 'Sin nombre'}",
+        f"ID del curso: {id_curso}",
+        "",
+        "# DATOS DEL DOCENTE",
+        f"Nombre: {curso[0] or '-'}",
+        f"Apellido: {curso[1] or '-'}",
+        f"Especialidad: {curso[2] or '-'}",
+        f"Tipo de documento: {curso[3] or '-'}",
+        f"Número de documento: {curso[4] or '-'}",
+        f"Nacionalidad: {curso[5] or '-'}",
+        f"Domicilio: {curso[6] or '-'}",
+        f"Calle y número: {curso[7] or '-'}",
+        "",
+        "# INFORMACIÓN DEL CURSO",
+        f"Días de cursada: {curso[9] or '-'}",
+        f"Horarios: {curso[10] or '-'}",
+        f"Duración: {curso[11] or '-'}",
+        f"Establecimiento: {curso[12] or '-'}",
+        f"Fecha de iniciación: {curso[13] or '-'}",
+        f"Lugar en el que se dicta: {curso[14] or '-'}",
+        f"Localidad: {curso[15] or '-'}"
+    ]
+    texto = "\n".join(lineas)
+    
+    # Guardar Word
+    ruta = filedialog.asksaveasfilename(
+        title="Guardar curso como Word",
+        defaultextension=".rtf",
+        initialfile=f"curso_{id_curso}.rtf",
+        filetypes=[("Word (RTF)", "*.rtf")]
+    )
+    if not ruta:
+        return
+    
+    try:
+        crear_word_de_texto_cursos(ruta, texto)  # Sin foto
+        messagebox.showinfo("OK", f"Curso guardado en:\n{ruta}")
+    except Exception:
+        traceback.print_exc()
+        messagebox.showerror("Error", "No se pudo crear el Word.")
 
 # ============================================================
 # BLOQUE 24: CERRAR APLICACION
