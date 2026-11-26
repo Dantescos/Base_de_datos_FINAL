@@ -2276,18 +2276,22 @@ def abrir_ventana_perfil(event=None):
     frame_lista_perfil = Frame(frame_derecha, bg=GRIS_AZULADO, relief="solid", bd=1)
     frame_lista_perfil.pack(side="top", fill="both", expand=True, pady=(0, 20))
 
-    Label(frame_lista_perfil, text="cursos cursados", fg=COLOR_FONDO, bg=GRIS_AZULADO, font=("Segoe UI", 15, "bold")).pack(side="top", padx=10, pady=10)
+    Label(frame_lista_perfil, text="cursos cursados      |        cursos activos", fg=COLOR_FONDO, bg=GRIS_AZULADO, font=("Segoe UI", 15, "bold")).pack(side="top", padx=10, pady=10)
 
     scroll_perfil = tk.Scrollbar(frame_lista_perfil, orient="vertical")
-    scroll_perfil.pack(side="right", fill="y")
+    scroll_perfil.pack(side="left", fill="y")
 
-    lista_personas_perfil = Listbox(
-        frame_lista_perfil, yscrollcommand=scroll_perfil.set,
-        font=("Segoe UI", 12), bg=BLANCO, fg=GRIS_AZULADO,
-        selectbackground=AZUL_SERENO, selectforeground=BLANCO
-    )
+    scroll_perfil_activo = tk.Scrollbar(frame_lista_perfil, orient="vertical")
+    scroll_perfil_activo.pack(side="right", fill="y")
+
+    lista_personas_perfil = Listbox(frame_lista_perfil, yscrollcommand=scroll_perfil.set,font=("Segoe UI", 12), bg=BLANCO, fg=GRIS_AZULADO, selectbackground=AZUL_SERENO, selectforeground=BLANCO)
+
     lista_personas_perfil.pack(side="left", fill="both", expand=True)
     scroll_perfil.config(command=lista_personas_perfil.yview)
+
+    lista_personas_perfil_activos = Listbox(frame_lista_perfil, yscrollcommand=scroll_perfil_activo.set,font=("Segoe UI", 12), bg=BLANCO, fg=GRIS_AZULADO, selectbackground=AZUL_SERENO, selectforeground=BLANCO)
+    lista_personas_perfil_activos.pack(side="left", fill="both", expand=True)
+    scroll_perfil_activo.config(command=lista_personas_perfil_activos.yview)
 
     mostrar_foto_en_perfil()
     cargar_perfil()
