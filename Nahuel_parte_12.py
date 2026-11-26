@@ -169,7 +169,9 @@ cursor.execute("""CREATE TABLE IF NOT EXISTS personas(
     obra_social TEXT,
     nacionalidad TEXT,
     localidad TEXT,
+    cursos_hechos INTEGER,
     foto BLOB)""")
+
 
 cursor.execute("""CREATE TABLE IF NOT EXISTS pdf (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -2137,7 +2139,23 @@ def abrir_ventana_perfil(event=None):
         except Exception:
             traceback.print_exc()
             messagebox.showerror("Error", "No se pudo crear el Word.")
+    def refrescar_lista_de_cursos_hechos():
+    # Vacío la lista antes de volver a cargarla.
+        lista_personas_perfil.delete(0, tk.END)
 
+        # La columna correcta de la tabla se llama "nombres".
+        cursor.execute("SELECT nombres, apellido, dni FROM personas ORDER BY apellido, nombres")
+
+        # Recorro las personas y las muestro en la lista.
+        for nombre, apellido, dni in cursor.fetchall():
+            lista_personas.insert(tk.END, f"{apellido}, {nombre} — DNI {dni}")
+
+        # Actualizo el contador sin consultar una columna "estado" que no existe.
+        cursor.execute("SELECT COUNT(*) FROM personas")
+        cantidad = cursor.fetchone()[0]
+        contador_legajos.config(text=f"Legajos registrados: {cantidad}")
+
+    
     boton_guardar_perfil = Button(frame_izquierdo, text="Guardar cambios",fg=COLOR_BOTON_TEXTO,bg = COLOR_BOTON, font=("Segoe UI", 12),command=guardar_cambios_perfil)
     boton_guardar_perfil.grid(row=16, column=0, padx=10, pady=5, sticky="ew")
     boton_editor_fotos = Button(frame_izquierdo,text="Editar fotos",fg=COLOR_BOTON_TEXTO,bg = COLOR_BOTON, font=("Segoe UI", 12),command=abrir_ventana_editor_fotos)
