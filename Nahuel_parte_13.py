@@ -104,7 +104,6 @@ cursor.execute("""CREATE TABLE IF NOT EXISTS personas(
     cursos_hechos TEXT,
     cursos_en_progreso TEXT,
     foto BLOB)""")
-#fede estubo aqui :3
 # Creo tabla pdf para fotos/documentos
 cursor.execute("""CREATE TABLE IF NOT EXISTS pdf (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -205,7 +204,145 @@ for nombre_columna, tipo_columna in {
 }.items():
     agregar_columna_si_falta("pdf", nombre_columna, tipo_columna)
 
+cursor.execute("""
+    CREATE TABLE IF NOT EXISTS inscripciones_cursos (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        dni_persona INTEGER NOT NULL,
+        id_curso INTEGER NOT NULL,
+        estado TEXT NOT NULL DEFAULT 'activo'
+            CHECK (estado IN ('activo', 'cursado')),
+        fecha_inscripcion TEXT,
+        fecha_cierre TEXT,
+        UNIQUE (dni_persona, id_curso)
+    )
+""")
+cursor.execute("""
+    CREATE INDEX IF NOT EXISTS idx_inscripciones_curso
+    ON inscripciones_cursos(id_curso, estado)
+""")
+cursor.execute("""
+    CREATE INDEX IF NOT EXISTS idx_inscripciones_persona
+    ON inscripciones_cursos(dni_persona, estado)
+""")
+
 conexion.commit()
+
+def _sincronizar_cursos_persona(dni):
+    cursor.execute("""
+        SELECT c.especialidad, i.estado
+        FROM inscripciones_cursos i
+        JOIN cursos c ON c.id = i.id_curso
+        WHERE i.dni_persona = ?
+        ORDER BY c.especialidad COLLATE NOCASE
+    """, (int(dni),))
+    hechos, activos = [], []
+    for nombre, estado in cursor.fetchall():
+        nombre = (nombre or "").strip()
+        if not nombre:
+            continue
+        destino = hechos if estado == "cursado" else activos
+        if nombre not in destino:
+            destino.append(nombre)
+    cursor.execute("""
+        UPDATE personas
+        SET cursos_hechos = ?, cursos_en_progreso = ?
+        WHERE dni = ?
+    """, ("; ".join(hechos), "; ".join(activos), int(dni)))
+
+def obtener_alumnos_curso(id_curso, estado=None):
+    consulta = """
+        SELECT p.id, p.nombres, p.apellido, p.dni, i.estado,
+               i.fecha_inscripcion, i.fecha_cierre
+        FROM inscripciones_cursos i
+        JOIN personas p ON p.dni = i.dni_persona
+        WHERE i.id_curso = ?
+    """
+    parametros = [int(id_curso)]
+    if estado is not None:
+        if estado not in ("activo", "cursado"):
+            raise ValueError("El estado debe ser 'activo' o 'cursado'.")
+        consulta += " AND i.estado = ?"
+        parametros.append(estado)
+    consulta += " ORDER BY p.apellido COLLATE NOCASE, p.nombres COLLATE NOCASE"
+    cursor.execute(consulta, parametros)
+    return cursor.fetchall()
+
+def obtener_cursos_persona(dni, estado=None):
+    consulta = """
+        SELECT c.id, c.especialidad, i.estado,
+               i.fecha_inscripcion, i.fecha_cierre
+        FROM inscripciones_cursos i
+        JOIN cursos c ON c.id = i.id_curso
+        WHERE i.dni_persona = ?
+    """
+    parametros = [int(dni)]
+    if estado is not None:
+        if estado not in ("activo", "cursado"):
+            raise ValueError("El estado debe ser 'activo' o 'cursado'.")
+        consulta += " AND i.estado = ?"
+        parametros.append(estado)
+    consulta += " ORDER BY c.especialidad COLLATE NOCASE"
+    cursor.execute(consulta, parametros)
+    return cursor.fetchall()
+
+def inscribir_persona_en_curso(dni, id_curso, fecha_inscripcion=None):
+    fecha_inscripcion = fecha_inscripcion or datetime.now().strftime("%Y-%m-%d")
+    try:
+        cursor.execute("SELECT 1 FROM personas WHERE dni = ?", (int(dni),))
+        if not cursor.fetchone():
+            raise ValueError(f"No existe una persona con DNI {dni}.")
+        cursor.execute("SELECT 1 FROM cursos WHERE id = ?", (int(id_curso),))
+        if not cursor.fetchone():
+            raise ValueError(f"No existe un curso con ID {id_curso}.")
+        cursor.execute("""
+            INSERT INTO inscripciones_cursos
+                (dni_persona, id_curso, estado, fecha_inscripcion, fecha_cierre)
+            VALUES (?, ?, 'activo', ?, NULL)
+            ON CONFLICT(dni_persona, id_curso) DO NOTHING
+        """, (int(dni), int(id_curso), fecha_inscripcion))
+        creada = cursor.rowcount > 0
+        conexion.commit()
+        _sincronizar_cursos_persona(dni)
+        conexion.commit()
+        return creada
+    except Exception:
+        conexion.rollback()
+        raise
+
+def cambiar_estado_inscripcion(dni, id_curso, estado, fecha_cierre=None):
+    if estado not in ("activo", "cursado"):
+        raise ValueError("El estado debe ser 'activo' o 'cursado'.")
+    if estado == "cursado":
+        fecha_cierre = fecha_cierre or datetime.now().strftime("%Y-%m-%d")
+    else:
+        fecha_cierre = None
+    try:
+        cursor.execute("""
+            UPDATE inscripciones_cursos
+            SET estado = ?, fecha_cierre = ?
+            WHERE dni_persona = ? AND id_curso = ?
+        """, (estado, fecha_cierre, int(dni), int(id_curso)))
+        if cursor.rowcount == 0:
+            raise ValueError("La persona no está inscripta en ese curso.")
+        _sincronizar_cursos_persona(dni)
+        conexion.commit()
+    except Exception:
+        conexion.rollback()
+        raise
+
+def quitar_persona_de_curso(dni, id_curso):
+    try:
+        cursor.execute("""
+            DELETE FROM inscripciones_cursos
+            WHERE dni_persona = ? AND id_curso = ?
+        """, (int(dni), int(id_curso)))
+        eliminada = cursor.rowcount > 0
+        _sincronizar_cursos_persona(dni)
+        conexion.commit()
+        return eliminada
+    except Exception:
+        conexion.rollback()
+        raise
 
 # ============================================================
 # BLOQUE 7: CARPETAS Y UTILIDADES DE LEGAJOS DE SANCA
@@ -707,7 +844,7 @@ def abrir_ventana_cursos():
         ("Lugar en el que se dicta", "grilla_lugar_en_el_que_se_dicta"),
         ("Localidad", "grilla_localidad"),
     ]
-    #fede estubo aqui :3
+
     for numero_fila, (etiqueta, clave) in enumerate(campos_curso, start=1):
         crear_campo(panel_curso, numero_fila, etiqueta, clave)
 
@@ -842,7 +979,7 @@ def abrir_ventana_cursos():
                 parent=ventana_cursos
             )
             return
-#fede estubo aqui :3
+
         cursor.execute("""
             SELECT
                 docente_nombres, docente_apellido, docente_especialidad,
@@ -1034,7 +1171,15 @@ def abrir_ventana_cursos():
             return
 
         try:
+            cursor.execute(
+                "SELECT DISTINCT dni_persona FROM inscripciones_cursos WHERE id_curso = ?",
+                (id_curso,)
+            )
+            dnis_inscriptos = [fila[0] for fila in cursor.fetchall()]
+            cursor.execute("DELETE FROM inscripciones_cursos WHERE id_curso = ?", (id_curso,))
             cursor.execute("DELETE FROM cursos WHERE id = ?", (id_curso,))
+            for dni_inscripto in dnis_inscriptos:
+                _sincronizar_cursos_persona(dni_inscripto)
             conexion.commit()
             refrescar_lista_cursos()
             if curso_en_edicion["id"] == id_curso:
@@ -1382,6 +1527,7 @@ def eliminar_definitivo():
 
     try:
         cursor.execute("DELETE FROM pdf WHERE dni_personas = ?", (dni,))
+        cursor.execute("DELETE FROM inscripciones_cursos WHERE dni_persona = ?", (dni,))
         cursor.execute("DELETE FROM personas WHERE dni = ?", (dni,))
         conexion.commit()
         # Borro también la carpeta del legajo si existe.
@@ -1978,6 +2124,12 @@ def abrir_ventana_perfil(event=None):
                 if cursor.fetchone():
                     messagebox.showerror("DNI duplicado", "Otra persona ya utiliza ese DNI.")
                     return
+
+                if str(dni) != str(dni_anterior):
+                    cursor.execute(
+                        "UPDATE inscripciones_cursos SET dni_persona = ? WHERE dni_persona = ?",
+                        (dni, dni_anterior)
+                    )
 
                 # Actualizo todos los campos del registro existente.
                 cursor.execute("""UPDATE personas
