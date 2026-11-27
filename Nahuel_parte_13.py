@@ -2660,8 +2660,9 @@ def abrir_ventana_autores():
         label_foto.pack(expand=True)
     else:
         Label(frame_foto, text="No se encontró la imagen", bg=BLANCO, fg=NEGRO).pack(expand=True)
-
-
+        
+btn_autores = Button (frame_btn,text="Autores", width=10, bg=COLOR_BOTON, fg=COLOR_BOTON_TEXTO, command= abrir_ventana_autores)
+btn_autores.pack(side="right", padx=5, pady=7)
 # ============================================================
 # BLOQUE 22: VENTANA DE DOCUMENTOS
 # ============================================================
@@ -2809,7 +2810,6 @@ def abrir_ventana_ver_documento(dni_persona=None):
     Button(frame_btn_doc, bg=COLOR_BOTON, fg=COLOR_BOTON_TEXTO, text="Guardar Word", command=guardar_word).pack(side="left", padx=5)
     Button(frame_btn_doc, bg=ROJO, fg=BLANCO, text="Eliminar archivo", command=eliminar_archivo).pack(side="left", padx=5)
     Button(frame_btn_doc, bg=COLOR_BOTON, fg=COLOR_BOTON_TEXTO, text="Importar PDF/Word", command=importar_documento).pack(side="left", padx=5)
-    Button(frame_btn_doc, bg=COLOR_BOTON, fg=COLOR_BOTON_TEXTO, text="Autores", command=abrir_ventana_autores).pack(side="left", padx=5)
 
     if dni_persona:
         cargar_documento()
