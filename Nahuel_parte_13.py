@@ -1521,10 +1521,6 @@ def eliminar_definitivo():
 
     if not messagebox.askyesno("Confirmar eliminación", f"¿Estas seguro de que deseas eliminar a esta persona?\n{texto}"):
         return
-
-    grids_remove_nom_ape()
-    grids_remove_dni()
-
     try:
         cursor.execute("DELETE FROM pdf WHERE dni_personas = ?", (dni,))
         cursor.execute("DELETE FROM inscripciones_cursos WHERE dni_persona = ?", (dni,))
